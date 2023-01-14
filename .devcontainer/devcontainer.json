@@ -47,15 +47,16 @@
     "runArgs": [
         "--runtime=nvidia",
         "--gpus", "all",
-        "--network=host"
+        "--network=host",
+        "--name edna"
     ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-iot.vscode-ros"
+            ]
+        }
+    },
     "privileged": true,
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // "forwardPorts": [],
-
-    // Use 'postCreateCommand' to run commands after the container is created.
-    // "postCreateCommand": "uname -a",
-
-    // Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
     "remoteUser": "vscode"
 }
