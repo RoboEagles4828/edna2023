@@ -48,7 +48,7 @@
         "--runtime=nvidia",
         "--gpus", "all",
         "--network=host",
-        "--name edna"
+        "--name=edna"
     ],
     "customizations": {
         "vscode": {

@@ -29,4 +29,4 @@ echo 'source /ros2_humble/install/setup.zsh' >> ~/.zshrc
 
 # Setup ROS2 Humble as the default bridge extension
 basekit_file="/isaac-sim/apps/omni.isaac.sim.base.kit"
-sed -i 's/ros_bridge/ros2_bridge-humble/' $basekit_file
+sudo sed -i 's/ros_bridge/ros2_bridge-humble/' $basekit_file
