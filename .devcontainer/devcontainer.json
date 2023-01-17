@@ -23,8 +23,8 @@
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0"
     },
-    "initializeCommand": "sh .devcontainer/init.sh",
-    "postCreateCommand": "sh .devcontainer/postCreate.sh",
+    "initializeCommand": "bash .devcontainer/init.sh",
+    "postCreateCommand": "bash .devcontainer/postCreate.sh",
     "mounts": [
         // X11
         "source=${localEnv:XAUTHORITY},target=/home/vscode/.Xauthority,type=bind",
@@ -34,15 +34,15 @@
         "source=/usr/share/vulkan/implicit_layer.d/nvidia_layers.json,target=/usr/share/vulkan/implicit_layer.d/nvidia_layers.json,type=bind,consistency=cached",
         // Isaac
         "source=${localEnv:HOME}/docker/isaac-sim/cache/kit,target=/isaac-sim/kit/cache/Kit,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/ov,target=/home/vscode/.cache/ov,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/pip,target=/home/vscode/.cache/pip,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/glcache,target=/home/vscode/.cache/nvidia/GLCache,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/computecache,target=/home/vscode/.nv/ComputeCache,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/logs,target=/home/vscode/.nvidia-omniverse/logs,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/ov,target=/root/.cache/ov,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/pip,target=/root/.cache/pip,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/glcache,target=/root/.cache/nvidia/GLCache,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/computecache,target=/root/.nv/ComputeCache,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/logs,target=/root/.nvidia-omniverse/logs,type=bind",
         "source=${localEnv:HOME}/docker/isaac-sim/logs-kit,target=/isaac-sim/kit/logs,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/config,target=/home/vscode/.nvidia-omniverse/config,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/data,target=/home/vscode/.local/share/ov/data,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/documents,target=/home/vscode/Documents,type=bind"
+        "source=${localEnv:HOME}/docker/isaac-sim/config,target=/root/.nvidia-omniverse/config,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/data,target=/root/.local/share/ov/data,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/documents,target=/root/Documents,type=bind"
     ],
     "runArgs": [
         "--runtime=nvidia",

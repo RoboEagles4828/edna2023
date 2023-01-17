@@ -3,7 +3,7 @@
 localhost = "omniverse://localhost"
 
 [cache]
-data_dir = "/home/vscode/.cache/ov/Cache"
+data_dir = "/root/.cache/ov/Cache"
 proxy_cache_enabled = false
 proxy_cache_server = ""
 
