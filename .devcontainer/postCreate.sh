@@ -6,10 +6,10 @@ sudo cp ./.devcontainer/omniverse.toml /root/.nvidia-omniverse/config/omniverse.
 # Run the postinstall script for isaac sim
 # Check to see if post install has already been run
 if [ ! -d root/.cache/ov/Kit ]; then
-    echo "ISAAC SIM POST INSTALL RUNNING... THIS WILL TAKE ABOUT 10min"
+    echo "ISAAC SIM POST INSTALL RUNNING... THIS WILL TAKE ABOUT 30min"
     sudo mkdir -p /root/Documents
-    sudo chown -r root:root /root
-    sudo bash /isaac-sim/omni.isaac.sim.post.install.sh
+    sudo chown -R root:root /root
+    sudo /isaac-sim/omni.isaac.sim.post.install.sh
 fi                                                                                                                                                                                                                                                                                                      
 
 # Setup ZSH

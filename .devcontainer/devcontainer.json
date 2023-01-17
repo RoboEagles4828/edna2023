@@ -1,19 +1,6 @@
 {
     "name": "edna",
-    "build": {
-        "dockerfile": "./Dockerfile",
-        "context": "."
-    },
-    "features": {
-        "ghcr.io/devcontainers/features/common-utils:2.0.6": {
-            "installZsh": "true",
-            "configureZshAsDefaultShell": "true",
-            "username": "vscode",
-            "uid": "1000",
-            "gid": "1000",
-            "upgradePackages": "true"
-        }
-    },
+    "image": "ghcr.io/roboeagles4828/humble-isaac:latest",
     "containerEnv": {
         "ACCEPT_EULA": "Y",
         "DISPLAY": "${localEnv:DISPLAY}",
@@ -23,8 +10,7 @@
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0"
     },
-    "initializeCommand": "bash .devcontainer/init.sh",
-    "postCreateCommand": "bash .devcontainer/postCreate.sh",
+    "initializeCommand": "./.devcontainer/init.sh",
     "mounts": [
         // X11
         "source=${localEnv:XAUTHORITY},target=/home/vscode/.Xauthority,type=bind",
