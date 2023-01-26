@@ -2,3 +2,4 @@ install
 build
 log
 c_cpp_properties.json
+__pycache__
