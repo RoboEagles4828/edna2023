@@ -20,7 +20,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://swerve_description/meshes/SwerveAxle.stl" scale="0.001 0.001 0.001" />
+                    <mesh filename="package://edna_description/meshes/SwerveAxle.stl" scale="0.001 0.001 0.001" />
                 </geometry>
                 <material name="blue" />
             </visual>
@@ -42,7 +42,7 @@
                 <origin xyz="0 0 0" rpy="0 ${pi / 4} 0" />
                 
                 <geometry>
-                    <mesh filename="package://swerve_description/meshes/SwerveWheel.stl" scale="0.001 0.001 0.001" />
+                    <mesh filename="package://edna_description/meshes/SwerveWheel.stl" scale="0.001 0.001 0.001" />
                 </geometry>
                 <material name="yellow" />
             </visual>

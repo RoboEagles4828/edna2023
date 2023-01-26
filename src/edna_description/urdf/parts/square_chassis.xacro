@@ -19,7 +19,7 @@
       <visual>
         <origin xyz="0.061605 -0.34976 -0.53866" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://swerve_description/meshes/SwerveChassis.stl" scale="0.001 0.001 0.001" />
+          <mesh filename="package://edna_description/meshes/SwerveChassis.stl" scale="0.001 0.001 0.001" />
         </geometry>
         <material name="red"/>
       </visual>

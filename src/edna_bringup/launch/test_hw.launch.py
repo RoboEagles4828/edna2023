@@ -11,28 +11,25 @@ from launch_ros.actions import Node
 import xacro
 
 def generate_launch_description():
-    use_sim_time = True
+    # SIM TIME MUST BE DISABLED
+    # sim time relys on a simulation to handle the ros clock.
+    # this launch uses fake hardware using the real clock.
+    use_sim_time = False
 
     # Process the URDF file
-    pkg_path = os.path.join(get_package_share_directory('swerve_description'))
-    xacro_file = os.path.join(pkg_path,'urdf', 'robots','swerve.urdf.xacro')
-    controllers_file = os.path.join(pkg_path, 'config', 'controllers.yaml')
-    joystick_file = os.path.join(pkg_path, 'config', 'xbox-holonomic.config.yaml')
-    rviz_file = os.path.join(pkg_path, 'config', 'view.rviz')
+    description_pkg_path = os.path.join(get_package_share_directory('edna_description'))
+    xacro_file = os.path.join(description_pkg_path,'urdf', 'robots','edna.urdf.xacro')
+    edna_description_config = xacro.process_file(xacro_file, mappings={ 'hw_interface_plugin': 'swerve_hardware/TestDriveHardware' })
+    edna_description_xml = edna_description_config.toxml()
 
+    # Get paths to other config files
+    bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
+    controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
+    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic.config.yaml')
+    rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
 
-    swerve_description_config = xacro.process_file(xacro_file)
-    
-    # Save Built URDF file to Description Directory
-    swerve_description_xml = swerve_description_config.toxml()
-    source_code_path = os.path.abspath(os.path.join(pkg_path, "../../../../src/swerve_description"))
-    urdf_save_path = os.path.join(source_code_path, "swerve.urdf")
-    with open(urdf_save_path, 'w') as f:
-        f.write(swerve_description_xml)
-
-    
-     # Create a robot_state_publisher node
-    params = {'robot_description': swerve_description_xml, 'use_sim_time': use_sim_time}
+    # Create a robot_state_publisher node
+    params = {'robot_description': edna_description_xml, 'use_sim_time': use_sim_time}
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -44,10 +41,9 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[{'robot_description': swerve_description_xml, 'use_sim_time': True }, controllers_file],
+        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': use_sim_time }, controllers_file],
         output="screen",
     )
-
 
     # Starts ROS2 Control Joint State Broadcaster
     joint_state_broadcaster_spawner = Node(
@@ -55,8 +51,6 @@ def generate_launch_description():
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
-    
-
 
     #Starts ROS2 Control Swerve Drive Controller
     swerve_drive_controller_spawner = Node(
@@ -71,29 +65,20 @@ def generate_launch_description():
         )
     )
 
-
     # Start Rviz2 with basic view
     run_rviz2_node = Node(
         package='rviz2',
         executable='rviz2',
-        parameters=[{ 'use_sim_time': True }],
         name='isaac_rviz2',
         output='screen',
-        arguments=[["-d"], [rviz_file]],
+        arguments=[["-d"], [rviz_file], '--ros-args', '--log-level', 'FATAL'],
     )
-
-
-    # run_rviz2 = ExecuteProcess(
-    #     cmd=['rviz2', '-d', rviz_file],
-    #     output='screen'
-    # )
     rviz2_delay = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=joint_state_broadcaster_spawner,
             on_exit=[run_rviz2_node],
         )
     )
-
 
     # Start Joystick Node
     joy = Node(
@@ -105,7 +90,6 @@ def generate_launch_description():
                 'deadzone': 0.3,
                 'autorepeat_rate': 20.0,
             }])
-
 
     # Start Teleop Node to translate joystick commands to robot commands
     joy_teleop = Node(

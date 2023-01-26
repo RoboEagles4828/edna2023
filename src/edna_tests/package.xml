@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>test_swerve_control</name>
-  <version>0.0.0</version>
-  <description>Test package for publishing topic messages to test swerve control</description>
-  <maintainer email="gagemiller155@gmail.com">helios</maintainer>
+  <name>edna_tests</name>
+  <version>0.0.1</version>
+  <description>Test robot functions</description>
+  <maintainer email="roboeagles4828@gmail.com">roboeagles</maintainer>
   <license>MIT</license>
 
   <exec_depend>rclpy</exec_depend>
