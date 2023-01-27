@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+import math
 
 from sensor_msgs.msg import JointState
 
@@ -27,8 +28,8 @@ class PublishJointCmd(Node):
             'rear_left_axle_joint',
             'rear_right_axle_joint']
         # position_cmds.name = []
-        
-        velocity_cmds.velocity = [ 0.0, 0.0, 0.0, 0.0, 50.0, 50.0, 50.0, 50.0]
+        rad = math.pi
+        velocity_cmds.velocity = [ 0.0, 0.0, 0.0, 0.0, rad, rad, rad, rad]
         # position_cmds.position = []
 
         self.publisher_.publish(velocity_cmds)

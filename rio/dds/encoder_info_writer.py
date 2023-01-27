@@ -16,17 +16,13 @@ class EncoderInfoWriter:
         positions = list()
         velocities = list()
 
-        print(encoder_info)
         if encoder_info:
-            print(encoder_info)
             for module_value in encoder_info.values():
-                print(module_value)
                 for joint in module_value.values():
                     names.append(joint['name'])
-                    positions.append(joint['position'])
-                    velocities.append(joint['velocity'])
+                    positions.append(float(joint['position']))
+                    velocities.append(float(joint['velocity']))
 
-        print(f'NAMES -- {names}, POSITIONS -- {positions}, VELOCITIES -- {velocities}')
         self.output.instance.set_dictionary({"name": names, "position": positions, "velocity": velocities})
         self.output.write()
 
