@@ -4,41 +4,40 @@ from enum import Enum, auto
 import math
    
 
-class SwervePort():
-    def __init__(self):
-        self.axle_motor_port: int = None
-        self.wheel_motor_port: int = None
-
-class Constants:
-
-
-    #TODO: change CAN ids
-    front_left_wheel_motor_port = 9
-    front_left_axle_motor_port = 7
-    front_left_encoder_port = 8
-
-    back_left_wheel_motor_port = 6
-    back_left_axle_motor_port = 4
-    back_left_encoder_port = 5
-
-    front_right_wheel_motor_port = 12
-    front_right_axle_motor_port = 10
-    front_right_encoder_port = 11
-
-    back_right_wheel_motor_port = 3
-    back_right_axle_motor_port = 1
-    back_right_encoder_port = 2
-
-
-    controller_port = 0
-
-    test_wheel_motor_port = 6
-    test_axle_motor_port = 7
-
-    WHEEL_JOINT_GEAR_RATIO = 6.75 #8.14
-    AXLE_JOINT_GEAR_RATIO = 150.0/7.0
-    TICKS_PER_REV = 2048
-    TICKS_PER_RAD = TICKS_PER_REV / (2 * math.pi)
+MODULE_CONFIG = {
+    "front_left": {
+        "wheel_joint_name": "front_left_wheel_joint",
+        "wheel_motor_port": 9,
+        "axle_joint_name": "front_left_axle_joint",
+        "axle_motor_port": 7,
+        "axle_encoder_port": 8
+    },
+    "front_right": {
+        "wheel_joint_name": "front_left_wheel_joint",
+        "wheel_motor_port": 12,
+        "axle_joint_name": "front_left_axle_joint",
+        "axle_motor_port": 10,
+        "axle_encoder_port": 11
+    },
+    "back_left": {
+        "wheel_joint_name": "front_left_wheel_joint",
+        "wheel_motor_port": 6,
+        "axle_joint_name": "front_left_axle_joint",
+        "axle_motor_port": 4,
+        "axle_encoder_port": 5
+    },
+    "back_right": {
+        "wheel_joint_name": "front_left_wheel_joint",
+        "wheel_motor_port": 3,
+        "axle_joint_name": "front_left_axle_joint",
+        "axle_motor_port": 1,
+        "axle_encoder_port": 2
+    }
+}
+WHEEL_JOINT_GEAR_RATIO = 6.75 #8.14
+AXLE_JOINT_GEAR_RATIO = 150.0/7.0
+TICKS_PER_REV = 2048
+TICKS_PER_RAD = TICKS_PER_REV / (2 * math.pi)
 
 
 class MotorType(Enum):
@@ -160,8 +159,6 @@ class DriveTrain():
         self.front_right = SwerveModule("front_right_axle_joint", Constants.front_right_axle_motor_port, "front_right_wheel_joint", Constants.front_right_wheel_motor_port, Constants.front_right_encoder_port)
         self.back_left = SwerveModule("rear_left_axle_joint", Constants.back_left_axle_motor_port, "rear_left_wheel_joint", Constants.back_left_wheel_motor_port, Constants.back_left_encoder_port)
         self.back_right = SwerveModule("rear_right_axle_joint", Constants.back_right_axle_motor_port, "rear_right_wheel_joint", Constants.back_right_wheel_motor_port, Constants.back_right_encoder_port)
-
-        self.controller = wpilib.XboxController(Constants.controller_port)
         self.module_lookup = \
         {
             'front_left_axle_joint': self.front_left,
@@ -181,20 +178,11 @@ class DriveTrain():
         }
         return output
 
-    def setTestVelocity(self, test_velocity, test_velocity2):
-        scaled_vel = self.convertToTicks(test_velocity)
-        scaled_vel2 = self.convertToTicks(test_velocity2)
-        # self.test_motor.set(ctre.TalonFXControlMode.PercentOutput, test_velocity)
-        # self.test_motor_2.set(ctre.TalonFXControlMode.PercentOutput, test_velocity2)
-        # self.test.setVelocity(test_velocity, test_velocity2)
-
     def stop(self):
         self.front_left.stop()
         self.front_right.stop()
         self.back_left.stop()
         self.back_right.stop()
-        # self.test_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
-        # self.test_motor_2.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
 
     def setDynamicVelocities(self, commands):
@@ -203,7 +191,4 @@ class DriveTrain():
                 module_axle_name = command['axle_joint']['name']
                 module = self.module_lookup[module_axle_name]
                 module.setVelocities(command['wheel_joint']['velocity'], command['axle_joint']['velocity'])
-
-    def getTestEncoderInfo(self):
-        return self.test_motor.getSensorCollection().getIntegratedSensorPosition(), self.test_motor.getSensorCollection().getIntegratedSensorVelocity()
 
