@@ -113,7 +113,7 @@ class TestRobot(wpilib.TimedRobot):
         self.joint_commands_thread = {'name': 'joint_commands_thread', 'thread': None}
         self.encoder_info_thread = {'name': 'encoder_info_thread', 'thread': None}
 
-        self.threads = [self.joystick_thread, self.joint_commands_thread, self.encoder_info_thread]
+        self.threads = [self.joint_commands_thread, self.encoder_info_thread]
         # self.threads = [self.joint_commands_thread]
 
     def start_thread(self, name):
@@ -135,6 +135,7 @@ class TestRobot(wpilib.TimedRobot):
             if thread['thread'] is None:
                 thread['thread'] = self.start_thread(thread['name'])
                 thread['thread'].start()
+                time.sleep(0.5)
                 self.threads[index] = thread
             else:
                 if not thread['thread'].is_alive():

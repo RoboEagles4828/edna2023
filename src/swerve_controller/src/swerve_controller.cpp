@@ -157,7 +157,6 @@ namespace swerve_controller
     double &angular_cmd = command.twist.angular.z;
     if (abs(linear_x_cmd) < 0.5 && abs(linear_y_cmd) < 0.5 && abs(angular_cmd) < 0.5)
     {
-      RCLCPP_INFO(logger, "yes");
       front_left_handle_->set_velocity(0.0);
       front_right_handle_->set_velocity(0.0);
       rear_left_handle_->set_velocity(0.0);
@@ -172,7 +171,6 @@ namespace swerve_controller
     }
     else
     {
-      RCLCPP_INFO(logger, "NO");
       double x_offset = wheel_params_.x_offset;
       double radius = wheel_params_.radius;
 

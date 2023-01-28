@@ -9,7 +9,7 @@ class PublishJointCmd(Node):
 
     def __init__(self):
         super().__init__('publish_joint_commands')
-        self.publisher_ = self.create_publisher(JointState, 'isaac_joint_commands', 10)
+        self.publisher_ = self.create_publisher(JointState, 'isaac_joint_states', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
@@ -30,6 +30,7 @@ class PublishJointCmd(Node):
         # position_cmds.name = []
         rad = math.pi
         velocity_cmds.velocity = [ 0.0, 0.0, 0.0, 0.0, rad, rad, rad, rad]
+        velocity_cmds.position = [ 0.0, 0.0, 0.0, 0.0, rad, rad, rad, rad]
         # position_cmds.position = []
 
         self.publisher_.publish(velocity_cmds)
@@ -37,6 +38,15 @@ class PublishJointCmd(Node):
         self.get_logger().info('Publishing: ...')
         self.i += 1
 
+
+# 'front_left_wheel_joint',
+#             'front_left_axle_joint',
+#             'front_right_wheel_joint',
+#             'front_right_axle_joint',
+#             'rear_left_wheel_joint',
+#             'rear_left_axle_joint',
+#             'rear_right_wheel_joint',
+#             'rear_right_axle_joint']
 
 def main(args=None):
     rclpy.init(args=args)

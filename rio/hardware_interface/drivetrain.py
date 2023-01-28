@@ -134,21 +134,21 @@ class SwerveModule():
     
 
     def getEncoderInfo(self):
-            if(self.axle_joint_name == "front_right_axle_joint"):
-                print(f"{self.axle_joint_name} ENCODER VALUE: {str((math.fmod(self.encoder.getPosition(), 2 * math.pi) * -1) - math.pi)}")
+            # if(self.axle_joint_name == "front_right_axle_joint"):
+                # print(f"{self.axle_joint_name} ENCODER VALUE: {str((math.fmod(self.encoder.getPosition(), 2 * math.pi) * -1) - math.pi)}")
             output = \
             {
                 "wheel_joint": 
                     {
                         "name": self.wheel_joint_name,
-                        "position": self.wheel_motor.getSensorCollection().getIntegratedSensorPosition() % Constants.TICKS_PER_REV, 
-                        "velocity": self.wheel_motor.getSensorCollection().getIntegratedSensorVelocity()
+                        "position": 0.0, #self.wheel_motor.getSensorCollection().getIntegratedSensorPosition() % Constants.TICKS_PER_REV, 
+                        "velocity": 0.0 #self.wheel_motor.getSensorCollection().getIntegratedSensorVelocity()
                     },
                 "axle_joint":
                     {
                         "name": self.axle_joint_name,
-                        "position": int(((math.fmod(self.encoder.getPosition(), 2 * math.pi) * -1) - math.pi) * 1000),
-                        "velocity": self.encoder.getVelocity()
+                        "position": int(((math.fmod(self.encoder.getPosition(), 2 * math.pi) * -1) - math.pi) * 10000),
+                        "velocity": 0.0 #self.encoder.getVelocity()
                     }
             }
             return output

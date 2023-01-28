@@ -43,8 +43,10 @@ CallbackReturn IsaacDriveHardware::on_init(const hardware_interface::HardwareInf
 
   // SUBSCRIBER SETUP
   const sensor_msgs::msg::JointState empty_joint_state;
+  auto qos = rclcpp::QoS(1);
+  qos.best_effort();
   received_joint_msg_ptr_.set(std::make_shared<sensor_msgs::msg::JointState>(empty_joint_state));
-  isaac_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>("isaac_joint_states", rclcpp::SystemDefaultsQoS(),
+  isaac_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>("isaac_joint_states", qos,
     [this](const std::shared_ptr<sensor_msgs::msg::JointState> msg) -> void
     {
       if (!subscriber_is_active_) {
@@ -176,8 +178,8 @@ CallbackReturn IsaacDriveHardware::on_activate(
   // Set Default Values for State Interface Arrays
   for (auto i = 0u; i < hw_positions_.size(); i++)
   {
-    hw_positions_[i] = NULL;
-    hw_velocities_[i] = NULL;
+    hw_positions_[i] = 0.0;
+    hw_velocities_[i] = 0.0;
     joint_names_map_[joint_names_[i]] = i + 1; // ADD 1 to differentiate null key
   }
 
@@ -228,10 +230,20 @@ hardware_interface::return_type IsaacDriveHardware::read()
   auto velocities = last_command_msg->velocity;
   
   for (auto i = 0u; i < names.size(); i++) {
+    // for (auto j = 0u; j < names.size(); j++) {
+    //     if(names[i].equals(names[j]))
+    // }
+
+    RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test");
     uint p = joint_names_map_[names[i]];
+    RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test2 %f", positions[i]);
     if (p > 0) {
-      hw_positions_[p - 1] = positions[i];
-      hw_velocities_[p - 1] = velocities[i];
+      auto test = (float) positions[i];
+      hw_positions_[p - 1] = test/10000.0;
+      RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Position: %f ", names[i].c_str(), hw_positions_[p-i]);
+      
+      hw_velocities_[p - 1] = 0.0;
+      // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Velocity: %f", names[i], hw_velocity_[i]);
     }
   }
   

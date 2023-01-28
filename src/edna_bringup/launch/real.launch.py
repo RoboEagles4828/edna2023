@@ -37,7 +37,7 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': True }, controllers_file],
+        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': use_sim_time }, controllers_file],
         output="screen",
     )
 
@@ -49,32 +49,32 @@ def generate_launch_description():
     )
 
     #Starts ROS2 Control Swerve Drive Controller
-    swerve_drive_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["swerve_controller", "-c", "/controller_manager"],
-    )
-    swerve_drive_controller_delay = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[swerve_drive_controller_spawner],
-        )
-    )
+    # swerve_drive_controller_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=["swerve_controller", "-c", "/controller_manager"],
+    # )
+    # swerve_drive_controller_delay = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=joint_state_broadcaster_spawner,
+    #         on_exit=[swerve_drive_controller_spawner],
+    #     )
+    # )
 
     # Start Teleop Node to translate joystick commands to robot commands
-    joy_teleop = Node(
-        package='teleop_twist_joy', 
-        executable='teleop_node',
-        name='teleop_twist_joy_node', 
-        parameters=[joystick_file],
-        remappings={('/cmd_vel', '/swerve_controller/cmd_vel_unstamped')}
-        )
+    # joy_teleop = Node(
+    #     package='teleop_twist_joy', 
+    #     executable='teleop_node',
+    #     name='teleop_twist_joy_node', 
+    #     parameters=[joystick_file],
+    #     remappings={('/cmd_vel', '/swerve_controller/cmd_vel_unstamped')}
+    #     )
 
     # Launch!
     return LaunchDescription([
         control_node,
         node_robot_state_publisher,
         joint_state_broadcaster_spawner,
-        swerve_drive_controller_delay,
-        joy_teleop
+        # swerve_drive_controller_delay,
+        # joy_teleop
     ])

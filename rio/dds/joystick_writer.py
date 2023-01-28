@@ -11,6 +11,8 @@ class JoyStickWriter:
     
     def sendData(self, axes, buttons):
         if axes and buttons:
+            for axe in axes:
+                axe = int(axe*10000)
             self.output.instance.set_dictionary({"axes": axes, "buttons": buttons})
             self.output.write()
 
