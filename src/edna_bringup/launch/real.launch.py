@@ -48,18 +48,18 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
-    #Starts ROS2 Control Swerve Drive Controller
-    # swerve_drive_controller_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["swerve_controller", "-c", "/controller_manager"],
-    # )
-    # swerve_drive_controller_delay = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=joint_state_broadcaster_spawner,
-    #         on_exit=[swerve_drive_controller_spawner],
-    #     )
-    # )
+    # Starts ROS2 Control Swerve Drive Controller
+    swerve_drive_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["swerve_controller", "-c", "/controller_manager"],
+    )
+    swerve_drive_controller_delay = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[swerve_drive_controller_spawner],
+        )
+    )
 
     # Start Teleop Node to translate joystick commands to robot commands
     # joy_teleop = Node(
@@ -75,6 +75,6 @@ def generate_launch_description():
         control_node,
         node_robot_state_publisher,
         joint_state_broadcaster_spawner,
-        # swerve_drive_controller_delay,
+        swerve_drive_controller_delay,
         # joy_teleop
     ])

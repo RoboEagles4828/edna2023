@@ -231,23 +231,44 @@ hardware_interface::return_type IsaacDriveHardware::read()
   
   for (auto i = 0u; i < names.size(); i++) {
     for (auto j = 0u; j < names.size(); j++) {
-        if(i==joint_names_map_[names[j]]){
-              // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test %s", names[j].c_str());
-              uint p = joint_names_map_[names[j]];
-              // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test2 %i", p);
-              if (p > 0) {
-                auto test = (float) positions[j];
-                hw_positions_[p - 1] = test/10000.0;
-                // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Position: %f ", names[j].c_str(), hw_positions_[p-i]);
-      
-                hw_velocities_[p - 1] = 0.0;
-                 // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Velocity: %f", names[i], hw_velocity_[i]);
-          }
+      if(i+1==joint_names_map_[names[j]]){
+        // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test %s", names[j].c_str());
+        uint p = joint_names_map_[names[j]];
+        // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test2 %i", p);
+        if (p > 0) {
+          auto test = (float) positions[j];
+          hw_positions_[p - 1] = test/10000.0;
+          // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Position: %f ", names[j].c_str(), hw_positions_[p-i]);
+
+          hw_velocities_[p - 1] = 0.0;
+            // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Velocity: %f", names[i], hw_velocity_[i]);
         }
+      }
     }
-
-
   }
+  // for (auto i = 0u; i < info_.joints.size(); i++) {
+  //   for (auto j = 0u; j < names.size(); j++) {
+
+  //       if(info_.joints[i].name.c_str()==names[j].c_str()){
+  //             // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test %s", names[j].c_str());
+  //             // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test2 %i", p);
+  //               auto test = (float) positions[j];
+  //               hw_positions_[i] = test/10000.0;
+  //               // if(test != 0.0){
+  //               RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test %f", test);
+  //               // }
+
+  //               // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Position: %f ", names[j].c_str(), hw_positions_[p-i]);
+      
+  //               hw_velocities_[i] = 0.0;
+  //                // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Velocity: %f", names[i], hw_velocity_[i]);
+  //       }
+  //   }
+
+
+  // }
+  
+
   
   return hardware_interface::return_type::OK;
 }

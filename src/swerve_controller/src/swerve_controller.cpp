@@ -185,10 +185,11 @@ namespace swerve_controller
 
       // get current wheel positions
       const double front_left_current_pos = front_left_handle_2_->get_position();
+
       const double front_right_current_pos = front_right_handle_2_->get_position();
       const double rear_left_current_pos = rear_left_handle_2_->get_position();
       const double rear_right_current_pos = rear_right_handle_2_->get_position();
-      // RCLCPP_INFO(rclcpp::get_logger("update"), "%f", pos1);
+      RCLCPP_INFO(rclcpp::get_logger("update"), "%f", front_left_current_pos);
 
       double front_left_velocity = (sqrt(pow(b, 2) + pow(d, 2))) * (1 / (radius * M_PI));
       double front_right_velocity = (sqrt(pow(b, 2) + pow(c, 2))) * (1 / (radius * M_PI));
@@ -214,7 +215,7 @@ namespace swerve_controller
         {
           front_left_position += M_PI;
         }
-        RCLCPP_INFO(logger, "front_left_current_pos");
+        // RCLCPP_INFO(logger, "front_left_current_pos");
 
         // // convert to degrees
         // front_left_position = ((180 / M_PI) * front_left_position);
@@ -239,7 +240,7 @@ namespace swerve_controller
         {
           front_right_position += M_PI;
         }
-        RCLCPP_INFO(logger, "front_right_current_pos");
+        // RCLCPP_INFO(logger, "front_right_current_pos");
         // // convert to degrees
         // front_right_position = ((180 / M_PI) * front_right_position);
         // // keep it in -90 to 90 scope
@@ -263,7 +264,7 @@ namespace swerve_controller
         {
           rear_left_position += M_PI;
         }
-        RCLCPP_INFO(logger, "rear_left_current_pos");
+        // RCLCPP_INFO(logger, "rear_left_current_pos");
 
         // //convert to degrees
         // rear_left_position = ((180 / M_PI) * rear_left_position);
@@ -287,7 +288,7 @@ namespace swerve_controller
         {
           rear_right_position += M_PI;
         }
-        RCLCPP_INFO(logger, "rear_right_current_pos");
+        // RCLCPP_INFO(logger, "rear_right_current_pos");
         // //convert to degrees
         // rear_right_position = ((180 / M_PI) * rear_right_position);
         // //keep it in -90 to 90 scope
@@ -309,49 +310,49 @@ namespace swerve_controller
       // remmeber to comment this back in!
       // Has a 1 degree tolerance. Turns clockwise if less than, counter clockwise if greater than
       float turningspeed = 5.0;
-      if (front_left_current_pos > front_left_position + (M_PI / 90) || front_left_current_pos < front_left_position - (M_PI / 90))
+      if (front_left_current_pos > front_left_position + (M_PI / 36) || front_left_current_pos < front_left_position - (M_PI / 36))
       {
-        float setspeed = abs((front_left_position - front_left_current_pos)) / (M_PI / 18);
+        float setspeed = abs((front_left_position - front_left_current_pos)) / (M_PI / 9);
         if (setspeed > turningspeed)
         {
           setspeed = turningspeed;
         }
         if (front_left_position > front_left_current_pos)
         {
-          front_left_handle_2_->set_velocity(setspeed);
+          front_left_handle_2_->set_velocity(setspeed/5);
         }
         else
         {
-          front_left_handle_2_->set_velocity(-1 * setspeed);
+          front_left_handle_2_->set_velocity(-1 * setspeed/5);
         }
       }
       else
       {
         front_left_handle_2_->set_velocity(0.0);
       }
-      if (front_right_current_pos > front_right_position + (M_PI / 90) || front_right_current_pos < front_right_position - (M_PI / 90))
+      if (front_right_current_pos > front_right_position + (M_PI / 36) || front_right_current_pos < front_right_position - (M_PI / 36))
       {
-        float setspeed = abs((front_right_position - front_right_current_pos)) / (M_PI / 18);
+        float setspeed = abs((front_right_position - front_right_current_pos)) / (M_PI / 9);
         if (setspeed > turningspeed)
         {
           setspeed = turningspeed;
         }
         if (front_right_position > front_right_current_pos)
         {
-          front_right_handle_2_->set_velocity(setspeed);
+          front_right_handle_2_->set_velocity(setspeed/5);
         }
         else
         {
-          front_right_handle_2_->set_velocity(-1 * setspeed);
+          front_right_handle_2_->set_velocity(-1 * setspeed/5);
         }
       }
       else
       {
         front_left_handle_2_->set_velocity(0.0);
       }
-      if (rear_left_current_pos > rear_left_position + (M_PI / 90) || rear_left_current_pos < rear_left_position - (M_PI / 90))
+      if (rear_left_current_pos > rear_left_position + (M_PI / 36) || rear_left_current_pos < rear_left_position - (M_PI / 36))
       {
-        float setspeed = (abs(rear_left_position - rear_left_current_pos)) / (M_PI / 18);
+        float setspeed = (abs(rear_left_position - rear_left_current_pos)) / (M_PI / 9);
         if (setspeed > turningspeed)
         {
           setspeed = turningspeed;
@@ -369,9 +370,9 @@ namespace swerve_controller
       {
         front_left_handle_2_->set_velocity(0.0);
       }
-      if (rear_right_current_pos > rear_right_position + (M_PI / 90) || rear_right_current_pos < rear_right_position - (M_PI / 90))
+      if (rear_right_current_pos > rear_right_position + (M_PI / 36) || rear_right_current_pos < rear_right_position - (M_PI / 36))
       {
-        float setspeed = (abs(rear_right_position - rear_right_current_pos)) / (M_PI / 18);
+        float setspeed = (abs(rear_right_position - rear_right_current_pos)) / (M_PI / 9);
         if (setspeed > turningspeed)
         {
           setspeed = turningspeed;
