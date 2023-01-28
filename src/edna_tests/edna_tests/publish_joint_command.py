@@ -19,13 +19,13 @@ class PublishJointCmd(Node):
         # position_cmds = JointState()
         
         velocity_cmds.name = [
-            'front_left_wheel_joint', 
+            'front_left_wheel_joint',
+            'front_left_axle_joint',
             'front_right_wheel_joint',
-            'rear_left_wheel_joint',
-            'rear_right_wheel_joint',
-            'front_left_axle_joint', 
             'front_right_axle_joint',
+            'rear_left_wheel_joint',
             'rear_left_axle_joint',
+            'rear_right_wheel_joint',
             'rear_right_axle_joint']
         # position_cmds.name = []
         rad = math.pi
