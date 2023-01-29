@@ -1,4 +1,4 @@
-# from robot import edna_robot
+from robot import edna_robot
 from dds.dds import DDS_Publisher, DDS_Subscriber
 import time
 import os, inspect
@@ -18,10 +18,9 @@ def do_thing():
 
 
 if __name__ == '__main__':
-    do_thing()
-    # robot = edna_robot()
-    # robot.robotInit()
-    # robot.teleopInit()
-    # while True:
-    #     robot.teleopPeriodic()
-    #     time.sleep(20/1000)
+    robot = edna_robot(use_threading=True)
+    robot.robotInit()
+    robot.teleopInit()
+    while True:
+        robot.teleopPeriodic()
+        time.sleep(20/1000)
