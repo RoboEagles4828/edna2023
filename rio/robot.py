@@ -1,12 +1,14 @@
 import logging
 import wpilib
 import threading
+import traceback
 import time
 import os, inspect
 from hardware_interface.drivetrain import DriveTrain
 from dds.dds import DDS_Publisher, DDS_Subscriber
 
 # Locks
+FRC_STAGE = "DISABLED"
 STOP_THREADS = False
 rti_init_lock = threading.Lock()
 drive_train_lock = threading.Lock()
@@ -29,12 +31,17 @@ def initDriveTrain():
 ## Generic Loop that is used for all threads
 def threadLoop(name, dds, action):
     logging.info(f"Starting {name} thread")
+    global STOP_THREADS
+    global FRC_STAGE
     try:
         while STOP_THREADS == False:
-            action(dds)
+            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON":
+                action(dds)
             time.sleep(20/1000)
-    except:
+    except Exception as e:
         logging.error(f"An issue occured with the {name} thread")
+        logging.error(e)
+        logging.error(traceback.format_exc())
     
     logging.info(f"Closing {name} thread")
     dds.close()
@@ -99,20 +106,23 @@ class edna_robot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         initDriveTrain()
         self.threads = []
-
-    def teleopInit(self) -> None:
         if self.use_threading:
             logging.info("Initializing Threads")
             global STOP_THREADS
             STOP_THREADS = False
-            self._encoder_thread = threading.Thread(target=encoderThread, daemon=True)
-            self._command_thread = threading.Thread(target=commandThread, daemon=True)
+            self._encoder_thread = threading.Thread(target=encoderThread, daemon=True).start()
+            self._command_thread = threading.Thread(target=commandThread, daemon=True).start()
             # joystickThread = threading.Thread(target=joystickThread, daemon=True)
             self.threads = [self._encoder_thread, self._command_thread]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
             # self.joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
+
+    def teleopInit(self) -> None:
+        logging.info("Entering Teleop")
+        global FRC_STAGE
+        FRC_STAGE = "TELEOP"
     
     def teleopPeriodic(self) -> None:
         if self.use_threading:
@@ -122,13 +132,14 @@ class edna_robot(wpilib.TimedRobot):
 
     def teleopExit(self) -> None:
         logging.info("Exiting Teleop")
-        if self.use_threading:
-            self.stop_threads()
+        global FRC_STAGE
+        FRC_STAGE = "DISABLED"
+        drive_train.stop()
+        # if self.use_threading:
+        #     self.stopThreads()
 
     def manageThreads(self):
-        for thread in self.threads:
-            if not thread.is_alive():
-                thread.start()
+        pass
     
     def doActions(self):
         encoderAction(self.encoder_publisher)

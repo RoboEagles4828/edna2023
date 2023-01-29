@@ -2,6 +2,8 @@ import wpilib
 import ctre
 from enum import Enum, auto
 import math
+import time
+import logging
    
 
 MODULE_CONFIG = {
@@ -13,23 +15,23 @@ MODULE_CONFIG = {
         "axle_encoder_port": 8
     },
     "front_right": {
-        "wheel_joint_name": "front_left_wheel_joint",
+        "wheel_joint_name": "front_right_wheel_joint",
         "wheel_motor_port": 12,
-        "axle_joint_name": "front_left_axle_joint",
+        "axle_joint_name": "front_right_axle_joint",
         "axle_motor_port": 10,
         "axle_encoder_port": 11
     },
     "rear_left": {
-        "wheel_joint_name": "front_left_wheel_joint",
+        "wheel_joint_name": "rear_left_wheel_joint",
         "wheel_motor_port": 6,
-        "axle_joint_name": "front_left_axle_joint",
+        "axle_joint_name": "rear_left_axle_joint",
         "axle_motor_port": 4,
         "axle_encoder_port": 5
     },
     "rear_right": {
-        "wheel_joint_name": "front_left_wheel_joint",
+        "wheel_joint_name": "rear_right_wheel_joint",
         "wheel_motor_port": 3,
-        "axle_joint_name": "front_left_axle_joint",
+        "axle_joint_name": "rear_right_axle_joint",
         "axle_motor_port": 1,
         "axle_encoder_port": 2
     }
@@ -38,6 +40,7 @@ WHEEL_JOINT_GEAR_RATIO = 6.75 #8.14
 AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048
 TICKS_PER_RAD = TICKS_PER_REV / (2 * math.pi)
+CMD_TIMEOUT_SECONDS = 1 
 
 
 class MotorType(Enum):
@@ -62,11 +65,11 @@ class SwerveModule():
         self.last_axle_vel_cmd = None
         
         # Configure Encoder
-        # encoderconfig = ctre.CANCoderConfiguration()
-        # encoderconfig.sensorCoefficient = 2 * math.pi / 4096.0
-        # encoderconfig.unitString = "rad"
-        # encoderconfig.sensorTimeBase = ctre.SensorTimeBase.PerSecond
-        # self.encoder.configAllSettings(encoderconfig)
+        self.encoderconfig = ctre.CANCoderConfiguration()
+        self.encoderconfig.sensorCoefficient = 2 * math.pi / 4096.0
+        self.encoderconfig.unitString = "rad"
+        self.encoderconfig.sensorTimeBase = ctre.SensorTimeBase.PerSecond
+        self.encoder.configAllSettings(self.encoderconfig)
         
         # Configure Motors
         self.kf = 1023.0/20660.0
@@ -109,14 +112,21 @@ class SwerveModule():
         return angular_vel * WHEEL_JOINT_GEAR_RATIO
 
     def setVelocities(self, wheel_motor_vel, axle_motor_vel):
+        deadzone = 0.2
+        # if wheel_motor_vel < deadzone:
+            # self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, 0)
+        # else:
         wheel_vel = self.convertToTicks(self.scaleWheelToShaft(wheel_motor_vel - axle_motor_vel/1.9))
-        axle_vel = self.convertToTicks(self.scaleAxleToShaft(axle_motor_vel))
-        if wheel_vel != self.last_wheel_vel_cmd:
-            self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
-        if axle_vel != self.last_axle_vel_cmd:
-            self.axle_motor.set(ctre.TalonFXControlMode.Velocity, axle_vel)
+        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
         self.last_wheel_vel_cmd = wheel_vel
-        self.last_axle_vel_cmd = axle_vel
+        
+        if axle_motor_vel < deadzone:
+            self.axle_motor.set(ctre.TalonFXControlMode.Velocity, 0)
+        else:
+            axle_vel = self.convertToTicks(self.scaleAxleToShaft(axle_motor_vel))
+            self.axle_motor.set(ctre.TalonFXControlMode.Velocity, axle_vel)
+            self.last_axle_vel_cmd = axle_vel
+
 
     def stop(self):
         self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
@@ -134,6 +144,12 @@ class SwerveModule():
     def scaleShaftToWheel(self, angular_vel):
         return angular_vel * WHEEL_JOINT_GEAR_RATIO
 
+    def convertEncoder(self, encoder_value) -> int:
+        pi_range = abs(math.fmod(encoder_value, 4 * math.pi))
+        center = pi_range - (2 * math.pi)
+        scaled = int(center * 10000)
+        return scaled
+
     def getEncoderData(self):
             output = [
                 {
@@ -143,7 +159,7 @@ class SwerveModule():
                 },
                 {
                     "name": self.axle_joint_name,
-                    "position": int(((math.fmod(self.encoder.getPosition(), 2 * math.pi) * -1) - math.pi) * 10000),
+                    "position": self.convertEncoder(self.encoder.getPosition()),
                     "velocity": 0.0 #self.encoder.getVelocity()
                 }
             ]
@@ -151,6 +167,8 @@ class SwerveModule():
 
 class DriveTrain():
     def __init__(self):
+        self.last_cmds_time = time.time()
+        self.warn_timeout = True
         self.front_left = SwerveModule(MODULE_CONFIG["front_left"])
         self.front_right = SwerveModule(MODULE_CONFIG["front_right"])
         self.back_left = SwerveModule(MODULE_CONFIG["rear_left"])
@@ -189,7 +207,10 @@ class DriveTrain():
 
     def sendCommands(self, commands):
         if commands:
-            for i in range(commands['name'].size):
+            self.last_cmds = commands
+            self.last_cmds_time = time.time()
+            self.warn_timeout = True
+            for i in range(len(commands['name'])):
                 if 'axle' in commands['name'][i]:
                     axle_name = commands['name'][i]
                     axle_velocity = commands['velocity'][i]
@@ -200,6 +221,13 @@ class DriveTrain():
 
                     module = self.module_lookup[axle_name]
                     module.setVelocities(wheel_velocity, axle_velocity)
+                    logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_velocity}")
         else:
-            self.stop()
+            current_time = time.time()
+            if current_time - self.last_cmds_time > CMD_TIMEOUT_SECONDS:
+                self.stop()
+                # Display Warning Once
+                if self.warn_timeout:
+                    logging.warn("CMD TIMEOUT: HALTING")
+                    self.warn_timeout = False
 
