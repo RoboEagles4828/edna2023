@@ -40,7 +40,12 @@ WHEEL_JOINT_GEAR_RATIO = 6.75 #8.14
 AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048
 TICKS_PER_RAD = TICKS_PER_REV / (2 * math.pi)
-CMD_TIMEOUT_SECONDS = 1 
+CMD_TIMEOUT_SECONDS = 1
+
+# This is needed to fix bad float values being published by RTI from the RIO.
+# To fix this, we scale the float and convert to integers. 
+# Then we scale it back down inside the ROS2 hardware interface.
+SCALING_FACTOR_FIX = 10000 
 
 
 class MotorType(Enum):
