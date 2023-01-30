@@ -5,7 +5,7 @@ import ctre
 # Ports
 motorPort = 7
 controllerPort = 0
-encoderPort = 0
+encoderPort = 8
 # PID Constants
 pid_constants = {
     "kP": 0.2,
@@ -36,9 +36,11 @@ class motor_poc(wpilib.TimedRobot):
 
         canCoderConfig = ctre.CANCoderConfiguration()
         canCoderConfig.absoluteSensorRange = ctre.AbsoluteSensorRange.Unsigned_0_to_360
+        canCoderConfig.initializationStrategy = ctre.SensorInitializationStrategy.BootToAbsolutePosition
         canCoderConfig.magnetOffsetDegrees = encoder_offset
         canCoderConfig.sensorDirection = encoder_direction
         self.encoder = ctre.CANCoder(encoderPort)
+        self.encoder.setPositionToAbsolute(timeout_ms)
         self.encoder.configAllSettings(canCoderConfig, timeout_ms)
         self.encoder.setStatusFramePeriod(ctre.CANCoderStatusFrame.SensorData, 10, timeout_ms)
         
@@ -48,7 +50,7 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.configRemoteFeedbackFilter(self.encoder, 0, timeout_ms)
         self.talon.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.RemoteSensor0, pid_loop_idx, timeout_ms)
         self.talon.configNeutralDeadband(0.001, timeout_ms)
-        self.talon.setSensorPhase(False)
+        self.talon.setSensorPhase(True)
         self.talon.setInverted(False)
         self.talon.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.talon.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, timeout_ms)
@@ -61,8 +63,8 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.config_kP(slot_idx, pid_constants["kP"], timeout_ms)
         self.talon.config_kI(slot_idx, pid_constants["kI"], timeout_ms)
         self.talon.config_kD(slot_idx, pid_constants["kD"], timeout_ms)
-        self.talon.configMotionCruiseVelocity(150, timeout_ms)
-        self.talon.configMotionAcceleration(60, timeout_ms)
+        self.talon.configMotionCruiseVelocity(15, timeout_ms)
+        self.talon.configMotionAcceleration(5, timeout_ms)
         # self.talon.setSelectedSensorPosition(0, pid_loop_idx, timeout_ms)
         self.talon.configVoltageCompSaturation(nominal_voltage, timeout_ms)
         currentLimit = ctre.SupplyCurrentLimitConfiguration()
@@ -82,14 +84,14 @@ class motor_poc(wpilib.TimedRobot):
         currentPosition = self.talon.getSelectedSensorPosition()
         currentMotorOutput = self.talon.getMotorOutputPercent()
         currentVelocity = self.talon.getSelectedSensorVelocity()
-        absolutePosition = self.encoder.getAbsolutePosition()
+        absolutePosition = self.encoder.getPosition()
 
         if self.joystick.getAButton():
             self.targetPosition += increment
         elif self.joystick.getBButton():
             self.targetPosition -= increment
 
-        print(f"ABS POS: {absolutePosition}")
+        print(f"Target: {self.targetPosition} ABS POS: {absolutePosition}")
         # print(f"Target: {self.targetPosition} Current Position: {currentPosition} Current Motor Output: {currentMotorOutput} Current Velocity: {currentVelocity}")
         self.talon.set(ctre.TalonFXControlMode.MotionMagic, self.targetPosition)
 
