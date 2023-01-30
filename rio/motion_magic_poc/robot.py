@@ -91,7 +91,7 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.configFactoryDefault()
         self.talon.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
         self.talon.configNeutralDeadband(0.001, timeout_ms)
-        self.talon.setSensorPhase(True)
+        self.talon.setSensorPhase(False)
         self.talon.setInverted(False)
         self.talon.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.talon.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, timeout_ms)
