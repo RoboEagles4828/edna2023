@@ -43,14 +43,13 @@ increment = 1
 # This is thought of as radians per shaft tick times the ratio to the axle (steer)
 positionCoefficient = 2.0 * math.pi / motor_ticks_per_rev * steer_reduction
 # This is the same conversion with time in mind.
-velicityCoefficient = positionCoefficient * 10.0
-
+velocityCoefficient = positionCoefficient * 10.0
 # axle (radians) -> shaft (ticks)
 def getShaftTicks(radians, type):
     if type == "position":
         return radians / positionCoefficient
     elif type == "velocity":
-        return radians / velicityCoefficient
+        return radians / velocityCoefficient
     else:
         return 0
 
@@ -59,7 +58,7 @@ def getAxleRadians(ticks, type):
     if type == "position":
         return ticks * positionCoefficient
     elif type == "velocity":
-        return ticks * velicityCoefficient
+        return ticks * velocityCoefficient
     else:
         return 0
 
@@ -80,7 +79,7 @@ class motor_poc(wpilib.TimedRobot):
         # Setup encoder to be in radians
         canCoderConfig.sensorCoefficient = 2 * math.pi / encoder_ticks_per_rev
         canCoderConfig.unitString = "rad"
-        canCoderConfig.velocityMeasurementPeriod = ctre.SensorTimeBase.PerSecond
+        canCoderConfig.sensorTimeBase = ctre.SensorTimeBase.PerSecond
         self.encoder = ctre.CANCoder(encoderPort)
         self.encoder.configAllSettings(canCoderConfig, timeout_ms)
         self.encoder.setPositionToAbsolute(timeout_ms)
@@ -91,8 +90,8 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.configFactoryDefault()
         self.talon.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
         self.talon.configNeutralDeadband(0.001, timeout_ms)
-        self.talon.setSensorPhase(False)
-        self.talon.setInverted(False)
+        self.talon.setSensorPhase(True)
+        self.talon.setInverted(True)
         self.talon.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.talon.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, timeout_ms)
         self.talon.configNominalOutputForward(0, timeout_ms)
@@ -104,9 +103,9 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.config_kI(slot_idx, pid_constants["kI"], timeout_ms)
         self.talon.config_kD(slot_idx, pid_constants["kD"], timeout_ms)
         # TODO: Figure out Magic Numbers and Calculations Below
-        self.talon.config_kF(slot_idx, (1023.0 *  velicityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
-        self.talon.configMotionCruiseVelocity(2.0 / velocityConstant / velicityCoefficient, timeout_ms)
-        self.talon.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / self.velicityCoefficient, timeout_ms)
+        self.talon.config_kF(slot_idx, (1023.0 *  velocityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
+        self.talon.configMotionCruiseVelocity(2.0 / velocityConstant / velocityCoefficient, timeout_ms)
+        self.talon.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / velocityCoefficient, timeout_ms)
         # Set Sensor Position to match Absolute Position of CANCoder
         self.talon.setSelectedSensorPosition(getShaftTicks(self.encoder.getAbsolutePosition(), "position"), pid_loop_idx, timeout_ms)
         self.talon.configVoltageCompSaturation(nominal_voltage, timeout_ms)
@@ -123,6 +122,7 @@ class motor_poc(wpilib.TimedRobot):
 
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")
+        self.talon.setSelectedSensorPosition(getShaftTicks(self.encoder.getAbsolutePosition(), "position"))
     
     def teleopPeriodic(self) -> None:
         # Get position and velocities of the motor
@@ -139,7 +139,7 @@ class motor_poc(wpilib.TimedRobot):
         self.targetPosition = math.fmod(self.targetPosition, 2.0 * math.pi)
         # This correction is needed in case we got a negative remainder
         # A negative radian can be thought of as starting at 2pi and moving down abs(remainder)
-        if self.targetPosition < 0:
+        if self.targetPosition < 0.0:
             self.targetPosition += 2.0 * math.pi
         
 
@@ -156,19 +156,19 @@ class motor_poc(wpilib.TimedRobot):
         # The current motor position does not stay inside the 0 - 2pi range.
         # We need the absolute position to compare with the target position.
         absoluteMotorPosition = math.fmod(motorPosition, 2.0 * math.pi)
-        if absoluteMotorPosition < 0:
+        if absoluteMotorPosition < 0.0:
             absoluteMotorPosition += 2.0 * math.pi
 
         # If the target position was in the first quadrant area 
         # and absolute motor position was in the last quadrant area
         # then we need to move into the next loop around the circle.
         if self.targetPosition - absoluteMotorPosition < -math.pi:
-            newMotorPosition + 2.0 * math.pi
+            newMotorPosition += 2.0 * math.pi
         # If the target position was in the last quadrant area
         # and absolute motor position was in the first quadrant area
         # then we need to move into the previous loop around the circle.
         elif self.targetPosition - absoluteMotorPosition > math.pi:
-            newMotorPosition - 2.0 * math.pi
+            newMotorPosition -= 2.0 * math.pi
 
         # Last, add the current existing loops that the motor has gone through.
         newMotorPosition += motorPosition - absoluteMotorPosition
