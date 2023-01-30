@@ -7,6 +7,7 @@ import math
 motorPort = 7
 controllerPort = 0
 encoderPort = 8
+
 # PID Constants
 pid_constants = {
     "kP": 0.2,
@@ -19,49 +20,75 @@ pid_constants = {
 slot_idx = 0
 pid_loop_idx = 0
 timeout_ms = 30
-velocityConstant = 1.0
-accelerationConstant = 0.5
+
 # Motor Constants
 drive_reduction = (14.0 / 50.0) * (25.0 / 19.0) * (15.0 / 45.0)
 steer_reduction = (15.0 / 32.0) * (10.0 / 60.0)
-ticks_per_rotation = 2048.0
+motor_ticks_per_rev = 2048.0
 nominal_voltage = 12.0
 steer_current_limit = 20.0
+
 # Encoder Constants
-encoder_ticks_per_rev = 2048
+encoder_ticks_per_rev = 4096.0
 encoder_offset = 0
 encoder_direction = False
+
 # Demo Behavior
+# Range: 0 - 2pi
+velocityConstant = 1.0
+accelerationConstant = 0.5
 increment = 1
 
-def get_radians_from_degrees(degrees):
-    return 
+# Conversion Functions
+# This is thought of as radians per shaft tick times the ratio to the axle (steer)
+positionCoefficient = 2.0 * math.pi / motor_ticks_per_rev * steer_reduction
+# This is the same conversion with time in mind.
+velicityCoefficient = positionCoefficient * 10.0
+
+# axle (radians) -> shaft (ticks)
+def getShaftTicks(radians, type):
+    if type == "position":
+        return radians / positionCoefficient
+    elif type == "velocity":
+        return radians / velicityCoefficient
+    else:
+        return 0
+
+# shaft (ticks) -> axle (radians)
+def getAxleRadians(ticks, type):
+    if type == "position":
+        return ticks * positionCoefficient
+    elif type == "velocity":
+        return ticks * velicityCoefficient
+    else:
+        return 0
 
 ######### Robot Class #########
 class motor_poc(wpilib.TimedRobot):
 
     def robotInit(self) -> None:
         logging.info("Entering Robot Init")
+        # Configure Joystick
+        self.joystick = wpilib.XboxController(controllerPort)
 
-        self.positionCoefficient = 2.0 * math.pi / ticks_per_rotation * steer_reduction
-        self.velicityCoefficient = self.positionCoefficient * 10.0
-
+        # Configure CANCoder
         canCoderConfig = ctre.CANCoderConfiguration()
         canCoderConfig.absoluteSensorRange = ctre.AbsoluteSensorRange.Unsigned_0_to_360
         canCoderConfig.initializationStrategy = ctre.SensorInitializationStrategy.BootToAbsolutePosition
         canCoderConfig.magnetOffsetDegrees = encoder_offset
         canCoderConfig.sensorDirection = encoder_direction
+        # Setup encoder to be in radians
+        canCoderConfig.sensorCoefficient = 2 * math.pi / encoder_ticks_per_rev
+        canCoderConfig.unitString = "rad"
+        canCoderConfig.velocityMeasurementPeriod = ctre.SensorTimeBase.PerSecond
         self.encoder = ctre.CANCoder(encoderPort)
-        self.encoder.setPositionToAbsolute(timeout_ms)
         self.encoder.configAllSettings(canCoderConfig, timeout_ms)
+        self.encoder.setPositionToAbsolute(timeout_ms)
         self.encoder.setStatusFramePeriod(ctre.CANCoderStatusFrame.SensorData, 10, timeout_ms)
 
-        
-        
-        self.joystick = wpilib.XboxController(controllerPort)
+        # Configure Talon
         self.talon = ctre.TalonFX(motorPort)
         self.talon.configFactoryDefault()
-        # self.talon.configRemoteFeedbackFilter(self.encoder, 0, timeout_ms)
         self.talon.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
         self.talon.configNeutralDeadband(0.001, timeout_ms)
         self.talon.setSensorPhase(True)
@@ -76,11 +103,12 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.config_kP(slot_idx, pid_constants["kP"], timeout_ms)
         self.talon.config_kI(slot_idx, pid_constants["kI"], timeout_ms)
         self.talon.config_kD(slot_idx, pid_constants["kD"], timeout_ms)
-        self.talon.config_kF(slot_idx, (1023.0 *  self.velicityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
-        self.talon.configMotionCruiseVelocity(2.0 / velocityConstant / self.velicityCoefficient, timeout_ms)
+        # TODO: Figure out Magic Numbers and Calculations Below
+        self.talon.config_kF(slot_idx, (1023.0 *  velicityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
+        self.talon.configMotionCruiseVelocity(2.0 / velocityConstant / velicityCoefficient, timeout_ms)
         self.talon.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / self.velicityCoefficient, timeout_ms)
-        
-        self.talon.setSelectedSensorPosition(math.radians(self.encoder.getAbsolutePosition()) / self.positionCoefficient, pid_loop_idx, timeout_ms)
+        # Set Sensor Position to match Absolute Position of CANCoder
+        self.talon.setSelectedSensorPosition(getShaftTicks(self.encoder.getAbsolutePosition(), "position"), pid_loop_idx, timeout_ms)
         self.talon.configVoltageCompSaturation(nominal_voltage, timeout_ms)
         currentLimit = ctre.SupplyCurrentLimitConfiguration()
         currentLimit.enable = True
@@ -88,6 +116,7 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.configSupplyCurrentLimit(currentLimit, timeout_ms)
         self.talon.enableVoltageCompensation(True)
         self.talon.setNeutralMode(ctre.NeutralMode.Brake)
+        
         # Keep track of position
         self.targetPosition = 0
 
@@ -96,22 +125,57 @@ class motor_poc(wpilib.TimedRobot):
         logging.info("Entering Teleop")
     
     def teleopPeriodic(self) -> None:
-        motorPosition = self.talon.getSelectedSensorPosition() / self.positionCoefficient
-        currentMotorOutput = self.talon.getMotorOutputPercent()
-        currentVelocity = self.talon.getSelectedSensorVelocity()
-        absolutePosition = self.encoder.getPosition()
+        # Get position and velocities of the motor
+        motorPosition = getAxleRadians(self.talon.getSelectedSensorPosition(), "position")
+        motorVelocity = getAxleRadians(self.talon.getSelectedSensorVelocity(), "velocity")
+        absolutePosition = self.encoder.getAbsolutePosition()
 
-        if self.joystick.getAButton():
+        # Increment Target Position
+        if self.joystick.getAButtonPressed():
             self.targetPosition += increment
-        elif self.joystick.getBButton():
+        elif self.joystick.getBButtonPressed():
             self.targetPosition -= increment
-
-        print(f"Target: {self.targetPosition} ABS POS: {absolutePosition}")
-        # print(f"Target: {self.targetPosition} Current Position: {currentPosition} Current Motor Output: {currentMotorOutput} Current Velocity: {currentVelocity}")
+        # Move back in 0 - 2pi range in case increment kicked us out
+        self.targetPosition = math.fmod(self.targetPosition, 2.0 * math.pi)
+        # This correction is needed in case we got a negative remainder
+        # A negative radian can be thought of as starting at 2pi and moving down abs(remainder)
+        if self.targetPosition < 0:
+            self.targetPosition += 2.0 * math.pi
         
-        # currentPosition = math.fmod(motorPosition, 2.0 * math.pi)
-        motorPostion = self.targetPosition 
-        self.talon.set(ctre.TalonFXControlMode.MotionMagic, self.targetPosition / self.positionCoefficient)
+
+
+        # Now that we have a new target position, we need to figure out how to move the motor.
+        # First let's assume that we will move directly to the target position.
+        newMotorPosition = self.targetPosition
+
+        # The motor could get to the target position by moving clockwise or counterclockwise.
+        # The shortest path should be the direction that is less than pi radians away from the current motor position.
+        # The shortest path could loop around the circle and be less than 0 or greater than 2pi.
+        # We need to get the absolute current position to determine if we need to loop around the 0 - 2pi range.
+        
+        # The current motor position does not stay inside the 0 - 2pi range.
+        # We need the absolute position to compare with the target position.
+        absoluteMotorPosition = math.fmod(motorPosition, 2.0 * math.pi)
+        if absoluteMotorPosition < 0:
+            absoluteMotorPosition += 2.0 * math.pi
+
+        # If the target position was in the first quadrant area 
+        # and absolute motor position was in the last quadrant area
+        # then we need to move into the next loop around the circle.
+        if self.targetPosition - absoluteMotorPosition < -math.pi:
+            newMotorPosition + 2.0 * math.pi
+        # If the target position was in the last quadrant area
+        # and absolute motor position was in the first quadrant area
+        # then we need to move into the previous loop around the circle.
+        elif self.targetPosition - absoluteMotorPosition > math.pi:
+            newMotorPosition - 2.0 * math.pi
+
+        # Last, add the current existing loops that the motor has gone through.
+        newMotorPosition += motorPosition - absoluteMotorPosition
+
+        print(f"Target: {self.targetPosition}   Motor: {motorPosition}   New: {newMotorPosition}   ABS: {absolutePosition}")
+        
+        self.talon.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newMotorPosition, "position"))
 
     def teleopExit(self) -> None:
         logging.info("Exiting Teleop")
