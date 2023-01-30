@@ -2,8 +2,11 @@ import logging
 import wpilib
 import ctre
 
+# Ports
 motorPort = 7
 controllerPort = 0
+encoderPort = 0
+# PID Constants
 pid_constants = {
     "kP": 0.2,
     "kI": 0.0,
@@ -12,18 +15,25 @@ pid_constants = {
     "kIzone": 0,
     "kPeakOutput": 1.0
 }
-increment = 1000
+slot_idx = 0
+pid_loop_idx = 0
+timeout_ms = 30
+# Motor Constants
 nominal_voltage = 12.0
 steer_current_limit = 20.0
+# Encoder Constants
+encoder_ticks_per_rev = 2048
+encoder_offset = 0
+encoder_direction = False
+# Demo Behavior
+increment = 1000
 
 ######### Robot Class #########
 class motor_poc(wpilib.TimedRobot):
 
     def robotInit(self) -> None:
         logging.info("Entering Robot Init")
-        slot_idx = 0
-        pid_loop_idx = 0
-        timeout_ms = 30
+        
         self.joystick = wpilib.XboxController(controllerPort)
         self.talon = ctre.TalonFX(motorPort)
         self.talon.configFactoryDefault()
@@ -53,6 +63,14 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.enableVoltageCompensation(True)
         self.talon.setNeutralMode(ctre.NeutralMode.Brake)
 
+        canCoderConfig = ctre.CANCoderConfiguration()
+        canCoderConfig.absoluteSensorRange = ctre.AbsoluteSensorRange.Unsigned_0_to_360
+        canCoderConfig.magnetOffsetDegrees = encoder_offset
+        canCoderConfig.sensorDirection = encoder_direction
+        self.encoder = ctre.CANCoder(encoderPort)
+        self.encoder.configAllSettings(canCoderConfig, timeout_ms)
+        self.encoder.setStatusFramePeriod(ctre.CANCoderStatusFrame.SensorData, 10, timeout_ms)
+
         # Keep track of position
         self.targetPosition = 0
 
@@ -64,13 +82,15 @@ class motor_poc(wpilib.TimedRobot):
         currentPosition = self.talon.getSelectedSensorPosition()
         currentMotorOutput = self.talon.getMotorOutputPercent()
         currentVelocity = self.talon.getSelectedSensorVelocity()
+        absolutePosition = self.encoder.getAbsolutePosition()
 
         if self.joystick.getAButton():
             self.targetPosition += increment
         elif self.joystick.getBButton():
             self.targetPosition -= increment
 
-        print(f"Target: {self.targetPosition} Current Position: {currentPosition} Current Motor Output: {currentMotorOutput} Current Velocity: {currentVelocity}")
+        print(f"ABS POS: {absolutePosition}")
+        # print(f"Target: {self.targetPosition} Current Position: {currentPosition} Current Motor Output: {currentMotorOutput} Current Velocity: {currentVelocity}")
         self.talon.set(ctre.TalonFXControlMode.MotionMagic, self.targetPosition)
 
     def teleopExit(self) -> None:
