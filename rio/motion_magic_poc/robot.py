@@ -39,7 +39,7 @@ encoder_reset_iterations = 500
 # Range: 0 - 2pi
 velocityConstant = 1.0
 accelerationConstant = 0.5
-increment = 1
+increment = math.pi / 8
 
 # Conversion Functions
 # This is thought of as radians per shaft tick times the ratio to the axle (steer)
@@ -91,7 +91,7 @@ class motor_poc(wpilib.TimedRobot):
         self.talon = ctre.TalonFX(motorPort)
         self.talon.configFactoryDefault()
         self.talon.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
-        self.talon.configNeutralDeadband(0.001, timeout_ms)
+        self.talon.configNeutralDeadband(0.01, timeout_ms)
         self.talon.setSensorPhase(True)
         self.talon.setInverted(True)
         self.talon.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
@@ -108,6 +108,7 @@ class motor_poc(wpilib.TimedRobot):
         self.talon.config_kF(slot_idx, (1023.0 *  velocityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
         self.talon.configMotionCruiseVelocity(2.0 / velocityConstant / velocityCoefficient, timeout_ms)
         self.talon.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / velocityCoefficient, timeout_ms)
+        self.talon.configMotionSCurveStrength(1)
         # Set Sensor Position to match Absolute Position of CANCoder
         self.talon.setSelectedSensorPosition(getShaftTicks(self.encoder.getAbsolutePosition(), "position"), pid_loop_idx, timeout_ms)
         self.talon.configVoltageCompSaturation(nominal_voltage, timeout_ms)
@@ -125,7 +126,7 @@ class motor_poc(wpilib.TimedRobot):
 
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")
-        self.talon.setSelectedSensorPosition(getShaftTicks(self.encoder.getAbsolutePosition(), "position"))
+        
     
     def teleopPeriodic(self) -> None:
         # Get position and velocities of the motor
