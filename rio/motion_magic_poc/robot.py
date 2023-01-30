@@ -22,8 +22,8 @@ pid_loop_idx = 0
 timeout_ms = 30
 
 # Motor Constants
-drive_reduction = (14.0 / 50.0) * (25.0 / 19.0) * (15.0 / 45.0)
-steer_reduction = (15.0 / 32.0) * (10.0 / 60.0)
+DRIVE_RATIO = 6.75
+STEER_RATIO = 150.0/7.0
 motor_ticks_per_rev = 2048.0
 nominal_voltage = 12.0
 steer_current_limit = 20.0
@@ -43,7 +43,7 @@ increment = 1
 
 # Conversion Functions
 # This is thought of as radians per shaft tick times the ratio to the axle (steer)
-positionCoefficient = 2.0 * math.pi / motor_ticks_per_rev * steer_reduction
+positionCoefficient = 2.0 * math.pi / motor_ticks_per_rev / STEER_RATIO
 # This is the same conversion with time in mind.
 velocityCoefficient = positionCoefficient * 10.0
 # axle (radians) -> shaft (ticks)
@@ -186,7 +186,7 @@ class motor_poc(wpilib.TimedRobot):
         # Last, add the current existing loops that the motor has gone through.
         newMotorPosition += motorPosition - absoluteMotorPosition
 
-        print(f"Target: {self.targetPosition}   Motor: {motorPosition}   New: {newMotorPosition}   ABS: {absolutePosition}")
+        print(f"ABS Target: {self.targetPosition}    Motor Target: {newMotorPosition}    Motor Current: {motorPosition}    ABS Current: {absolutePosition}")
         
         self.talon.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newMotorPosition, "position"))
 
