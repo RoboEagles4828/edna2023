@@ -32,6 +32,8 @@ steer_current_limit = 20.0
 encoder_ticks_per_rev = 4096.0
 encoder_offset = 0
 encoder_direction = False
+encoder_reset_velocity = math.radians(0.5)
+encoder_reset_iterations = 500
 
 # Demo Behavior
 # Range: 0 - 2pi
@@ -118,6 +120,7 @@ class motor_poc(wpilib.TimedRobot):
         
         # Keep track of position
         self.targetPosition = 0
+        self.reset_iterations = 0
 
 
     def teleopInit(self) -> None:
@@ -129,6 +132,16 @@ class motor_poc(wpilib.TimedRobot):
         motorPosition = getAxleRadians(self.talon.getSelectedSensorPosition(), "position")
         motorVelocity = getAxleRadians(self.talon.getSelectedSensorVelocity(), "velocity")
         absolutePosition = self.encoder.getAbsolutePosition()
+
+        # Reset
+        if motorVelocity < encoder_reset_velocity:
+            self.reset_iterations += 1
+            if self.reset_iterations >= encoder_reset_iterations:
+                self.reset_iterations = 0
+                self.talon.setSelectedSensorPosition(getShaftTicks(absolutePosition, "position"))
+                motorPosition = absolutePosition
+        else:
+            self.reset_iterations = 0
 
         # Increment Target Position
         if self.joystick.getAButtonPressed():
