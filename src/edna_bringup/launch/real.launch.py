@@ -16,13 +16,13 @@ def generate_launch_description():
     # Process the URDF file
     description_pkg_path = os.path.join(get_package_share_directory('edna_description'))
     xacro_file = os.path.join(description_pkg_path,'urdf', 'robots','edna.urdf.xacro')
-    edna_description_config = xacro.process_file(xacro_file)
+    edna_description_config = xacro.process_file(xacro_file, mappings={ 'hw_interface_plugin': 'swerve_hardware/RealDriveHardware' })
     edna_description_xml = edna_description_config.toxml()
 
     # Get paths to other config files
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
-    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic.config.yaml')
+    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-real.config.yaml')
 
     # Create a robot_state_publisher node
     params = {'robot_description': edna_description_xml, 'use_sim_time': use_sim_time}
@@ -37,7 +37,7 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': True }, controllers_file],
+        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': use_sim_time }, controllers_file],
         output="screen",
     )
 
@@ -48,7 +48,7 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
-    #Starts ROS2 Control Swerve Drive Controller
+    # Starts ROS2 Control Swerve Drive Controller
     swerve_drive_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -61,7 +61,6 @@ def generate_launch_description():
         )
     )
 
-    # Start Teleop Node to translate joystick commands to robot commands
     joy_teleop = Node(
         package='teleop_twist_joy', 
         executable='teleop_node',
@@ -69,7 +68,7 @@ def generate_launch_description():
         parameters=[joystick_file],
         remappings={('/cmd_vel', '/swerve_controller/cmd_vel_unstamped')}
         )
-
+  
     # Launch!
     return LaunchDescription([
         control_node,

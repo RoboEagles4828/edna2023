@@ -19,8 +19,10 @@ swerve_controller:
     front_right_axle_joint: "front_right_axle_joint"
     rear_left_axle_joint: "rear_left_axle_joint"
     rear_right_axle_joint: "rear_right_axle_joint"
-    chassis_length: 0.7366
-    chassis_width: 0.7366
-    wheel_radius: 0.1016
-    cmd_vel_timeout: 10.0
+    #Used to scale velocity
+    chassis_length_meters: 0.7366
+    chassis_width_meters: 0.7366
+    wheel_radius_meters: 0.1016
+    #If no new twist commands are created in 1 second the robot will halt 
+    cmd_vel_timeout_seconds: 1.0
     use_stamped_vel: false
