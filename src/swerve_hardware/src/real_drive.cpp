@@ -68,7 +68,6 @@ CallbackReturn RealDriveHardware::on_init(const hardware_interface::HardwareInfo
   hw_command_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_command_position_.resize(info_.joints.size()/2, std::numeric_limits<double>::quiet_NaN());
 
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
     joint_names_.push_back(joint.name);
