@@ -142,7 +142,7 @@ class edna_robot(wpilib.TimedRobot):
             self.threads = [
                 {"name": "encoder", "thread": startThread("encoder") },
                 {"name": "command", "thread": startThread("command") },
-                {"name": "joystick", "thread": startThread("joystick") }
+                # {"name": "joystick", "thread": startThread("joystick") }
             ]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
