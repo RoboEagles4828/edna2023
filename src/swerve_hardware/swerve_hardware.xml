@@ -14,4 +14,11 @@
       The ROS2 Control hardware interface for testing a connected controller.
     </description>
   </class>
+  <class name="swerve_hardware/RealDriveHardware"
+         type="swerve_hardware::RealDriveHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ROS2 Control hardware interface for testing a connected controller.
+    </description>
+  </class>
 </library>

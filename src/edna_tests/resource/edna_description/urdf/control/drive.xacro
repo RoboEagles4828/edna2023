@@ -45,11 +45,19 @@
           <param name="min">-1</param>
           <param name="max">1</param>
         </command_interface>
+        <command_interface name="position">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
       <joint name="rear_left_axle_joint">
         <command_interface name="velocity">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
+        <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>
         </command_interface>
@@ -61,11 +69,19 @@
           <param name="min">-1</param>
           <param name="max">1</param>
         </command_interface>
+        <command_interface name="position">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
       <joint name="rear_right_axle_joint">
         <command_interface name="velocity">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
+        <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>
         </command_interface>
