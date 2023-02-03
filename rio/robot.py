@@ -134,6 +134,7 @@ class edna_robot(wpilib.TimedRobot):
 
     def robotInit(self) -> None:
         initDriveTrain()
+        initJoystick()
         self.threads = []
         if self.use_threading:
             logging.info("Initializing Threads")
@@ -142,7 +143,7 @@ class edna_robot(wpilib.TimedRobot):
             self.threads = [
                 {"name": "encoder", "thread": startThread("encoder") },
                 {"name": "command", "thread": startThread("command") },
-                # {"name": "joystick", "thread": startThread("joystick") }
+                {"name": "joystick", "thread": startThread("joystick") }
             ]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
@@ -173,10 +174,10 @@ class edna_robot(wpilib.TimedRobot):
             if thread["thread"].is_alive() == False:
                 # If this is the command thread, we need to stop the robot
                 if thread["name"] == "command":
-                    logging.warn(f"Stopping robot due to command thread failure")
+                    logging.warning(f"Stopping robot due to command thread failure")
                     with drive_train_lock:
                         drive_train.stop()
-                logging.warn(f"Thread {thread['name']} is not alive, restarting...")
+                logging.warning(f"Thread {thread['name']} is not alive, restarting...")
                 thread["thread"] = startThread(thread["name"])
     
     def doActions(self):

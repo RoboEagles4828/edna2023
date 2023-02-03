@@ -1,4 +1,5 @@
 import wpilib
+import logging
 
 CONTROLLER_PORT = 0
 SCALING_FACTOR_FIX = 10000
@@ -30,11 +31,13 @@ class Joystick:
             self.joystick.getRightStickButton()
         ]
 
-        for axe in axes:
-            axe = int(axe * SCALING_FACTOR_FIX)
-        
-        for button in buttons:
-            button = int(button)
+        def scale(a):
+            return int(a * SCALING_FACTOR_FIX)
+        def toInt(b):
+            return int(b)
 
-        return {"axes": axes, "buttons": buttons}
+        axes = map(scale, axes)
+        buttons = map(toInt, buttons)
+
+        return {"axes": list(axes), "buttons": list(buttons)}
 
