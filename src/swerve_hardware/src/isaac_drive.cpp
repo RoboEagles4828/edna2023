@@ -66,20 +66,20 @@ CallbackReturn IsaacDriveHardware::on_init(const hardware_interface::HardwareInf
   hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_command_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  // hw_command_position_.resize(info_.joints.size()/2, std::numeric_limits<double>::quiet_NaN());
+  hw_command_position_.resize(info_.joints.size()/2, std::numeric_limits<double>::quiet_NaN());
 
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
     joint_names_.push_back(joint.name);
-    if (joint.command_interfaces.size() != 1)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("IsaacDriveHardware"),
-        "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
-        joint.command_interfaces.size());
-      return CallbackReturn::ERROR;
-    }
+    // if (joint.command_interfaces.size() != 1)
+    // {
+    //   RCLCPP_FATAL(
+    //     rclcpp::get_logger("IsaacDriveHardware"),
+    //     "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
+    //     joint.command_interfaces.size());
+    //   return CallbackReturn::ERROR;
+    // }
 
     if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY && joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION)
     {
@@ -142,28 +142,33 @@ std::vector<hardware_interface::StateInterface> IsaacDriveHardware::export_state
 std::vector<hardware_interface::CommandInterface> IsaacDriveHardware::export_command_interfaces()
 {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
-  // uint counter_position =0;
+  uint counter_position =0;
   // uint counter_velocity =0;
 
   for (auto i = 0u; i < info_.joints.size(); i++)
-  {
-    RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Joint Name %s", info_.joints[i].name.c_str());
+    {
+      RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Joint Name %s", info_.joints[i].name.c_str());
 
-    if (info_.joints[i].command_interfaces[0].name == hardware_interface::HW_IF_VELOCITY) {
-      command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_command_velocity_[i]));
-        RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Velocity: %s", info_.joints[i].name.c_str() );
-        joint_names_velocity_.emplace_back(info_.joints[i].name);
-        // counter_velocity++;
-    } 
-    // else {
-    //   command_interfaces.emplace_back(hardware_interface::CommandInterface(
-    //     info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_command_position_[counter_position]));
-    //     RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Position: %s", info_.joints[i].name.c_str() );
-    //     joint_names_position_.emplace_back(info_.joints[i].name);
-    //     counter_position++;
-    // }
-  }
+      for (auto j = 0u; j < info_.joints[i].command_interfaces.size(); j++)
+      {
+        if (info_.joints[i].command_interfaces[j].name == hardware_interface::HW_IF_VELOCITY)
+        {
+          command_interfaces.emplace_back(hardware_interface::CommandInterface(
+              info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_command_velocity_[i]));
+          RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Velocity: %s", info_.joints[i].name.c_str());
+          joint_names_velocity_.emplace_back(info_.joints[i].name);
+          // counter_velocity++;
+        }
+        else
+        {
+          command_interfaces.emplace_back(hardware_interface::CommandInterface(
+              info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_command_position_[counter_position]));
+          RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Position: %s", info_.joints[i].name.c_str());
+          joint_names_position_.emplace_back(info_.joints[i].name);
+          counter_position++;
+        }
+      }
+    }
 
   return command_interfaces;
 }
@@ -180,14 +185,13 @@ CallbackReturn IsaacDriveHardware::on_activate(
   {
     hw_positions_[i] = 0.0;
     hw_velocities_[i] = 0.0;
-    joint_names_map_[joint_names_[i]] = i + 1; // ADD 1 to differentiate null key
   }
 
   // Set Default Values for Command Interface Arrays
   for (auto i = 0u; i < hw_command_velocity_.size(); i++)
   {
     hw_command_velocity_[i] = 0;
-    // hw_command_position_[i] = 0;
+    hw_command_position_[i] = 0;
   }
 
   subscriber_is_active_ = true;
@@ -229,44 +233,17 @@ hardware_interface::return_type IsaacDriveHardware::read()
   auto positions = last_command_msg->position;
   auto velocities = last_command_msg->velocity;
   
-  for (auto i = 0u; i < names.size(); i++) {
-    for (auto j = 0u; j < names.size(); j++) {
-      if(i+1==joint_names_map_[names[j]]){
-        // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test %s", names[j].c_str());
-        uint p = joint_names_map_[names[j]];
-        // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test2 %i", p);
-        if (p > 0) {
-          auto test = (float) positions[j];
-          hw_positions_[p - 1] = test/10000.0;
-          // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Position: %f ", names[j].c_str(), hw_positions_[p-i]);
-
-          hw_velocities_[p - 1] = 0.0;
-            // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Velocity: %f", names[i], hw_velocity_[i]);
+  for (auto i = 0u; i < info_.joints.size(); i++)
+    {
+      for (auto j = 0u; j < names.size(); j++)
+      {
+        if (strcmp(names[j].c_str(), info_.joints[i].name.c_str()) == 0)
+        {
+          hw_positions_[i] = positions[j];
+          hw_velocities_[i] = (float)velocities[j];
         }
       }
     }
-  }
-  // for (auto i = 0u; i < info_.joints.size(); i++) {
-  //   for (auto j = 0u; j < names.size(); j++) {
-
-  //       if(info_.joints[i].name.c_str()==names[j].c_str()){
-  //             // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test %s", names[j].c_str());
-  //             // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test2 %i", p);
-  //               auto test = (float) positions[j];
-  //               hw_positions_[i] = test/10000.0;
-  //               // if(test != 0.0){
-  //               RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "test %f", test);
-  //               // }
-
-  //               // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Position: %f ", names[j].c_str(), hw_positions_[p-i]);
-      
-  //               hw_velocities_[i] = 0.0;
-  //                // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Name: %s Velocity: %f", names[i], hw_velocity_[i]);
-  //       }
-  //   }
-
-
-  // }
   
 
   
@@ -291,15 +268,15 @@ hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write()
   rclcpp::spin_some(node_);
 
   // Publish Position
-  // if (realtime_isaac_publisher_->trylock()) {
-  //   auto & realtime_isaac_command_ = realtime_isaac_publisher_->msg_;
-  //   realtime_isaac_command_.header.stamp = node_->get_clock()->now();
-  //   realtime_isaac_command_.name = joint_names_position_;
-  //   realtime_isaac_command_.velocity = empty_;
-  //   realtime_isaac_command_.position = hw_command_position_;
-  //   realtime_isaac_publisher_->unlockAndPublish();
-  // }
-  // rclcpp::spin_some(node_);
+  if (realtime_isaac_publisher_->trylock()) {
+    auto & realtime_isaac_command_ = realtime_isaac_publisher_->msg_;
+    realtime_isaac_command_.header.stamp = node_->get_clock()->now();
+    realtime_isaac_command_.name = joint_names_position_;
+    realtime_isaac_command_.velocity = empty_;
+    realtime_isaac_command_.position = hw_command_position_;
+    realtime_isaac_publisher_->unlockAndPublish();
+  }
+  rclcpp::spin_some(node_);
 
   return hardware_interface::return_type::OK;
 }

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SWERVE_HARDWARE__ISAAC_DRIVE_HPP_
-#define SWERVE_HARDWARE__ISAAC_DRIVE_HPP_
+#ifndef SWERVE_HARDWARE__REAL_DRIVE_HPP_
+#define SWERVE_HARDWARE__REAL_DRIVE_HPP_
 
 #include <memory>
 #include <string>
@@ -82,14 +82,14 @@ private:
   std::map<std::string, uint> joint_names_map_;
 
 
-  // Pub Sub to isaac
+  // Pub Sub to Robot
   rclcpp::Node::SharedPtr node_;
-  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> isaac_publisher_ = nullptr;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_ = nullptr;
   std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
-    realtime_isaac_publisher_ = nullptr;
+    realtime_real_publisher_ = nullptr;
 
   bool subscriber_is_active_ = false;
-  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr isaac_subscriber_ = nullptr;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr real_subscriber_ = nullptr;
   realtime_tools::RealtimeBox<std::shared_ptr<sensor_msgs::msg::JointState>> received_joint_msg_ptr_{nullptr};
 };
 

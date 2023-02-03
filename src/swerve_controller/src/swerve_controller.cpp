@@ -50,7 +50,7 @@ namespace swerve_controller
   {
     velocity_.get().set_value(velocity);
   }
-  Axle::Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_velocity,std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_position, std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position, std::string name) : command_velocity_(command_velocity), command_position_(command_position), state_position_(state_position), name(std::move(name)) {}
+  Axle::Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_velocity, std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_position, std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position, std::string name) : command_velocity_(command_velocity), command_position_(command_position), state_position_(state_position), name(std::move(name)) {}
 
   void Axle::set_velocity(double velocity)
   {
@@ -224,17 +224,6 @@ namespace swerve_controller
         {
           front_left_position += M_PI;
         }
-        // RCLCPP_INFO(logger, "front_left_current_pos");
-
-        // // convert to degrees
-        // front_left_position = ((180 / M_PI) * front_left_position);
-        // // keep it in -90 to 90 scope
-        // front_left_position = ((int)(front_left_position) + 90) % 180 - 90;
-        // // convert back to radians
-        // if (abs(front_left_position) >= 0.01)
-        // {
-        //   front_left_position = (M_PI / 180) * front_left_position;
-        // }
 
         front_left_velocity *= -1;
       }
@@ -249,16 +238,6 @@ namespace swerve_controller
         {
           front_right_position += M_PI;
         }
-        // RCLCPP_INFO(logger, "front_right_current_pos");
-        // // convert to degrees
-        // front_right_position = ((180 / M_PI) * front_right_position);
-        // // keep it in -90 to 90 scope
-        // front_right_position = ((int)(front_right_position) + 90) % 180 - 90;
-        // // convert back to radians
-        // if (abs(front_right_position) >= 0.01)
-        // {
-        //   front_right_position = (M_PI / 180) * front_right_position;
-        // }
 
         front_right_velocity *= -1;
       }
@@ -273,17 +252,6 @@ namespace swerve_controller
         {
           rear_left_position += M_PI;
         }
-        // RCLCPP_INFO(logger, "rear_left_current_pos");
-
-        // //convert to degrees
-        // rear_left_position = ((180 / M_PI) * rear_left_position);
-        // //keep it in -90 to 90 scope
-        // rear_left_position = ((int)(rear_left_position) + 90) % 180 - 90;
-        // //convert back to radians
-        // if(abs(rear_left_position)>=0.01){
-        //   rear_left_position = (M_PI / 180) * rear_left_position;
-        // }
-
         rear_left_velocity *= -1;
       }
       // rear right
@@ -297,14 +265,6 @@ namespace swerve_controller
         {
           rear_right_position += M_PI;
         }
-        // RCLCPP_INFO(logger, "rear_right_current_pos");
-        // //convert to degrees
-        // rear_right_position = ((180 / M_PI) * rear_right_position);
-        // //keep it in -90 to 90 scope
-        // rear_right_position = ((int)(rear_right_position) + 90) % 180 - 90;
-        // //convert back to radians
-        // if(abs(rear_right_position)>=0.01){
-        //   rear_right_position = (M_PI / 180) * rear_right_position;
         rear_right_velocity *= -1;
       }
       // RCLCPP_INFO(logger, "front_left_position: %f", front_left_position);
@@ -322,81 +282,83 @@ namespace swerve_controller
       // Set Wheel Positions
       // remmeber to comment this back in!
       // Has a 1 degree tolerance. Turns clockwise if less than, counter clockwise if greater than
-      float turningspeed = 1.0;
-      if (front_left_current_pos > front_left_position + (M_PI / 36) || front_left_current_pos < front_left_position - (M_PI / 36))
+      float turning_velocity_radians_limit = 1.0;
+      float turning_position_error_radians = M_PI / 36;
+      float turning_velocity_jerk_factor = M_PI / 9;
+      if (front_left_current_pos > front_left_position + turning_position_error_radians || front_left_current_pos < front_left_position - turning_position_error_radians)
       {
-        float setspeed = abs((front_left_position - front_left_current_pos)) / (M_PI / 9);
-        if (setspeed > turningspeed)
+        float turning_speed_radians = abs((front_left_position - front_left_current_pos)) / turning_velocity_jerk_factor;
+        if (turning_speed_radians > turning_velocity_radians_limit)
         {
-          setspeed = turningspeed;
+          turning_speed_radians = turning_velocity_radians_limit;
         }
         if (front_left_position > front_left_current_pos)
         {
-          front_left_axle_command_handle_->set_velocity(setspeed);
+          front_left_axle_command_handle_->set_velocity(turning_speed_radians);
         }
         else
         {
-          front_left_axle_command_handle_->set_velocity(-1 * setspeed);
+          front_left_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
         }
       }
       else
       {
         front_left_axle_command_handle_->set_velocity(0.0);
       }
-      if (front_right_current_pos > front_right_position + (M_PI / 36) || front_right_current_pos < front_right_position - (M_PI / 36))
+      if (front_right_current_pos > front_right_position + turning_position_error_radians || front_right_current_pos < front_right_position - turning_position_error_radians)
       {
-        float setspeed = abs((front_right_position - front_right_current_pos)) / (M_PI / 9);
-        if (setspeed > turningspeed)
+        float turning_speed_radians = abs((front_right_position - front_right_current_pos)) / turning_velocity_jerk_factor;
+        if (turning_speed_radians > turning_velocity_radians_limit)
         {
-          setspeed = turningspeed;
+          turning_speed_radians = turning_velocity_radians_limit;
         }
         if (front_right_position > front_right_current_pos)
         {
-          front_right_axle_command_handle_->set_velocity(setspeed);
+          front_right_axle_command_handle_->set_velocity(turning_speed_radians);
         }
         else
         {
-          front_right_axle_command_handle_->set_velocity(-1 * setspeed);
+          front_right_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
         }
       }
       else
       {
         front_right_axle_command_handle_->set_velocity(0.0);
       }
-      if (rear_left_current_pos > rear_left_position + (M_PI / 36) || rear_left_current_pos < rear_left_position - (M_PI / 36))
+      if (rear_left_current_pos > rear_left_position + turning_position_error_radians || rear_left_current_pos < rear_left_position - turning_position_error_radians)
       {
-        float setspeed = (abs(rear_left_position - rear_left_current_pos)) / (M_PI / 9);
-        if (setspeed > turningspeed)
+        float turning_speed_radians = (abs(rear_left_position - rear_left_current_pos)) / turning_velocity_jerk_factor;
+        if (turning_speed_radians > turning_velocity_radians_limit)
         {
-          setspeed = turningspeed;
+          turning_speed_radians = turning_velocity_radians_limit;
         }
         if (rear_left_position > rear_left_current_pos)
         {
-          rear_left_axle_command_handle_->set_velocity(setspeed);
+          rear_left_axle_command_handle_->set_velocity(turning_speed_radians);
         }
         else
         {
-          rear_left_axle_command_handle_->set_velocity(-1 * setspeed);
+          rear_left_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
         }
       }
       else
       {
         rear_left_axle_command_handle_->set_velocity(0.0);
       }
-      if (rear_right_current_pos > rear_right_position + (M_PI / 36) || rear_right_current_pos < rear_right_position - (M_PI / 36))
+      if (rear_right_current_pos > rear_right_position + turning_position_error_radians || rear_right_current_pos < rear_right_position - turning_position_error_radians)
       {
-        float setspeed = (abs(rear_right_position - rear_right_current_pos)) / (M_PI / 9);
-        if (setspeed > turningspeed)
+        float turning_speed_radians = (abs(rear_right_position - rear_right_current_pos)) / turning_velocity_jerk_factor;
+        if (turning_speed_radians > turning_velocity_radians_limit)
         {
-          setspeed = turningspeed;
+          turning_speed_radians = turning_velocity_radians_limit;
         }
         if (rear_right_position > rear_right_current_pos)
         {
-          rear_right_axle_command_handle_->set_velocity(setspeed);
+          rear_right_axle_command_handle_->set_velocity(turning_speed_radians);
         }
         else
         {
-          rear_right_axle_command_handle_->set_velocity(-1 * setspeed);
+          rear_right_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
         }
       }
       else
@@ -657,9 +619,9 @@ namespace swerve_controller
         [&axle_name](const auto &interface)
         {
           return interface.get_name() == axle_name &&
-                 interface.get_interface_name() == HW_IF_VELOCITY ;
+                 interface.get_interface_name() == HW_IF_VELOCITY;
         });
-        const auto command_handle_position = std::find_if(
+    const auto command_handle_position = std::find_if(
         command_interfaces_.begin(), command_interfaces_.end(),
         [&axle_name](const auto &interface)
         {
@@ -689,7 +651,7 @@ namespace swerve_controller
       RCLCPP_ERROR(logger, "Unable to obtain joint state handle for %s", axle_name.c_str());
       return nullptr;
     }
-    return std::make_shared<Axle>(std::ref(*command_handle_velocity),std::ref(*command_handle_position), std::ref(*state_handle), axle_name);
+    return std::make_shared<Axle>(std::ref(*command_handle_velocity), std::ref(*command_handle_position), std::ref(*state_handle), axle_name);
   }
 
 } // namespace swerve_controller
