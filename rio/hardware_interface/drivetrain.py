@@ -82,9 +82,8 @@ slot_idx = 0
 pid_loop_idx = 0
 timeout_ms = 30
 
-velocityConstant = 1.0
-accelerationConstant = 0.5
-
+velocityConstant = 0.5
+accelerationConstant = 0.25
 # Conversion Functions
 positionCoefficient = 2.0 * math.pi / TICKS_PER_REV / AXLE_JOINT_GEAR_RATIO
 velocityCoefficient = positionCoefficient * 10.0
