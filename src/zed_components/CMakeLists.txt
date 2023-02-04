@@ -78,14 +78,14 @@ endif()
 
 #############################################
 # Dependencies
-#find_package(ZED 3 REQUIRED)
+find_package(ZED 3 REQUIRED)
 
 exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
 if(CMAKE_SYSTEM_NAME2 MATCHES "aarch64") # Jetson TX
     set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 endif()
 
-#find_package(CUDA REQUIRED)
+find_package(CUDA REQUIRED)
 
 set(DEPENDENCIES
     rclcpp
