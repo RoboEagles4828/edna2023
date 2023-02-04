@@ -4,6 +4,7 @@
     "containerEnv": {
         "ACCEPT_EULA": "Y",
         "DISPLAY": "${localEnv:DISPLAY}",
+        "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
         // Nucleus Config
         "OMNI_USER": "admin",
