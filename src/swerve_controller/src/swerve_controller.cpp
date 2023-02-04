@@ -164,7 +164,7 @@ namespace swerve_controller
     double &linear_x_velocity_comand = command.twist.linear.x;
     double &linear_y_velocity_comand = command.twist.linear.y;
     double &angular_velocity_comand = command.twist.angular.z;
-    if (abs(linear_x_velocity_comand) < 0.5 && abs(linear_y_velocity_comand) < 0.5 && abs(angular_velocity_comand) < 0.5)
+    if (abs(linear_x_velocity_comand) < 0.4 && abs(linear_y_velocity_comand) < 0.4 && abs(angular_velocity_comand) < 0.4)
     {
       front_left_wheel_command_handle_->set_velocity(0.0);
       front_right_wheel_command_handle_->set_velocity(0.0);
@@ -194,11 +194,9 @@ namespace swerve_controller
 
       // get current wheel positions
       const double front_left_current_pos = front_left_axle_command_handle_->get_position();
-
       const double front_right_current_pos = front_right_axle_command_handle_->get_position();
       const double rear_left_current_pos = rear_left_axle_command_handle_->get_position();
       const double rear_right_current_pos = rear_right_axle_command_handle_->get_position();
-      RCLCPP_INFO(rclcpp::get_logger("update"), "%f", front_left_current_pos);
 
       double front_left_velocity = (sqrt(pow(b, 2) + pow(d, 2))) * (1 / (radius * M_PI));
       double front_right_velocity = (sqrt(pow(b, 2) + pow(c, 2))) * (1 / (radius * M_PI));
@@ -211,63 +209,38 @@ namespace swerve_controller
       double rear_right_position = atan2(a, c);
 
       // optimization
-
-      // front_left
-      // RCLCPP_INFO(logger, "front_left_current_pos: %f, front_left_position %f", front_left_current_pos, front_left_position);
-      while (abs(front_left_current_pos - front_left_position) > M_PI / 2)
-      {
-        if (front_left_position > front_left_current_pos)
-        {
-          front_left_position -= M_PI;
-        }
-        else
-        {
-          front_left_position += M_PI;
-        }
-
+      if (abs(front_left_current_pos - front_left_position) > M_PI / 2) {
+        front_left_position += M_PI;
         front_left_velocity *= -1;
       }
-      // front_right
-      while (abs(front_right_current_pos - front_right_position) > M_PI / 2)
-      {
-        if (front_right_position > front_right_current_pos)
-        {
-          front_right_position -= M_PI;
-        }
-        else
-        {
-          front_right_position += M_PI;
-        }
-
+      if (abs(front_right_current_pos - front_right_position) > M_PI / 2) {
+        front_right_position += M_PI;
         front_right_velocity *= -1;
       }
-      // rear_left
-      while (abs(rear_left_current_pos - rear_left_position) > M_PI / 2)
-      {
-        if (rear_left_position > rear_left_current_pos)
-        {
-          rear_left_position -= M_PI;
-        }
-        else
-        {
-          rear_left_position += M_PI;
-        }
+      if (abs(rear_left_current_pos - rear_left_position) > M_PI / 2) {
+        rear_left_position += M_PI;
         rear_left_velocity *= -1;
       }
-      // rear right
-      while (abs(rear_right_current_pos - rear_right_position) > M_PI / 2)
-      {
-        if (rear_right_position > rear_right_current_pos)
-        {
-          rear_right_position -= M_PI;
-        }
-        else
-        {
-          rear_right_position += M_PI;
-        }
+      if (abs(rear_right_current_pos - rear_right_position) > M_PI / 2) {
+        rear_right_position += M_PI;
         rear_right_velocity *= -1;
       }
-      // RCLCPP_INFO(logger, "front_left_position: %f", front_left_position);
+
+      // Convert hardware positions to 0-2pi
+      if (front_left_position < 0.0){
+          front_left_position += 2.0 * M_PI;
+      }
+      if (front_right_position < 0.0){
+          front_right_position += 2.0 * M_PI;
+      }
+      if (rear_left_position < 0.0){
+          rear_left_position += 2.0 * M_PI;
+      }
+      if (rear_right_position < 0.0){
+          rear_right_position += 2.0 * M_PI;
+      }
+      RCLCPP_INFO(logger, "current_front_right_position: %f", front_right_current_pos);
+      RCLCPP_INFO(logger, "target_front_right_position: %f", front_right_position);
       // RCLCPP_INFO(logger, "front_left_current_position: %f", front_left_current_pos);
       // Set Wheel Velocities
       front_left_axle_command_handle_->set_position(front_left_position);
@@ -282,89 +255,89 @@ namespace swerve_controller
       // Set Wheel Positions
       // remmeber to comment this back in!
       // Has a 1 degree tolerance. Turns clockwise if less than, counter clockwise if greater than
-      float turning_velocity_radians_limit = 1.0;
-      float turning_position_error_radians = M_PI / 36;
-      float turning_velocity_jerk_factor = M_PI / 9;
-      if (front_left_current_pos > front_left_position + turning_position_error_radians || front_left_current_pos < front_left_position - turning_position_error_radians)
-      {
-        float turning_speed_radians = abs((front_left_position - front_left_current_pos)) / turning_velocity_jerk_factor;
-        if (turning_speed_radians > turning_velocity_radians_limit)
-        {
-          turning_speed_radians = turning_velocity_radians_limit;
-        }
-        if (front_left_position > front_left_current_pos)
-        {
-          front_left_axle_command_handle_->set_velocity(turning_speed_radians);
-        }
-        else
-        {
-          front_left_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
-        }
-      }
-      else
-      {
-        front_left_axle_command_handle_->set_velocity(0.0);
-      }
-      if (front_right_current_pos > front_right_position + turning_position_error_radians || front_right_current_pos < front_right_position - turning_position_error_radians)
-      {
-        float turning_speed_radians = abs((front_right_position - front_right_current_pos)) / turning_velocity_jerk_factor;
-        if (turning_speed_radians > turning_velocity_radians_limit)
-        {
-          turning_speed_radians = turning_velocity_radians_limit;
-        }
-        if (front_right_position > front_right_current_pos)
-        {
-          front_right_axle_command_handle_->set_velocity(turning_speed_radians);
-        }
-        else
-        {
-          front_right_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
-        }
-      }
-      else
-      {
-        front_right_axle_command_handle_->set_velocity(0.0);
-      }
-      if (rear_left_current_pos > rear_left_position + turning_position_error_radians || rear_left_current_pos < rear_left_position - turning_position_error_radians)
-      {
-        float turning_speed_radians = (abs(rear_left_position - rear_left_current_pos)) / turning_velocity_jerk_factor;
-        if (turning_speed_radians > turning_velocity_radians_limit)
-        {
-          turning_speed_radians = turning_velocity_radians_limit;
-        }
-        if (rear_left_position > rear_left_current_pos)
-        {
-          rear_left_axle_command_handle_->set_velocity(turning_speed_radians);
-        }
-        else
-        {
-          rear_left_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
-        }
-      }
-      else
-      {
-        rear_left_axle_command_handle_->set_velocity(0.0);
-      }
-      if (rear_right_current_pos > rear_right_position + turning_position_error_radians || rear_right_current_pos < rear_right_position - turning_position_error_radians)
-      {
-        float turning_speed_radians = (abs(rear_right_position - rear_right_current_pos)) / turning_velocity_jerk_factor;
-        if (turning_speed_radians > turning_velocity_radians_limit)
-        {
-          turning_speed_radians = turning_velocity_radians_limit;
-        }
-        if (rear_right_position > rear_right_current_pos)
-        {
-          rear_right_axle_command_handle_->set_velocity(turning_speed_radians);
-        }
-        else
-        {
-          rear_right_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
-        }
-      }
-      else
-      {
-        rear_right_axle_command_handle_->set_velocity(0.0);
-      }
+      // float turning_velocity_radians_limit = 1.0;
+      // float turning_position_error_radians = M_PI / 36;
+      // float turning_velocity_jerk_factor = M_PI / 9;
+      // if (front_left_current_pos > front_left_position + turning_position_error_radians || front_left_current_pos < front_left_position - turning_position_error_radians)
+      // {
+      //   float turning_speed_radians = abs((front_left_position - front_left_current_pos)) / turning_velocity_jerk_factor;
+      //   if (turning_speed_radians > turning_velocity_radians_limit)
+      //   {
+      //     turning_speed_radians = turning_velocity_radians_limit;
+      //   }
+      //   if (front_left_position > front_left_current_pos)
+      //   {
+      //     front_left_axle_command_handle_->set_velocity(turning_speed_radians);
+      //   }
+      //   else
+      //   {
+      //     front_left_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
+      //   }
+      // }
+      // else
+      // {
+      //   front_left_axle_command_handle_->set_velocity(0.0);
+      // }
+      // if (front_right_current_pos > front_right_position + turning_position_error_radians || front_right_current_pos < front_right_position - turning_position_error_radians)
+      // {
+      //   float turning_speed_radians = abs((front_right_position - front_right_current_pos)) / turning_velocity_jerk_factor;
+      //   if (turning_speed_radians > turning_velocity_radians_limit)
+      //   {
+      //     turning_speed_radians = turning_velocity_radians_limit;
+      //   }
+      //   if (front_right_position > front_right_current_pos)
+      //   {
+      //     front_right_axle_command_handle_->set_velocity(turning_speed_radians);
+      //   }
+      //   else
+      //   {
+      //     front_right_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
+      //   }
+      // }
+      // else
+      // {
+      //   front_right_axle_command_handle_->set_velocity(0.0);
+      // }
+      // if (rear_left_current_pos > rear_left_position + turning_position_error_radians || rear_left_current_pos < rear_left_position - turning_position_error_radians)
+      // {
+      //   float turning_speed_radians = (abs(rear_left_position - rear_left_current_pos)) / turning_velocity_jerk_factor;
+      //   if (turning_speed_radians > turning_velocity_radians_limit)
+      //   {
+      //     turning_speed_radians = turning_velocity_radians_limit;
+      //   }
+      //   if (rear_left_position > rear_left_current_pos)
+      //   {
+      //     rear_left_axle_command_handle_->set_velocity(turning_speed_radians);
+      //   }
+      //   else
+      //   {
+      //     rear_left_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
+      //   }
+      // }
+      // else
+      // {
+      //   rear_left_axle_command_handle_->set_velocity(0.0);
+      // }
+      // if (rear_right_current_pos > rear_right_position + turning_position_error_radians || rear_right_current_pos < rear_right_position - turning_position_error_radians)
+      // {
+      //   float turning_speed_radians = (abs(rear_right_position - rear_right_current_pos)) / turning_velocity_jerk_factor;
+      //   if (turning_speed_radians > turning_velocity_radians_limit)
+      //   {
+      //     turning_speed_radians = turning_velocity_radians_limit;
+      //   }
+      //   if (rear_right_position > rear_right_current_pos)
+      //   {
+      //     rear_right_axle_command_handle_->set_velocity(turning_speed_radians);
+      //   }
+      //   else
+      //   {
+      //     rear_right_axle_command_handle_->set_velocity(-1 * turning_speed_radians);
+      //   }
+      // }
+      // else
+      // {
+      //   rear_right_axle_command_handle_->set_velocity(0.0);
+      // }
 
       // remmeber to comment this back in!
 
@@ -374,6 +347,8 @@ namespace swerve_controller
       //  rear_left_axle_command_handle_->set_velocity(5.0);
       //  rear_right_axle_command_handle_->set_velocity(5.0);
       // test TEMPORARY!
+
+       
 
       // Time update
       const auto update_dt = current_time - previous_update_timestamp_;

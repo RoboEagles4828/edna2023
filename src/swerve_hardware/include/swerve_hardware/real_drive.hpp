@@ -76,8 +76,6 @@ private:
   std::vector<double> hw_velocities_;
   std::vector<double> empty_;
   std::vector<std::string> joint_names_;
-  std::vector<std::string> joint_names_velocity_;
-  std::vector<std::string> joint_names_position_;
 
   std::map<std::string, uint> joint_names_map_;
 
