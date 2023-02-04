@@ -10,7 +10,7 @@
   <xacro:include filename="$(find edna_description)/urdf/util/materials.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/square_chassis.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/swerve_axle.xacro" />
-  <xacro:include filename="$(find edna_description)/urdf/parts/zed_macro.urdf.xacro" />
+  <!-- <xacro:include filename="$(find edna_description)/urdf/parts/zed_macro.urdf.xacro" /> -->
 
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
@@ -33,9 +33,9 @@
     <origin xyz="-${axle_pos} ${axle_pos_y} -${axle_pos}" rpy="${pi / 2} 0 0" />
   </xacro:swerve_axle>
   
-  <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
+  <!-- <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="${pi/2} 0 0" />
-  </xacro:zed_camera>
+  </xacro:zed_camera> -->
 
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" />
 </robot>
