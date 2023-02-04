@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/humble-isaac:latest",
+    "image": "ghcr.io/roboeagles4828/galactic-isaac:latest",
     "containerEnv": {
         "ACCEPT_EULA": "Y",
         "DISPLAY": "${localEnv:DISPLAY}",
@@ -45,5 +45,5 @@
         }
     },
     "privileged": true,
-    "remoteUser": "vscode"
+    "remoteUser": "edna"
 }
