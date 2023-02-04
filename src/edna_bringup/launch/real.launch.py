@@ -75,5 +75,5 @@ def generate_launch_description():
         node_robot_state_publisher,
         joint_state_broadcaster_spawner,
         swerve_drive_controller_delay,
-        joy_teleop
+        joy_teleop,
     ])

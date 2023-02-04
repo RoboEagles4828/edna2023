@@ -67,7 +67,7 @@ namespace swerve_hardware
     hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_command_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-    hw_command_position_.resize(info_.joints.size() / 2, std::numeric_limits<double>::quiet_NaN());
+    hw_command_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
     for (const hardware_interface::ComponentInfo &joint : info_.joints)
     {
@@ -146,8 +146,6 @@ namespace swerve_hardware
   std::vector<hardware_interface::CommandInterface> RealDriveHardware::export_command_interfaces()
   {
     std::vector<hardware_interface::CommandInterface> command_interfaces;
-    uint counter_position = 0;
-    // uint counter_velocity =0;
 
     for (auto i = 0u; i < info_.joints.size(); i++)
     {
@@ -160,16 +158,12 @@ namespace swerve_hardware
           command_interfaces.emplace_back(hardware_interface::CommandInterface(
               info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_command_velocity_[i]));
           RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Velocity: %s", info_.joints[i].name.c_str());
-          joint_names_velocity_.emplace_back(info_.joints[i].name);
-          // counter_velocity++;
         }
         else
         {
           command_interfaces.emplace_back(hardware_interface::CommandInterface(
-              info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_command_position_[counter_position]));
+              info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_command_position_[i]));
           RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Position: %s", info_.joints[i].name.c_str());
-          joint_names_position_.emplace_back(info_.joints[i].name);
-          counter_position++;
         }
       }
     }
@@ -241,8 +235,12 @@ namespace swerve_hardware
       {
         if (strcmp(names[j].c_str(), info_.joints[i].name.c_str()) == 0)
         {
-          auto test = (float)positions[j];
-          hw_positions_[i] = test / 10000.0;
+          auto radians = (float)positions[j] / 10000.0;
+          // Incoming range is 0 - 2pi, convert to -pi to pi
+          if (radians > M_PI){
+            radians -= 2.0 * M_PI;
+          }  
+          hw_positions_[i] = radians;
           hw_velocities_[i] = (float)velocities[j] / 10000.0;
         }
       }
@@ -253,26 +251,13 @@ namespace swerve_hardware
 
   hardware_interface::return_type swerve_hardware::RealDriveHardware::write()
   {
-
-    // Publish Velocity
+    // Publish Velocity and Position
     if (realtime_real_publisher_->trylock())
     {
       auto &realtime_real_command_ = realtime_real_publisher_->msg_;
       realtime_real_command_.header.stamp = node_->get_clock()->now();
-      realtime_real_command_.name = joint_names_velocity_;
+      realtime_real_command_.name = joint_names_;
       realtime_real_command_.velocity = hw_command_velocity_;
-      realtime_real_command_.position = empty_;
-      realtime_real_publisher_->unlockAndPublish();
-    }
-    rclcpp::spin_some(node_);
-
-    // Publish Position
-    if (realtime_real_publisher_->trylock())
-    {
-      auto &realtime_real_command_ = realtime_real_publisher_->msg_;
-      realtime_real_command_.header.stamp = node_->get_clock()->now();
-      realtime_real_command_.name = joint_names_position_;
-      realtime_real_command_.velocity = empty_;
       realtime_real_command_.position = hw_command_position_;
       realtime_real_publisher_->unlockAndPublish();
     }
