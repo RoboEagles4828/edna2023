@@ -1,9 +1,10 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/humble-isaac:latest",
+    "image": "ghcr.io/roboeagles4828/edna:latest",
     "containerEnv": {
         "ACCEPT_EULA": "Y",
         "DISPLAY": "${localEnv:DISPLAY}",
+        "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
         // Nucleus Config
         "OMNI_USER": "admin",
@@ -13,22 +14,22 @@
     "initializeCommand": "./.devcontainer/init.sh",
     "mounts": [
         // X11
-        "source=${localEnv:XAUTHORITY},target=/home/vscode/.Xauthority,type=bind",
+        "source=${localEnv:XAUTHORITY},target=/home/edna/.Xauthority,type=bind",
         // Vulkan
         "source=/usr/share/glvnd/egl_vendor.d/10_nvidia.json,target=/usr/share/glvnd/egl_vendor.d/10_nvidia.json,type=bind,consistency=cached",
         "source=/usr/share/vulkan/icd.d/nvidia_icd.json,target=/usr/share/vulkan/icd.d/nvidia_icd.json,type=bind,consistency=cached",
         "source=/usr/share/vulkan/implicit_layer.d/nvidia_layers.json,target=/usr/share/vulkan/implicit_layer.d/nvidia_layers.json,type=bind,consistency=cached",
         // Isaac
         "source=${localEnv:HOME}/docker/isaac-sim/cache/kit,target=/isaac-sim/kit/cache/Kit,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/ov,target=/root/.cache/ov,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/pip,target=/root/.cache/pip,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/glcache,target=/root/.cache/nvidia/GLCache,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/computecache,target=/root/.nv/ComputeCache,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/logs,target=/root/.nvidia-omniverse/logs,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/ov,target=/edna/.cache/ov,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/pip,target=/edna/.cache/pip,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/glcache,target=/edna/.cache/nvidia/GLCache,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/cache/computecache,target=/edna/.nv/ComputeCache,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/logs,target=/edna/.nvidia-omniverse/logs,type=bind",
         "source=${localEnv:HOME}/docker/isaac-sim/logs-kit,target=/isaac-sim/kit/logs,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/config,target=/root/.nvidia-omniverse/config,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/data,target=/root/.local/share/ov/data,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/documents,target=/root/Documents,type=bind"
+        "source=${localEnv:HOME}/docker/isaac-sim/config,target=/edna/.nvidia-omniverse/config,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/data,target=/edna/.local/share/ov/data,type=bind",
+        "source=${localEnv:HOME}/docker/isaac-sim/documents,target=/edna/Documents,type=bind"
     ],
     "runArgs": [
         "--runtime=nvidia",
@@ -44,5 +45,5 @@
         }
     },
     "privileged": true,
-    "remoteUser": "vscode"
+    "remoteUser": "edna"
 }

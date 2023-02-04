@@ -18,7 +18,7 @@
 
 <robot name="stereolabs_camera" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="camera_name"   default="zed" />
-  <xacro:arg name="camera_model"  default="zed" />
+  <xacro:arg name="camera_model"  default="zed2i" />
   <xacro:arg name="base_frame"    default="base_link" />
   <xacro:arg name="cam_pos_x"     default="0.0" />
   <xacro:arg name="cam_pos_y"     default="0.0" />
@@ -27,10 +27,12 @@
   <xacro:arg name="cam_pitch"     default="0.0" />
   <xacro:arg name="cam_yaw"       default="0.0" />
 
+
   <xacro:include filename="$(find zed_wrapper)/urdf/zed_macro.urdf.xacro" />
   <xacro:zed_camera name="$(arg camera_name)" model="$(arg camera_model)" parent="$(arg base_frame)">
     <origin xyz="$(arg cam_pos_x) $(arg cam_pos_y) $(arg cam_pos_z)" rpy="$(arg cam_roll) $(arg cam_pitch) $(arg cam_yaw)" />
   </xacro:zed_camera>
+
 
   <link name="$(arg base_frame)" />
 </robot>
