@@ -239,14 +239,53 @@ namespace swerve_controller
       if (rear_right_position < 0.0){
           rear_right_position += 2.0 * M_PI;
       }
+
+
+       // Convert current hardware positions to 0-2pi
+      auto front_left_current_pos_abs = front_left_current_pos;
+      if (front_left_current_pos_abs < 0.0){
+          front_left_current_pos_abs += 2.0 * M_PI;
+      }
+      auto front_right_current_pos_abs = front_right_current_pos;
+      if (front_right_current_pos_abs < 0.0){
+          front_right_current_pos_abs += 2.0 * M_PI;
+      }
+      auto rear_left_current_pos_abs = rear_left_current_pos;
+      if (rear_left_current_pos_abs < 0.0){
+          rear_left_current_pos_abs += 2.0 * M_PI;
+      }
+      auto rear_right_current_pos_abs = rear_right_current_pos;
+      if (rear_right_current_pos_abs < 0.0){
+          rear_right_current_pos_abs += 2.0 * M_PI;
+      }
+
+
+
       RCLCPP_INFO(logger, "current_front_right_position: %f", front_right_current_pos);
       RCLCPP_INFO(logger, "target_front_right_position: %f", front_right_position);
       // RCLCPP_INFO(logger, "front_left_current_position: %f", front_left_current_pos);
       // Set Wheel Velocities
-      front_left_axle_command_handle_->set_position(front_left_position);
-      front_right_axle_command_handle_->set_position(front_right_position);
-      rear_left_axle_command_handle_->set_position(rear_left_position);
-      rear_right_axle_command_handle_->set_position(rear_right_position);
+      if (front_left_velocity == 0.0) {
+        front_left_axle_command_handle_->set_position(front_left_current_pos_abs);
+      } else {
+        front_left_axle_command_handle_->set_position(front_left_position);
+      }
+      if (front_right_velocity == 0.0) {
+        front_right_axle_command_handle_->set_position(front_right_current_pos_abs);
+      } else {
+        front_right_axle_command_handle_->set_position(front_right_position);
+      }
+      if (rear_left_velocity == 0.0) {
+        rear_left_axle_command_handle_->set_position(rear_left_current_pos_abs);
+      } else {
+        rear_left_axle_command_handle_->set_position(rear_left_position);
+      }
+      if (rear_right_velocity == 0.0) {
+        rear_right_axle_command_handle_->set_position(rear_right_current_pos_abs);
+      } else {
+        rear_right_axle_command_handle_->set_position(rear_right_position);
+      }
+
       front_left_wheel_command_handle_->set_velocity(front_left_velocity);
       front_right_wheel_command_handle_->set_velocity(front_right_velocity);
       rear_left_wheel_command_handle_->set_velocity(rear_left_velocity);
