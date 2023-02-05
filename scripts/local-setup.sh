@@ -12,7 +12,10 @@ sudo apt-get install \
     ca-certificates \
     curl \
     gnupg-agent \
-    software-properties-common
+    software-properties-common \
+    git-lfs
+
+git lfs install
 
 echo "Installing DOCKER"
 curl https://get.docker.com | sh \
