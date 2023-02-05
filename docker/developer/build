@@ -1,7 +1,7 @@
 #!/bin/bash
 
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
-IMAGE_NAME="edna:latest"
+IMAGE_NAME="developer-environment:2023"
 
 docker build -t $GITHUB_REGISTRY/$IMAGE_NAME --cache-from $GITHUB_REGISTRY/$IMAGE_NAME .
 
