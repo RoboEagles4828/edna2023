@@ -11,7 +11,8 @@
         "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
         "OMNI_USER": "admin",
         "OMNI_PASS": "admin",
-        "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0"
+        "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0",
+        "FASTRTPS_DEFAULT_PROFILES_FILE": "/usr/local/share/middleware_profiles/rtps_udp_profile.xml"
     },
     "remoteEnv": {
         "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}" 
@@ -29,9 +30,10 @@
     "mounts": [
         "source=${localEnv:XAUTHORITY},target=/home/edna/.Xauthority,type=bind", // X11
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind", // docker
-        "source=/dev/shm,target=/dev/shm,type=bind" // shared memory
     ],
     "runArgs": [
+        "-v",
+        "/dev/*:/dev/*",
         "--runtime=nvidia",
         "--gpus", "all",
         "--network=host",
