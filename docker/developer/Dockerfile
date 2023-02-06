@@ -18,6 +18,15 @@ COPY install-scripts/install-common /opt/install-scripts/install-common
 RUN chmod +x /opt/install-scripts/install-common
 RUN /opt/install-scripts/install-common
 
+##############
+# Docker CLI #
+##############
+
+# Copy and isntall docker
+COPY install-scripts/install-docker /opt/install-scripts/install-docker
+RUN chmod +x /opt/install-scripts/install-docker
+RUN /opt/install-scripts/install-docker
+
 ######################
 # User configuration #
 ######################
@@ -50,6 +59,10 @@ RUN if [ ! $(getent passwd ${USERNAME}) ]; then \
 RUN echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME} \
     && adduser ${USERNAME} video && adduser ${USERNAME} sudo
+
+# Add docker group
+RUN groupadd --system docker
+RUN usermod -aG docker ${USERNAME}
 
 ENV USERNAME=${USERNAME}
 ENV USER_GID=${USER_GID}

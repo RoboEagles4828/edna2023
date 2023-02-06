@@ -102,7 +102,22 @@ install_debian_packages() {
     # Clean up
     apt-get -y clean 
     rm -rf /var/lib/apt/lists/*
+    PACKAGES_ALREADY_INSTALLED="true"
 }
+
+
+# Let the feature know that some actions have already been done
+MARKER_FILE="/usr/local/etc/vscode-dev-containers/common"
+if [ ! -d "/usr/local/etc/vscode-dev-containers" ]; then
+    mkdir -p "$(dirname "${MARKER_FILE}")"
+fi
+
+echo -e "\
+    PACKAGES_ALREADY_INSTALLED=${PACKAGES_ALREADY_INSTALLED}\n\
+    LOCALE_ALREADY_SET=${LOCALE_ALREADY_SET}\n\
+    EXISTING_NON_ROOT_USER=${EXISTING_NON_ROOT_USER}\n\
+    RC_SNIPPET_ALREADY_ADDED=${RC_SNIPPET_ALREADY_ADDED}\n\
+    ZSH_ALREADY_INSTALLED=${ZSH_ALREADY_INSTALLED}" > "${MARKER_FILE}"
 
 install_debian_packages
 echo "Done!"

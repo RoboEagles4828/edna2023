@@ -6,6 +6,7 @@ if [[ -z "$hasDriver" ]]; then
   exit 1
 fi
 
+echo "Installing common packages"
 sudo apt-get update
 sudo apt-get install \
     apt-transport-https \
