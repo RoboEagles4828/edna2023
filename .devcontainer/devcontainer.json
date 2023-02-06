@@ -12,6 +12,9 @@
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0"
     },
+    "remoteEnv": {
+        "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}" 
+    },
     "features": {
         "ghcr.io/devcontainers/features/common-utils:2": {
             "configureZshAsDefaultShell": true,
