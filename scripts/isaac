@@ -8,7 +8,19 @@ CMD=${@:-$DEFAULT_CMD}
 SCRIPT_DIR=$( dirname "${BASH_SOURCE[0]}")
 source $SCRIPT_DIR/config/nvidia_driver_config
 
+if [[ "$1" == "stop" ]]; then
+    docker stop $CONTAINTER_NAME > /dev/null 2>&1
+    exit 0
+fi
+
+if [[ "$1" == "rm" ]]; then
+    docker stop $CONTAINTER_NAME > /dev/null 2>&1
+    docker rm $CONTAINTER_NAME > /dev/null 2>&1
+    exit 0
+fi
+
 launch_isaac() {
+    extension_name="omni.isaac.swerve_bot"
     docker run -d -t \
     --name $CONTAINTER_NAME \
     --entrypoint "" \
@@ -25,6 +37,7 @@ launch_isaac() {
     -v ${nvidia_icd}:/etc/vulkan/icd.d/nvidia_icd.json \
     -v ${_10_nvidia}:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
     -v ${WORKSPACE_LOCAL_PATH}/scripts/config/omniverse.toml:/root/.nvidia-omniverse/config/omniverse.toml:rw \
+    -v ${WORKSPACE_LOCAL_PATH}/isaac/:/root/isaac/:rw \
     -v ${ISAAC_LOCAL_STORAGE}/../../.Xauthority:/root/.Xauthority:rw \
     -v ${ISAAC_LOCAL_STORAGE}/cache/kit:/isaac-sim/kit/cache/Kit:rw \
     -v ${ISAAC_LOCAL_STORAGE}/cache/ov:/root/.cache/ov:rw \
