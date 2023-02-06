@@ -3,3 +3,4 @@ install
 log
 c_cpp_properties.json
 __pycache__
+nvidia_driver_config

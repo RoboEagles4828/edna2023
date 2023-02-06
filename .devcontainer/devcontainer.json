@@ -2,12 +2,13 @@
     "name": "edna",
     "image": "ghcr.io/roboeagles4828/developer-environment:2023",
     "containerEnv": {
-        "ACCEPT_EULA": "Y",
         "DISPLAY": "${localEnv:DISPLAY}",
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
         "SHELL": "/usr/bin/zsh",
-        // Nucleus Config
+        "ACCEPT_EULA": "Y",
+        // Isaac and Nucleus Config
+        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
         "OMNI_USER": "admin",
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0"
@@ -28,7 +29,6 @@
     "mounts": [
         "source=${localEnv:XAUTHORITY},target=/home/edna/.Xauthority,type=bind", // X11
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind", // docker
-        "source=${localEnv:HOME}/docker/isaac-sim,target=/home/admin/docker/isaac-sim,type=bind" // isaac
     ],
     "runArgs": [
         "--runtime=nvidia",
@@ -40,6 +40,7 @@
     "customizations": {
         "vscode": {
             "extensions": [
+                "ms-azuretools.vscode-docker",
                 "ms-iot.vscode-ros"
             ]
         }
