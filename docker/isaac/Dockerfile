@@ -1,13 +1,4 @@
 FROM nvcr.io/nvidia/isaac-sim:2022.2.0
 
-ENV INSTALL_SCRIPT_DIR=/opt/install-scripts
-COPY install-scripts ${INSTALL_SCRIPT_DIR}
-COPY utility-scripts ${UTILITY_SCRIPT_DIR}
-
-ENV PATH="${UTILITY_SCRIPT_DIR}:${INSTALL_SCRIPT_DIR}:${PATH}"
-
-RUN install-common
-USER edna
-RUN install-ros2
-
-ENTRYPOINT [ "/bin/zsh" ]
+# Set ROS2 Humble as the default ROS Bridge
+RUN sed -i 's/ros_bridge/ros2_bridge-humble/' /isaac-sim/apps/omni.isaac.sim.base.kit

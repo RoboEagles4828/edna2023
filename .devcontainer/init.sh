@@ -3,7 +3,7 @@
 mkdir -p ~/docker/isaac-sim
 
 # Find nvidia and vulkan driver config files
-nvidia_driver_config_path="scripts/nvidia_driver_config"
+nvidia_driver_config_path="scripts/config/nvidia_driver_config"
 nvidia_layers=""
 nvidia_icd=""
 _10_nvidia=""

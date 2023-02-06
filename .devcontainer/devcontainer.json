@@ -7,7 +7,7 @@
         "NVIDIA_DRIVER_CAPABILITIES": "all",
         "SHELL": "/usr/bin/zsh",
         "ACCEPT_EULA": "Y",
-        // Isaac and Nucleus Config
+        "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
         "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
         "OMNI_USER": "admin",
         "OMNI_PASS": "admin",
