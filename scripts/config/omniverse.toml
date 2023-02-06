@@ -1,4 +1,6 @@
+
 [bookmarks]
+IsaacAssets = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.2.0/Isaac"
 edna = "/workspaces/edna2023"
 localhost = "omniverse://localhost"
 

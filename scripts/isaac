@@ -25,7 +25,8 @@ launch_isaac() {
     --name $CONTAINTER_NAME \
     --entrypoint "" \
     --gpus all \
-    --network=host \
+    --network=host -P \
+    --privileged \
     -e "ACCEPT_EULA=Y" \
     -e "OMNI_USER=$OMNI_USER" \
     -e "OMNI_PASS=$OMNI_PASS" \
@@ -33,6 +34,8 @@ launch_isaac() {
     -e "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES" \
     -e "NVIDIA_DRIVER_CAPABILITIES=$NVIDIA_DRIVER_CAPABILITIES" \
     -e "DISPLAY=$DISPLAY" \
+    -v /dev/shm:/dev/shm:rw \
+    -v /var/run/docker.sock:/var/run/docker.sock:rw \
     -v ${nvidia_layers}:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
     -v ${nvidia_icd}:/etc/vulkan/icd.d/nvidia_icd.json \
     -v ${_10_nvidia}:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
