@@ -40,7 +40,7 @@ launch_isaac() {
 
 # Check if an isaac container already exists
 if [ $( docker ps -a | grep $CONTAINTER_NAME | wc -l ) -gt 0 ]; then
-    status=$( docker ps -a -f name=$CONTAINTER_NAME | grep $CONTAINTER_NAME | awk '{ print $8 }' )
+    status=$( docker ps -a -f name=$CONTAINTER_NAME | grep $CONTAINTER_NAME | awk '{ print $5 }' ) # TODO: Make this check better
     if [[ "$status" == "Exited" ]]; then
         docker start $CONTAINTER_NAME > /dev/null 2>&1
     fi
