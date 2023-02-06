@@ -40,8 +40,8 @@ launch_isaac() {
 
 # Check if an isaac container already exists
 if [ $( docker ps -a | grep $CONTAINTER_NAME | wc -l ) -gt 0 ]; then
-    status=$( docker ps -a -f name=$CONTAINTER_NAME | grep $CONTAINTER_NAME | awk '{ print $5 }' ) # TODO: Make this check better
-    if [[ "$status" == "Exited" ]]; then
+    status=$( docker container inspect -f '{{.State.Running}}' $CONTAINTER_NAME )
+    if [[ "$status" == "false" ]]; then
         docker start $CONTAINTER_NAME > /dev/null 2>&1
     fi
     docker exec -it $CONTAINTER_NAME $CMD
@@ -51,6 +51,5 @@ else
     docker exec -it $CONTAINTER_NAME $CMD
 fi
 
-# After execution, stop the container
-echo "Stopping isaac..."
-docker stop $CONTAINTER_NAME > /dev/null 2>&1 &
+# echo "Stopping isaac..."
+# docker stop $CONTAINTER_NAME > /dev/null 2>&1 &
