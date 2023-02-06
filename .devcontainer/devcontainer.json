@@ -27,7 +27,8 @@
     "initializeCommand": "./.devcontainer/init.sh",
     "mounts": [
         "source=${localEnv:XAUTHORITY},target=/home/edna/.Xauthority,type=bind", // X11
-        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" // docker
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind", // docker
+        "source=${localEnv:HOME}/docker/isaac-sim,target=/home/admin/docker/isaac-sim,type=bind" // isaac
     ],
     "runArgs": [
         "--runtime=nvidia",
