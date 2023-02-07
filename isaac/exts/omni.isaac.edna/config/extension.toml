@@ -5,8 +5,8 @@ order = 0
 [package]
 version = "1.0.0"
 category = "Simulation"
-title = "Swerve Bot"
-description = "Extension for running swerve bot in Isaac Sim"
+title = "edna"
+description = "Extension for running edna in Isaac Sim"
 authors = ["Gage Miller, Nitin C"]
 repository = ""
 keywords = ["isaac", "samples", "manipulation"]
@@ -39,7 +39,7 @@ writeTarget.kit = true
 
 
 [[python.module]]
-name = "omni.isaac.swerve_bot.import_bot"
+name = "omni.isaac.edna.import_bot"
 
 [[test]]
 timeout = 960

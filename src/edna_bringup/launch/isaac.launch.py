@@ -26,8 +26,8 @@ def generate_launch_description():
     rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
 
     # Save Built URDF file to Description Directory
-    description_source_code_path = os.path.abspath(os.path.join(description_pkg_path, "../../../../src/edna_description"))
-    urdf_save_path = os.path.join(description_source_code_path, "swerve.urdf")
+    description_source_code_path = os.path.abspath(os.path.join(description_pkg_path, "../../../../isaac/exts/omni.isaac.edna/omni/isaac/edna"))
+    urdf_save_path = os.path.join(description_source_code_path, "edna.urdf")
     with open(urdf_save_path, 'w') as f:
         f.write(edna_description_xml)
 

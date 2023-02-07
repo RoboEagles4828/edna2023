@@ -1,7 +1,7 @@
 from omni.isaac.core.utils.stage import add_reference_to_stage
 import omni.graph.core as og
 import omni.usd
-from omni.isaac.swerve_bot.base_sample import BaseSample
+from omni.isaac.edna.base_sample import BaseSample
 from omni.isaac.urdf import _urdf
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils import prims

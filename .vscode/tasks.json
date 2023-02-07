@@ -11,6 +11,8 @@
 				"zed_components",
 				"zed_wrapper",
 				"zed_display_rviz2",
+				"zed_interfaces",
+				"rviz_plugin_zed_od",
 				"--base-paths",
 				"${workspaceFolder}",
 			],

@@ -7,20 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import os
-from omni.isaac.swerve_bot.base_sample import BaseSampleExtension
-from omni.isaac.swerve_bot.import_bot.import_bot import ImportBot
+from omni.isaac.edna.base_sample import BaseSampleExtension
+from omni.isaac.edna.import_bot.import_bot import ImportBot
 
 
 class ImportBotExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
         super().start_extension(
-            menu_name="Swerve Bot",
+            menu_name="Edna FRC",
             submenu_name="",
             name="Import URDF",
-            title="Load the URDF for Swerve Bot",
+            title="Load the URDF for Edna FRC 2023 Robot",
             doc_link="",
-            overview="This loads the Swerve bot into Isaac Sim.",
+            overview="This loads the Edna robot into Isaac Sim.",
             file_path=os.path.abspath(__file__),
             sample=ImportBot(),
         )
