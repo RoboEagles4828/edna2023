@@ -1,49 +1,51 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/edna:latest",
+    "image": "ghcr.io/roboeagles4828/developer-environment:2023",
     "containerEnv": {
-        "ACCEPT_EULA": "Y",
         "DISPLAY": "${localEnv:DISPLAY}",
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
-        // Nucleus Config
+        "SHELL": "/usr/bin/zsh",
+        "ACCEPT_EULA": "Y",
+        "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
+        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
         "OMNI_USER": "admin",
         "OMNI_PASS": "admin",
-        "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0"
+        "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0",
+        "FASTRTPS_DEFAULT_PROFILES_FILE": "/usr/local/share/middleware_profiles/rtps_udp_profile.xml"
     },
+    "remoteEnv": {
+        "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}" 
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "configureZshAsDefaultShell": true,
+            "upgradePackages": false,
+            "username": "admin"
+        }
+    },
+    "remoteUser": "admin",
+    "postCreateCommand": "./.devcontainer/postCreate.sh",
     "initializeCommand": "./.devcontainer/init.sh",
     "mounts": [
-        // X11
-        "source=${localEnv:XAUTHORITY},target=/home/edna/.Xauthority,type=bind",
-        // Vulkan
-        "source=/usr/share/glvnd/egl_vendor.d/10_nvidia.json,target=/usr/share/glvnd/egl_vendor.d/10_nvidia.json,type=bind,consistency=cached",
-        "source=/usr/share/vulkan/icd.d/nvidia_icd.json,target=/usr/share/vulkan/icd.d/nvidia_icd.json,type=bind,consistency=cached",
-        "source=/usr/share/vulkan/implicit_layer.d/nvidia_layers.json,target=/usr/share/vulkan/implicit_layer.d/nvidia_layers.json,type=bind,consistency=cached",
-        // Isaac
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/kit,target=/isaac-sim/kit/cache/Kit,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/ov,target=/edna/.cache/ov,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/pip,target=/edna/.cache/pip,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/glcache,target=/edna/.cache/nvidia/GLCache,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/cache/computecache,target=/edna/.nv/ComputeCache,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/logs,target=/edna/.nvidia-omniverse/logs,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/logs-kit,target=/isaac-sim/kit/logs,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/config,target=/edna/.nvidia-omniverse/config,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/data,target=/edna/.local/share/ov/data,type=bind",
-        "source=${localEnv:HOME}/docker/isaac-sim/documents,target=/edna/Documents,type=bind"
+        "source=${localEnv:XAUTHORITY},target=/home/edna/.Xauthority,type=bind", // X11
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind", // docker
     ],
     "runArgs": [
+        "-v",
+        "/dev/*:/dev/*",
         "--runtime=nvidia",
         "--gpus", "all",
         "--network=host",
         "--name=edna"
     ],
+    "privileged": true,
     "customizations": {
         "vscode": {
             "extensions": [
+                "ms-azuretools.vscode-docker",
                 "ms-iot.vscode-ros"
             ]
         }
-    },
-    "privileged": true,
-    "remoteUser": "edna"
+    }
 }
