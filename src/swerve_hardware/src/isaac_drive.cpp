@@ -286,5 +286,5 @@ hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const
 
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(Ca
+PLUGINLIB_EXPORT_CLASS(
   swerve_hardware::IsaacDriveHardware, hardware_interface::SystemInterface)
