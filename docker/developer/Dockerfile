@@ -27,6 +27,15 @@ COPY install-scripts/install-docker /opt/install-scripts/install-docker
 RUN chmod +x /opt/install-scripts/install-docker
 RUN /opt/install-scripts/install-docker
 
+####################
+# ROS Dependencies #
+####################
+
+# Copy and isntall docker
+COPY install-scripts/install-ros-deps /opt/install-scripts/install-ros-deps
+RUN chmod +x /opt/install-scripts/install-ros-deps
+RUN /opt/install-scripts/install-ros-deps
+
 ######################
 # User configuration #
 ######################
