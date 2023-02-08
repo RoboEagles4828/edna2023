@@ -29,7 +29,7 @@
 using std::placeholders::_1;
 namespace swerve_hardware
 {
-  CallbackReturn RealDriveHardware::on_init(const hardware_interface::HardwareInfo &info)
+  hardware_interface::CallbackReturn RealDriveHardware::on_init(const hardware_interface::HardwareInfo &info)
   {
 
     // rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_default;
@@ -59,9 +59,9 @@ namespace swerve_hardware
       });
 
     // INTERFACE SETUP
-    if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
+    if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
     {
-      return CallbackReturn::ERROR;
+      return hardware_interface::CallbackReturn::ERROR;
     }
 
     hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -78,7 +78,7 @@ namespace swerve_hardware
       //       rclcpp::get_logger("RealDriveHardware"),
       //       "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
       //       joint.command_interfaces.size());
-      //   return CallbackReturn::ERROR;
+      //   return hardware_interface::CallbackReturn::ERROR;
       // }
       // if (joint.command_interfaces.size() != 2 && (joint.name.find("axle")))
       // {
@@ -86,7 +86,7 @@ namespace swerve_hardware
       //       rclcpp::get_logger("RealDriveHardware"),
       //       "Joint '%s' has %zu command interfaces found. 2 expected.", joint.name.c_str(),
       //       joint.command_interfaces.size());
-      //   return CallbackReturn::ERROR;
+      //   return hardware_interface::CallbackReturn::ERROR;
       // }
 
       if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY && joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION)
@@ -95,7 +95,7 @@ namespace swerve_hardware
             rclcpp::get_logger("RealDriveHardware"),
             "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
             joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-        return CallbackReturn::ERROR;
+        return hardware_interface::CallbackReturn::ERROR;
       }
 
       if (joint.state_interfaces.size() != 2)
@@ -104,7 +104,7 @@ namespace swerve_hardware
             rclcpp::get_logger("RealDriveHardware"),
             "Joint '%s' has %zu state interface. 2 expected.", joint.name.c_str(),
             joint.state_interfaces.size());
-        return CallbackReturn::ERROR;
+        return hardware_interface::CallbackReturn::ERROR;
       }
 
       if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
@@ -113,7 +113,7 @@ namespace swerve_hardware
             rclcpp::get_logger("RealDriveHardware"),
             "Joint '%s' have '%s' as first state interface. '%s' expected.", joint.name.c_str(),
             joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
-        return CallbackReturn::ERROR;
+        return hardware_interface::CallbackReturn::ERROR;
       }
 
       if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
@@ -122,11 +122,11 @@ namespace swerve_hardware
             rclcpp::get_logger("RealDriveHardware"),
             "Joint '%s' have '%s' as second state interface. '%s' expected.", joint.name.c_str(),
             joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-        return CallbackReturn::ERROR;
+        return hardware_interface::CallbackReturn::ERROR;
       }
     }
 
-    return CallbackReturn::SUCCESS;
+    return hardware_interface::CallbackReturn::SUCCESS;
   }
 
   std::vector<hardware_interface::StateInterface> RealDriveHardware::export_state_interfaces()
@@ -171,7 +171,7 @@ namespace swerve_hardware
     return command_interfaces;
   }
 
-  CallbackReturn RealDriveHardware::on_activate(
+  hardware_interface::CallbackReturn RealDriveHardware::on_activate(
       const rclcpp_lifecycle::State & /*previous_state*/)
   {
     RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Activating ...please wait...");
@@ -197,23 +197,23 @@ namespace swerve_hardware
 
     RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Successfully activated!");
 
-    return CallbackReturn::SUCCESS;
+    return hardware_interface::CallbackReturn::SUCCESS;
   }
 
-  CallbackReturn RealDriveHardware::on_deactivate(
+  hardware_interface::CallbackReturn RealDriveHardware::on_deactivate(
       const rclcpp_lifecycle::State & /*previous_state*/)
   {
     RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Deactivating ...please wait...");
     subscriber_is_active_ = false;
     RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Successfully deactivated!");
 
-    return CallbackReturn::SUCCESS;
+    return hardware_interface::CallbackReturn::SUCCESS;
   }
 
   // ||                        ||
   // \/ THE STUFF THAT MATTERS \/
 
-  hardware_interface::return_type RealDriveHardware::read()
+  hardware_interface::return_type RealDriveHardware::read(const rclcpp::Time & time, const rclcpp::Duration & period)
   {
     rclcpp::spin_some(node_);
     std::shared_ptr<sensor_msgs::msg::JointState> last_command_msg;
@@ -249,7 +249,7 @@ namespace swerve_hardware
     return hardware_interface::return_type::OK;
   }
 
-  hardware_interface::return_type swerve_hardware::RealDriveHardware::write()
+  hardware_interface::return_type swerve_hardware::RealDriveHardware::write(const rclcpp::Time & time, const rclcpp::Duration & period)
   {
     // Publish Velocity and Position
     if (realtime_real_publisher_->trylock())
