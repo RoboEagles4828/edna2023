@@ -9,4 +9,5 @@ echo "export ROS_DOMAIN_ID=0" >> ~/.zshrc
 sudo apt-get update
 rosdep update --rosdistro=humble
 
-# sudo chown root:docker /var/run/docker.sock
+# Take ownership of docker.socket
+sudo chown root:docker /var/run/docker.sock

@@ -28,8 +28,8 @@
     "postCreateCommand": "./.devcontainer/postCreate.sh",
     "initializeCommand": "./.devcontainer/init.sh",
     "mounts": [
-        "source=${localEnv:XAUTHORITY},target=/home/edna/.Xauthority,type=bind", // X11
-        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind", // docker
+        "source=${localEnv:HOME}/.Xauthority,target=/root/.Xauthority,type=bind", // X11
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" // docker
     ],
     "runArgs": [
         "-v",
