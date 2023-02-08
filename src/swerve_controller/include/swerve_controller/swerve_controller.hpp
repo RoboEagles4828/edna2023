@@ -36,12 +36,10 @@
 #include "realtime_tools/realtime_box.h"
 #include "realtime_tools/realtime_buffer.h"
 #include "realtime_tools/realtime_publisher.h"
-#include <hardware_interface/loaned_command_interface.hpp>
+#include "hardware_interface/loaned_command_interface.hpp"
 
 namespace swerve_controller
 {
-using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-
 
 class Wheel {
   public:
@@ -94,25 +92,25 @@ public:
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_init() override;
+  controller_interface::CallbackReturn on_init() override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_error(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_error(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
 
 protected:
   std::shared_ptr<Wheel> get_wheel(const std::string & wheel_name);
