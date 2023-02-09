@@ -5,6 +5,7 @@ from omni.isaac.edna.base_sample import BaseSample
 from omni.isaac.urdf import _urdf
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils import prims
+from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.kit.viewport_legacy import get_default_viewport_window
 from pxr import UsdPhysics
@@ -26,19 +27,65 @@ class ImportBot(BaseSample):
         super().__init__()
         return
 
+    
+
     def setup_scene(self):
-        world =     self.get_world()
+        world = self.get_world()
+        world.get_physics_context().enable_gpu_dynamics(True)
+        self.setup_field()
+
         world.scene.add_default_ground_plane()
         # self.setup_perspective_cam()
         self.setup_world_action_graph()
         return
+   
+    def setup_field(self):
+        world = self.get_world()
+        self.extension_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
+        field = os.path.join(self.project_root_path, "assets/2023_field/FE-2023.usd")
+        add_reference_to_stage(usd_path=field,prim_path="/World/Field")
+        cone = os.path.join(self.project_root_path, "assets/2023_field/parts/GE-23700_JFH.usd")
+        cube = os.path.join(self.project_root_path, "assets/2023_field/parts/GE-23701_JFL.usd")
+        # chargestation = os.path.join(self.project_root_path, "assets/2023_field/charge_station.usd")
+        # add_reference_to_stage(chargestation, "/World/ChargeStation_1")
+        # add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
+        add_reference_to_stage(cone, "/World/Cone_1")
+        add_reference_to_stage(cone, "/World/Cone_2")
+        add_reference_to_stage(cone, "/World/Cone_3")
+        add_reference_to_stage(cone, "/World/Cone_4")
+        # add_reference_to_stage(cone, "/World/Cone_5")
+        # add_reference_to_stage(cone, "/World/Cone_6")
+        # add_reference_to_stage(cone, "/World/Cone_7")
+        # add_reference_to_stage(cone, "/World/Cone_8")
+        cone_1 = GeometryPrim("/World/Cone_1","cone_1_view",position=np.array([1.20298,-0.56861,0.0]))
+        cone_2 = GeometryPrim("/World/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0]))
+        cone_3 = GeometryPrim("/World/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0]))
+        cone_4 = GeometryPrim("/World/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0]))
+        # chargestation_1 = GeometryPrim("/World/ChargeStation_1","cone_3_view",position=np.array([-4.20298,-0.56861,0.0]))
+        # chargestation_2 = GeometryPrim("/World/ChargeStation_2","cone_4_view",position=np.array([4.20298,0.56861,0.0]))
+        
+
+        add_reference_to_stage(cube, "/World/Cube_1")
+        add_reference_to_stage(cube, "/World/Cube_2")
+        add_reference_to_stage(cube, "/World/Cube_3")
+        add_reference_to_stage(cube, "/World/Cube_4")
+        # add_reference_to_stage(cube, "/World/Cube_5")
+        # add_reference_to_stage(cube, "/World/Cube_6")
+        # add_reference_to_stage(cube, "/World/Cube_7")
+        # add_reference_to_stage(cube, "/World/Cube_8")
+        cube_1 = GeometryPrim("/World/Cube_1","cube_1_view",position=np.array([1.20298,0.65059,0.121]))
+        cube_2 = GeometryPrim("/World/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121]))
+        cube_3 = GeometryPrim("/World/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121]))
+        cube_4 = GeometryPrim("/World/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121]))
 
     async def setup_post_load(self):
         self._world = self.get_world()
+        # self._world.get_physics_context().enable_gpu_dynamics(True)
         self.robot_name = "Swerve"
         self.extension_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
-        self.path_to_urdf = os.path.join(self.project_root_path, "src/swerve_description/swerve.urdf")
+        self.path_to_urdf = os.path.join(self.extension_path, "../../../../../../../..", "isaac/exts/omni.isaac.edna/omni/isaac/edna/import_bot/edna.urdf")
         carb.log_info(self.path_to_urdf)
 
         self._robot_prim_path = self.import_robot(self.path_to_urdf)
@@ -51,8 +98,7 @@ class ImportBot(BaseSample):
         self._robot_prim = self._world.scene.add(
             Robot(prim_path=self._robot_prim_path, name=self.robot_name, position=np.array([0.0, 0.0, 0.3]))
         )
-        add_reference_to_stage("/home/nitin/Documents/2023RobotROS/Swervesim/sim_assets/2023_field/FE-2023.usd", "/World/Field")
-
+        
         self.configure_robot(self._robot_prim_path)
         return
     
@@ -93,18 +139,20 @@ class ImportBot(BaseSample):
         front_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint"), "angular")
         rear_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint"), "angular")
         rear_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint"), "angular")
+        # base = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/base_link/swerve_chassis_joint"), "angular")
         # set_drive_params(front_left_axle, 10000000.0, 100000.0, 98.0)
         # set_drive_params(front_right_axle, 10000000.0, 100000.0, 98.0)
         # set_drive_params(rear_left_axle, 10000000.0, 100000.0, 98.0)
         # set_drive_params(rear_right_axle, 10000000.0, 100000.0, 98.0)
-        set_drive_params(front_left_axle, 0, math.radians(1e5), 98.0)
-        set_drive_params(front_right_axle, 0, math.radians(1e5), 98.0)
-        set_drive_params(rear_left_axle, 0, math.radians(1e5), 98.0)
-        set_drive_params(rear_right_axle, 0, math.radians(1e5), 98.0)       
-        set_drive_params(front_left_wheel, 0, math.radians(1e5), 98.0)
-        set_drive_params(front_right_wheel, 0, math.radians(1e5), 98.0)
-        set_drive_params(rear_left_wheel, 0, math.radians(1e5), 98.0)
-        set_drive_params(rear_right_wheel, 0, math.radians(1e5), 98.0)
+        set_drive_params(front_left_axle, 1, 1000, 98.0)
+        set_drive_params(front_right_axle, 1, 1000, 98.0)
+        set_drive_params(rear_left_axle, 1, 1000, 98.0)
+        set_drive_params(rear_right_axle, 1, 1000, 98.0)       
+        set_drive_params(front_left_wheel, 1, 1000, 98.0)
+        set_drive_params(front_right_wheel, 1, 1000, 98.0)
+        set_drive_params(rear_left_wheel, 1, 1000, 98.0)
+        set_drive_params(rear_right_wheel, 1, 1000, 98.0)
+        # set_drive_params(base,1,1000,98.0)
         #self.create_lidar(robot_prim_path)
         #self.create_depth_camera()
         self.setup_robot_action_graph(robot_prim_path)
