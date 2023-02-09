@@ -241,6 +241,8 @@ hardware_interface::return_type IsaacDriveHardware::read(const rclcpp::Time & ti
         {
           hw_positions_[i] = positions[j];
           hw_velocities_[i] = (float)velocities[j];
+          // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Velocity: %f", hw_velocities_[i]);
+          // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "Position: %f", hw_positions_[i]);
         }
       }
     }
@@ -262,6 +264,7 @@ hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const
     realtime_isaac_command_.header.stamp = node_->get_clock()->now();
     realtime_isaac_command_.name = joint_names_velocity_;
     realtime_isaac_command_.velocity = hw_command_velocity_;
+    // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "SEND Velocity: %f", hw_command_velocity_[0]);
     realtime_isaac_command_.position = empty_;
     realtime_isaac_publisher_->unlockAndPublish();
   }

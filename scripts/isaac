@@ -40,7 +40,7 @@ launch_isaac() {
     -v ${nvidia_icd}:/etc/vulkan/icd.d/nvidia_icd.json \
     -v ${_10_nvidia}:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
     -v ${WORKSPACE_LOCAL_PATH}/scripts/config/omniverse.toml:/root/.nvidia-omniverse/config/omniverse.toml:rw \
-    -v ${WORKSPACE_LOCAL_PATH}/isaac/:/root/isaac/:rw \
+    -v ${WORKSPACE_LOCAL_PATH}/:/root/edna/:rw \
     -v ${ISAAC_LOCAL_STORAGE}/../../.Xauthority:/root/.Xauthority:rw \
     -v ${ISAAC_LOCAL_STORAGE}/cache/kit:/isaac-sim/kit/cache/Kit:rw \
     -v ${ISAAC_LOCAL_STORAGE}/cache/ov:/root/.cache/ov:rw \

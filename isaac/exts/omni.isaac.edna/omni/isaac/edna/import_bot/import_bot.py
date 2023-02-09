@@ -85,7 +85,7 @@ class ImportBot(BaseSample):
         self.robot_name = "Swerve"
         self.extension_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
-        self.path_to_urdf = os.path.join(self.extension_path, "../../../../../../../..", "isaac/exts/omni.isaac.edna/omni/isaac/edna/import_bot/edna.urdf")
+        self.path_to_urdf = os.path.join(self.extension_path, "../../../../../../../..", "src/edna_description/urdf/edna.urdf")
         carb.log_info(self.path_to_urdf)
 
         self._robot_prim_path = self.import_robot(self.path_to_urdf)
