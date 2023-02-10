@@ -18,3 +18,5 @@ echo "launch isaac    : Launch sim teleop code"
 echo "launch real     : Launch real teleop code"
 echo "restart-ros2    : restart ros2 daemon"
 echo "restart-ros2    : restart ros2 daemon"
+
+echo -e "\nctrl + shift + b  : Build"

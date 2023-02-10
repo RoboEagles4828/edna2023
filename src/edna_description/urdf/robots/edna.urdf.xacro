@@ -10,8 +10,6 @@
   <xacro:include filename="$(find edna_description)/urdf/util/materials.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/square_chassis.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/swerve_axle.xacro" />
-  <xacro:include filename="$(find edna_description)/urdf/parts/arm.xacro" />
-  <!-- <xacro:include filename="$(find edna_description)/urdf/parts/zed_macro.urdf.xacro" /> -->
 
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
