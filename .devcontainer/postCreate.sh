@@ -10,4 +10,4 @@ sudo apt-get update
 rosdep update --rosdistro=humble
 
 # Take ownership of docker.socket
-sudo chown root:docker /var/run/docker.sock
+# sudo chown root:docker /var/run/docker.sock
