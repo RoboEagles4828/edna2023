@@ -1,8 +1,0 @@
-#!/bin/bash
-cd ${ROS_ROOT}
-git clone https://github.com/RoboEagles4828/humble-focal-edna-deps.git
-mv humble-focal-edna-deps/src src && rm -rf humble-focal-edna-deps
-sudo apt update
-source ${ROS_ROOT}/setup.bash && 
-    rosdep install -y -r --ignore-src --from-paths src --rosdistro ${ROS_DISTRO} && 
-    colcon build --merge-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo && rm -rf src log build

@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "osrf/ros:humble-desktop",
+    "image": "ghcr.io/roboeagles4828/developer-environment:2023",
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
         "NVIDIA_VISIBLE_DEVICES": "all",
@@ -26,6 +26,7 @@
     },
     "remoteUser": "admin",
     "postCreateCommand": "./.devcontainer/postCreate.sh",
+    "postStartCommand": "./.devcontainer/postStart.sh",
     "initializeCommand": "./.devcontainer/init.sh",
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" // docker
