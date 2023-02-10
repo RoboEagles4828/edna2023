@@ -1,7 +1,7 @@
 #!/bin/bash
 git config devcontainers-theme.show-dirty 1
 sed -i 's/ZSH_THEME="devcontainers"/ZSH_THEME="eastwood"/' ~/.zshrc
-
+sudo chmod a+rw /dev/input/js*
 sudo mkdir -p /usr/local/share/middleware_profiles
 sudo cp /workspaces/edna2023/docker/developer/config/rtps_udp_profile.xml /usr/local/share/middleware_profiles/
 echo "source /opt/ros/humble/setup.zsh" >> ~/.zshrc
