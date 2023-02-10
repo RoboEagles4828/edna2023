@@ -11,7 +11,10 @@
 				"--base-paths",
 				"${workspaceFolder}",
 			],
-			"group": "build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 			"label": "Colcon: build"
 		}
 	]
