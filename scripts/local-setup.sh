@@ -20,8 +20,8 @@ sudo apt-get install \
     software-properties-common \
     git-lfs
 
-# Setup git lfs
-git lfs install
+# Git lfs for ros-isaac
+# git lfs install
 # Stop ubuntu pop ups that applications are not responding
 gsettings set org.gnome.mutter check-alive-timeout 60000
 
