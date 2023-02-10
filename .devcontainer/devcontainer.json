@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/developer-environment:2023",
+    "image": "osrf/ros:humble-desktop",
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
         "NVIDIA_VISIBLE_DEVICES": "all",
@@ -32,9 +32,9 @@
     ],
     "runArgs": [
         "-v",
-        "/dev/*:/dev/*",
-        "-v",
         "/root/.Xauthority:/root/.Xauthority",
+        "-v",
+        "/dev:/dev:rw",
         "--runtime=nvidia",
         "--gpus", "all",
         "--network=host",
