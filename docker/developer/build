@@ -3,6 +3,9 @@
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
 IMAGE_NAME="developer-environment:2023"
 
+rm -rf ./src
+cp -r ../../src .
+
 docker build -t $GITHUB_REGISTRY/$IMAGE_NAME --cache-from $GITHUB_REGISTRY/$IMAGE_NAME .
 
 echo "Build finished"
@@ -20,3 +23,5 @@ read PUSH
 if [ "$PUSH" = "y" ]; then
     docker push $GITHUB_REGISTRY/$IMAGE_NAME
 fi
+
+rm -rf src

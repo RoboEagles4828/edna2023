@@ -27,6 +27,16 @@ COPY install-scripts/install-docker /opt/install-scripts/install-docker
 RUN chmod +x /opt/install-scripts/install-docker
 RUN /opt/install-scripts/install-docker
 
+####################
+# Preload ROS Deps #
+####################
+
+# Copy and install workspace rosdeps
+COPY install-scripts/install-rosdeps /opt/install-scripts/install-rosdeps
+RUN chmod +x /opt/install-scripts/install-rosdeps
+COPY src /tmp/src
+RUN /opt/install-scripts/install-rosdeps
+
 ######################
 # User configuration #
 ######################

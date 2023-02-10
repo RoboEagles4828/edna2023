@@ -9,3 +9,4 @@ echo "export ROS_DOMAIN_ID=0" >> ~/.zshrc
 # Update
 sudo apt-get update
 rosdep update --rosdistro=humble
+rosdep install --from-paths src --ignore-src -r -y
