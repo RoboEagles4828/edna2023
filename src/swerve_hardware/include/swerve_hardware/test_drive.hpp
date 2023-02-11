@@ -65,10 +65,6 @@ private:
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
 
-  // Map for easy lookup name -> joint command value
-  std::map<std::string, uint> names_to_vel_cmd_map_;
-  std::map<std::string, uint> names_to_pos_cmd_map_;
-
   // The state vectors
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
@@ -76,6 +72,7 @@ private:
   // Joint name array will align with state and command interface array
   // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
   std::vector<std::string> joint_names_;
+  std::vector<std::string> joint_types_;
 };
 
 }  // namespace swerve_hardware

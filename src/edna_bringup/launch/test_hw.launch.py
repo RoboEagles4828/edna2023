@@ -25,7 +25,7 @@ def generate_launch_description():
     # Get paths to other config files
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
-    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic.config.yaml')
+    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-sim.config.yaml')
     rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
 
     # Create a robot_state_publisher node
@@ -52,7 +52,7 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
-    #Starts ROS2 Control Swerve Drive Controller
+    # Starts ROS2 Control Swerve Drive Controller
     swerve_drive_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",

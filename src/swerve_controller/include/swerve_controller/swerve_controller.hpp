@@ -52,25 +52,15 @@ class Wheel {
 };
 class Axle {
   public:
-    // Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> cmd_position_, 
-    //           std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position_,
-    //           std::string name);
-    Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_velocity_,std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_position_,std::reference_wrapper< const hardware_interface::LoanedStateInterface> state_position_,
+    Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_position_,std::reference_wrapper< const hardware_interface::LoanedStateInterface> state_position_,
                          std::string name);
-    void set_velocity(double command_velocity_);
     void set_position(double command_position_);
     double get_position (void);
 
   private:
-    // std::reference_wrapper<hardware_interface::LoanedCommandInterface> cmd_position_;
-    // std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position_;
-    // std::string name;
-    std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_velocity_;
     std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_position_;
     std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position_;
- 
     std::string name;
-
 };
 
 class SwerveController : public controller_interface::ControllerInterface
