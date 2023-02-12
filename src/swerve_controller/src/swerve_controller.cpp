@@ -61,6 +61,28 @@ namespace swerve_controller
     return state_position_.get().get_value();
   }
 
+  void optimize(double& target, const double& current, double& wheel_velocity) {
+    double target_copy = target;
+    double diff = target_copy - current;
+    if (diff >= M_PI) {
+      target_copy -= 2 * M_PI;
+    } else if (diff <= -M_PI) {
+      target_copy += 2 * M_PI;
+    }
+    diff = target_copy - current;
+    if(abs(diff) > M_PI / 2) {
+      // Get better position 180 degrees away
+      if (target < 0.0) {
+        target += M_PI;
+      } else {
+        target -= M_PI;
+      }
+      // Reverse direction
+      wheel_velocity *= -1.0;
+    }
+  }
+
+
   SwerveController::SwerveController() : controller_interface::ControllerInterface() {}
 
   controller_interface::CallbackReturn SwerveController::on_init()
@@ -151,6 +173,7 @@ namespace swerve_controller
     //   halt();
     // }
 
+    // INPUTS
     Twist command = *last_command_msg;
     double &linear_x_velocity_comand = command.twist.linear.x;
     double &linear_y_velocity_comand = command.twist.linear.y;
@@ -159,27 +182,47 @@ namespace swerve_controller
     double x_offset = wheel_params_.x_offset;
     double radius = wheel_params_.radius;
 
-    // Compute Wheel Velocities and Positions
-    const double a = linear_x_velocity_comand - angular_velocity_comand * x_offset / 2;
-    const double b = linear_x_velocity_comand + angular_velocity_comand * x_offset / 2;
-    const double c = linear_y_velocity_comand - angular_velocity_comand * x_offset / 2;
-    const double d = linear_y_velocity_comand + angular_velocity_comand * x_offset / 2;
-
     // get current wheel positions
     const double front_left_current_pos = front_left_axle_command_handle_->get_position();
     const double front_right_current_pos = front_right_axle_command_handle_->get_position();
     const double rear_left_current_pos = rear_left_axle_command_handle_->get_position();
     const double rear_right_current_pos = rear_right_axle_command_handle_->get_position();
 
-    double front_left_velocity = (sqrt(pow(b, 2) + pow(d, 2))) * (1 / (radius * M_PI));
-    double front_right_velocity = (sqrt(pow(b, 2) + pow(c, 2))) * (1 / (radius * M_PI));
-    double rear_left_velocity = (sqrt(pow(a, 2) + pow(d, 2))) * (1 / (radius * M_PI));
-    double rear_right_velocity = (sqrt(pow(a, 2) + pow(c, 2))) * (1 / (radius * M_PI));
+    // Compute Wheel Velocities and Positions
+    const double a = linear_y_velocity_comand - angular_velocity_comand * x_offset / 2;
+    const double b = linear_y_velocity_comand + angular_velocity_comand * x_offset / 2;
+    const double c = linear_x_velocity_comand - angular_velocity_comand * x_offset / 2;
+    const double d = linear_x_velocity_comand + angular_velocity_comand * x_offset / 2;
 
-    double front_left_position = atan2(b, d);
-    double front_right_position = atan2(b, c);
-    double rear_left_position = atan2(a, d);
-    double rear_right_position = atan2(a, c);
+    double front_left_velocity = (sqrt(pow(b, 2) + pow(c, 2))) * (1 / (radius * M_PI));
+    double front_right_velocity = (sqrt(pow(b, 2) + pow(d, 2))) * (1 / (radius * M_PI));
+    double rear_left_velocity = (sqrt(pow(a, 2) + pow(c, 2))) * (1 / (radius * M_PI));
+    double rear_right_velocity = (sqrt(pow(a, 2) + pow(d, 2))) * (1 / (radius * M_PI));
+
+    double front_left_position;
+    double front_right_position ;
+    double rear_left_position;
+    double rear_right_position;
+
+    // Make position current if no movement is given
+    if (abs(linear_x_velocity_comand) <= 0.1 && abs(linear_y_velocity_comand) <= 0.1 && abs(angular_velocity_comand) <= 0.1)
+    {
+      front_left_position = front_left_current_pos;
+      front_right_position = front_right_current_pos;
+      rear_left_position = rear_left_current_pos;
+      rear_right_position = rear_right_current_pos;
+    } else {
+      front_left_position = atan2(b, c);
+      front_right_position = atan2(b, d);
+      rear_left_position = atan2(a, c);
+      rear_right_position = atan2(a, d);
+
+      // Optimization
+      optimize(front_left_position, front_left_current_pos, front_left_velocity);
+      optimize(front_right_position, front_right_current_pos, front_right_velocity);
+      optimize(rear_left_position, rear_left_current_pos, rear_left_velocity);
+      optimize(rear_right_position, rear_right_current_pos, rear_right_velocity);
+    }
 
     front_left_wheel_command_handle_->set_velocity(front_left_velocity);
     front_right_wheel_command_handle_->set_velocity(front_right_velocity);
@@ -190,79 +233,6 @@ namespace swerve_controller
     front_right_axle_command_handle_->set_position(front_right_position);
     rear_left_axle_command_handle_->set_position(rear_left_position);
     rear_right_axle_command_handle_->set_position(rear_right_position);
-
-    // optimization
-    // if (abs(front_left_current_pos - front_left_position) > M_PI / 2) {
-    //   front_left_position += M_PI;
-    //   front_left_velocity *= -1;
-    // }
-    // if (abs(front_right_current_pos - front_right_position) > M_PI / 2) {
-    //   front_right_position += M_PI;
-    //   front_right_velocity *= -1;
-    // }
-    // if (abs(rear_left_current_pos - rear_left_position) > M_PI / 2) {
-    //   rear_left_position += M_PI;
-    //   rear_left_velocity *= -1;
-    // }
-    // if (abs(rear_right_current_pos - rear_right_position) > M_PI / 2) {
-    //   rear_right_position += M_PI;
-    //   rear_right_velocity *= -1;
-    // }
-
-    // // Convert hardware positions to 0-2pi
-    // if (front_left_position < 0.0){
-    //     front_left_position += 2.0 * M_PI;
-    // }
-    // if (front_right_position < 0.0){
-    //     front_right_position += 2.0 * M_PI;
-    // }
-    // if (rear_left_position < 0.0){
-    //     rear_left_position += 2.0 * M_PI;
-    // }
-    // if (rear_right_position < 0.0){
-    //     rear_right_position += 2.0 * M_PI;
-    // }
-
-
-    //  // Convert current hardware positions to 0-2pi
-    // auto front_left_current_pos_abs = front_left_current_pos;
-    // if (front_left_current_pos_abs < 0.0){
-    //     front_left_current_pos_abs += 2.0 * M_PI;
-    // }
-    // auto front_right_current_pos_abs = front_right_current_pos;
-    // if (front_right_current_pos_abs < 0.0){
-    //     front_right_current_pos_abs += 2.0 * M_PI;
-    // }
-    // auto rear_left_current_pos_abs = rear_left_current_pos;
-    // if (rear_left_current_pos_abs < 0.0){
-    //     rear_left_current_pos_abs += 2.0 * M_PI;
-    // }
-    // auto rear_right_current_pos_abs = rear_right_current_pos;
-    // if (rear_right_current_pos_abs < 0.0){
-    //     rear_right_current_pos_abs += 2.0 * M_PI;
-    // }
-
-    // Set Wheel Velocities
-    // if (front_left_velocity == 0.0) {
-    //   front_left_axle_command_handle_->set_position(front_left_current_pos_abs);
-    // } else {
-    //   front_left_axle_command_handle_->set_position(front_left_position);
-    // }
-    // if (front_right_velocity == 0.0) {
-    //   front_right_axle_command_handle_->set_position(front_right_current_pos_abs);
-    // } else {
-    //   front_right_axle_command_handle_->set_position(front_right_position);
-    // }
-    // if (rear_left_velocity == 0.0) {
-    //   rear_left_axle_command_handle_->set_position(rear_left_current_pos_abs);
-    // } else {
-    //   rear_left_axle_command_handle_->set_position(rear_left_position);
-    // }
-    // if (rear_right_velocity == 0.0) {
-    //   rear_right_axle_command_handle_->set_position(rear_right_current_pos_abs);
-    // } else {
-    //   rear_right_axle_command_handle_->set_position(rear_right_position);
-    // }
 
     // Time update
     const auto update_dt = current_time - previous_update_timestamp_;

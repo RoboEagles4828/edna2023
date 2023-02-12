@@ -25,7 +25,8 @@ def generate_launch_description():
     # Get paths to other config files
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
-    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-sim.config.yaml')
+    joystick_file = os.path.join(bringup_pkg_path, 'config', 'joystick.yaml')
+    teleop_joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-sim.config.yaml')
     rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
 
     # Create a robot_state_publisher node
@@ -85,18 +86,14 @@ def generate_launch_description():
             package='joy', 
             executable='joy_node', 
             name='joy_node',
-            parameters=[{
-                'dev': '/dev/input/js0',
-                'deadzone': 0.3,
-                'autorepeat_rate': 20.0,
-            }])
+            parameters=[joystick_file])
 
     # Start Teleop Node to translate joystick commands to robot commands
     joy_teleop = Node(
         package='teleop_twist_joy', 
         executable='teleop_node',
         name='teleop_twist_joy_node', 
-        parameters=[joystick_file],
+        parameters=[teleop_joystick_file],
         remappings={('/cmd_vel', '/swerve_controller/cmd_vel_unstamped')}
         )
 
