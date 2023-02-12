@@ -22,6 +22,7 @@ add_library(
   src/isaac_drive.cpp
   src/test_drive.cpp
   src/real_drive.cpp
+  src/motion_magic.cpp
 )
 target_include_directories(
   ${PROJECT_NAME}

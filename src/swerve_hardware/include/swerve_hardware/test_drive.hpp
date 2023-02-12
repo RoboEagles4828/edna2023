@@ -31,6 +31,7 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "swerve_hardware/visibility_control.h"
+#include "swerve_hardware/motion_magic.hpp"
 
 namespace swerve_hardware
 {
@@ -73,6 +74,10 @@ private:
   // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
   std::vector<std::string> joint_names_;
   std::vector<std::string> joint_types_;
+
+  double MAX_VELOCITY = 1.0;
+  double MAX_ACCELERATION = 1.0;
+  std::vector<MotionMagic> motion_magic_;
 };
 
 }  // namespace swerve_hardware

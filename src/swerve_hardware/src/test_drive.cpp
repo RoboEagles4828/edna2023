@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
+#include "swerve_hardware/motion_magic.hpp"
 #include "rclcpp/rclcpp.hpp"
 using std::placeholders::_1;
 
@@ -47,6 +48,7 @@ hardware_interface::CallbackReturn TestDriveHardware::on_init(const hardware_int
   // We will keep this at 8 and make the other 4 zero to keep indexing consistent
   hw_command_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   joint_types_.resize(info_.joints.size(), "");
+  motion_magic_.resize(info_.joints.size(), MotionMagic(MAX_ACCELERATION, MAX_VELOCITY));
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
@@ -207,8 +209,9 @@ hardware_interface::return_type TestDriveHardware::read(const rclcpp::Time & /*t
     }
     else if (joint_types_[i] == hardware_interface::HW_IF_POSITION)
     {
-      hw_velocities_[i] = 0.0;
-      hw_positions_[i] = hw_command_position_[i];
+      auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
+      hw_velocities_[i] = vel;
+      hw_positions_[i] = hw_positions_[i] + dt * vel;
     }
   }
   
