@@ -36,6 +36,7 @@
 #include "realtime_tools/realtime_buffer.h"
 #include "realtime_tools/realtime_publisher.h"
 #include "swerve_hardware/visibility_control.h"
+#include "swerve_hardware/motion_magic.hpp"
 
 namespace swerve_hardware
 {
@@ -66,24 +67,26 @@ public:
   hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-  // Parameters for the DiffBot simulation
-  double hw_start_sec_;
-  double hw_stop_sec_;
-
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
+
+  // The state vectors
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
-  std::vector<double> empty_;
+
+  // Joint name array will align with state and command interface array
+  // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
   std::vector<std::string> joint_names_;
-  std::vector<std::string> joint_names_velocity_;
-  std::vector<std::string> joint_names_position_;
+  std::vector<std::string> joint_types_;
 
-  std::map<std::string, uint> joint_names_map_;
-
+  double MAX_VELOCITY = 1.0;
+  double MAX_ACCELERATION = 1.0;
+  std::vector<MotionMagic> motion_magic_;
 
   // Pub Sub to isaac
+  std::string joint_state_topic_ = "isaac_joint_states";
+  std::string joint_command_topic_ = "isaac_joint_commands";
   rclcpp::Node::SharedPtr node_;
   std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> isaac_publisher_ = nullptr;
   std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
