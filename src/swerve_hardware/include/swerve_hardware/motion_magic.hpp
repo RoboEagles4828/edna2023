@@ -22,6 +22,8 @@ private:
     double MAX_ACCELERATION;
     double MAX_VELOCITY;
     double prevVelocity = 0.0;
+    double prevAcceleration = 0.0;
+    double prevError = 0.0;
     double tolerance = 0.05;
 };
 

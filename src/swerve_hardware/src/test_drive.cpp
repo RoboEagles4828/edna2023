@@ -209,6 +209,7 @@ hardware_interface::return_type TestDriveHardware::read(const rclcpp::Time & /*t
     }
     else if (joint_types_[i] == hardware_interface::HW_IF_POSITION)
     {
+      // New Stuff
       auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
       hw_velocities_[i] = vel;
       hw_positions_[i] = hw_positions_[i] + dt * vel;

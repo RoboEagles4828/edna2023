@@ -23,11 +23,10 @@ double MotionMagic::getPositionDifference(double targetPosition, double sensorPo
 double MotionMagic::getNextVelocity(double targetPosition, double sensorPosition, double sensorVelocity, double dt) {
     // Calculate an error term
     double error = getPositionDifference(targetPosition, sensorPosition);
-    double currentAcceleration = (sensorVelocity - prevVelocity) / dt;
-
+    if (abs(error) < tolerance) {
+        return 0.0;
+    }
     
-    prevVelocity = sensorVelocity;
-
     double velocity = 0.0;
     return velocity;
 }
