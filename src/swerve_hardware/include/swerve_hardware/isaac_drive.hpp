@@ -70,6 +70,7 @@ private:
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
+  std::vector<double> hw_command_velocity_converted_;
 
   // The state vectors
   std::vector<double> hw_positions_;
@@ -95,6 +96,11 @@ private:
   bool subscriber_is_active_ = false;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr isaac_subscriber_ = nullptr;
   realtime_tools::RealtimeBox<std::shared_ptr<sensor_msgs::msg::JointState>> received_joint_msg_ptr_{nullptr};
+
+  // Converts isaac position range -2pi - 2pi into expected ros position range -pi - pi
+  double convertToRosPosition(double isaac_position);
+  double convertToRosVelocity(double isaac_velocity);
+  void convertToIsaacVelocities(std::vector<double> ros_velocities);
 };
 
 }  // namespace swerve_hardware

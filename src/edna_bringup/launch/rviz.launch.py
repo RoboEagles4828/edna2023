@@ -18,6 +18,9 @@ def generate_launch_description():
     pkg_path = os.path.join(get_package_share_directory('edna_description'))
     xacro_file = os.path.join(pkg_path,'urdf', 'robots','edna.urdf.xacro')
     robot_description_config = xacro.process_file(xacro_file)
+
+    bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
+    rviz_file = os.path.join(bringup_pkg_path, 'config', 'description.rviz')
     
     # Create a robot_state_publisher node
     params = {'robot_description': robot_description_config.toxml(), 'use_sim_time': use_sim_time}
@@ -36,9 +39,8 @@ def generate_launch_description():
     )
 
     # Start Rviz2 with basic view
-    rviz2_config_path = os.path.join(get_package_share_directory('edna_description'), 'config/view.rviz')
     run_rviz2 = ExecuteProcess(
-        cmd=['rviz2', '-d', rviz2_config_path],
+        cmd=['rviz2', '-d', rviz_file],
         output='screen'
     )
 

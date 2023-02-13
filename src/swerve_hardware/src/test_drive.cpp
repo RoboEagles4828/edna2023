@@ -209,10 +209,15 @@ hardware_interface::return_type TestDriveHardware::read(const rclcpp::Time & /*t
     }
     else if (joint_types_[i] == hardware_interface::HW_IF_POSITION)
     {
-      // New Stuff
       auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
+      RCLCPP_INFO(rclcpp::get_logger("TestDriveHardware"), "Current: %f, Target: %f Vel: %f", hw_positions_[i], hw_command_position_[i], vel);
       hw_velocities_[i] = vel;
-      hw_positions_[i] = hw_positions_[i] + dt * vel;
+      hw_positions_[i] = hw_positions_[i] + hw_velocities_[i] * dt;
+
+      // Test without any velocity smoothing
+      // RCLCPP_INFO(rclcpp::get_logger("TestDriveHardware"), "Cmd: %f Name: %s", hw_command_position_[i], joint_names_[i].c_str());
+      // hw_velocities_[i] = 0.0;
+      // hw_positions_[i] = hw_command_position_[i];
     }
   }
   
@@ -221,7 +226,7 @@ hardware_interface::return_type TestDriveHardware::read(const rclcpp::Time & /*t
 
 
 
-hardware_interface::return_type TestDriveHardware::write(const rclcpp::Time & time, const rclcpp::Duration & /*period*/)
+hardware_interface::return_type TestDriveHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   // Do Nothing
   // Uncomment below if you want verbose messages for debugging.

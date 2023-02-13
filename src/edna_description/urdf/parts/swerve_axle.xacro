@@ -33,7 +33,7 @@
             <parent link="${parent}" />
             <child link="${prefix}_axle_link" />
             <xacro:insert_block name="origin" />
-            <axis xyz="0 0 1" />
+            <axis xyz="0 0 -1" />
             <dynamics friction="0.1" />
         </joint>
         

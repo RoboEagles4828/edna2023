@@ -216,6 +216,17 @@ hardware_interface::CallbackReturn IsaacDriveHardware::on_deactivate(
 // ||                        ||
 // \/ THE STUFF THAT MATTERS \/
 
+double IsaacDriveHardware::convertToRosPosition(double isaac_position)
+{
+  // Isaac goes from -2pi to 2pi, we want -pi to pi
+  if (isaac_position > M_PI) {
+    return isaac_position - 2.0 * M_PI;
+  } else if (isaac_position < -M_PI) {
+    return isaac_position + 2.0 * M_PI;
+  }
+  return isaac_position;
+}
+
 hardware_interface::return_type IsaacDriveHardware::read(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
   rclcpp::spin_some(node_);
@@ -235,8 +246,7 @@ hardware_interface::return_type IsaacDriveHardware::read(const rclcpp::Time & ti
   for (auto i = 0u; i < joint_names_.size(); i++) {
     for (auto j = 0u; j < names.size(); j++) {
       if (strcmp(names[j].c_str(), info_.joints[i].name.c_str()) == 0) {
-        // TODO: Check if a conversion is needed for velocity or position
-        hw_positions_[i] = positions[j];
+        hw_positions_[i] = convertToRosPosition(positions[j]);
         hw_velocities_[i] = (float)velocities[j];
         break;
       }
@@ -252,14 +262,17 @@ hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const
 {
   
   // Calculate Axle Velocities using motion magic
-  // TODO: Check if a conversion is needed for velocity or position
   double dt = period.seconds();
   for (auto i = 0u; i < joint_names_.size(); i++) {
     if (joint_types_[i] == hardware_interface::HW_IF_POSITION) {\
       auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
       hw_command_velocity_[i] = vel;
+      auto& clk = *node_->get_clock();
+      RCLCPP_INFO_THROTTLE(rclcpp::get_logger("IsaacDriveHardware"), clk, 500,
+      "Joint: %s Current: %f Target: %f Vel: %f", joint_names_[i].c_str(), hw_positions_[i], hw_command_position_[i], hw_command_velocity_[i]);
     }
   }
+  
 
   // Publish to Isaac
   if (realtime_isaac_publisher_->trylock()) {

@@ -140,6 +140,7 @@ protected:
 
   realtime_tools::RealtimeBox<std::shared_ptr<Twist>> received_velocity_msg_ptr_{nullptr};
 
+  double max_wheel_angular_velocity_ = 0.0;
   bool is_halted = false;
   bool use_stamped_vel_ = true;
 
