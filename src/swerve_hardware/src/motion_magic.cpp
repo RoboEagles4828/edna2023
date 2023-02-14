@@ -35,7 +35,7 @@ namespace swerve_hardware
         if (targetPosition != prevTargetPosition) {
                 totalDistance = absError;
                 prevTargetPosition = targetPosition;
-            }
+        }
         if (absError < tolerance) {
             return 0.0;
         }
