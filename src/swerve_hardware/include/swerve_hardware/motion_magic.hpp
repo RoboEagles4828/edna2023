@@ -24,19 +24,26 @@ public:
     SWERVE_HARDWARE_PUBLIC
     double getPositionDifference(double targetPosition, double sensorPosition);
 
+    SWERVE_HARDWARE_PUBLIC
+    double getTotalTime(double targetPosition);
+
 private:
     double MAX_ACCELERATION;
     double MAX_VELOCITY;
-    double prevVelocity = 0.0;
-    double prevAcceleration = 0.0;
-    double prevError = 0.0;
+    // double prevVel = 0.0;
+    // double prevAcceleration = 0.0;
+    // double prevError = 0.0;
+    double prevTargetPosition = 0.0;
 
-    double tolerance = 0.05;
-    double rampWindow1 = 0.3;
-    double rampWindow2 = 0.8;
-    double velocityInRampWindow1 = 0.1;
-    double velocityInRampWindow2 = 2.0;
-    double velocityInCruiseWindow = 3.0;
+    double tolerance = 0.1;
+    // double rampWindow1 = 0.3;
+    // double rampWindow2 = 0.8;
+    // double velocityInRampWindow1 = 0.1;
+    // double velocityInRampWindow2 = 2.0;
+    // double velocityInCruiseWindow = 3.0;
+
+    double totalDistance = 0.0;
+    double zeroTime = 0.0;
 };
 
 }  // namespace swerve_hardware
