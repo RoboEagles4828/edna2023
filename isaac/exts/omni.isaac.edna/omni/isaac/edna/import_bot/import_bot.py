@@ -8,6 +8,7 @@ from omni.isaac.core.utils import prims
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.kit.viewport_legacy import get_default_viewport_window
+from omni.isaac.sensor import IMUSensor
 from pxr import UsdPhysics
 import omni.kit.commands
 import os
@@ -31,10 +32,9 @@ class ImportBot(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
-        world.get_physics_context().enable_gpu_dynamics(True)
-        self.setup_field()
-
+        world.get_physics_context().enable_gpu_dynamics(False)
         world.scene.add_default_ground_plane()
+        self.setup_field()
         # self.setup_perspective_cam()
         self.setup_world_action_graph()
         return
@@ -45,8 +45,8 @@ class ImportBot(BaseSample):
         self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
         field = os.path.join(self.project_root_path, "assets/2023_field/FE-2023.usd")
         add_reference_to_stage(usd_path=field,prim_path="/World/Field")
-        cone = os.path.join(self.project_root_path, "assets/2023_field/parts/GE-23700_JFH.usd")
-        cube = os.path.join(self.project_root_path, "assets/2023_field/parts/GE-23701_JFL.usd")
+        cone = os.path.join(self.project_root_path, "assets/2023_field/parts/cone_without_deformable_body.usd")
+        cube = os.path.join(self.project_root_path, "assets/2023_field/parts/cube_without_deformable_body.usd")
         # chargestation = os.path.join(self.project_root_path, "assets/2023_field/charge_station.usd")
         # add_reference_to_stage(chargestation, "/World/ChargeStation_1")
         # add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
@@ -155,6 +155,8 @@ class ImportBot(BaseSample):
         # set_drive_params(base,1,1000,98.0)
         #self.create_lidar(robot_prim_path)
         #self.create_depth_camera()
+        self.create_imu(robot_prim_path)
+        self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)
         return
 
@@ -180,7 +182,12 @@ class ImportBot(BaseSample):
             enable_semantics=False
         )
         return
-
+    def create_imu(self, robot_prim_path):
+        imu_parent = "{}/imu_sensor_link".format(robot_prim_path)
+        imu_path = "/Imu_Sensor"
+        self.imu_prim_path = imu_parent + imu_path
+        imusensor = IMUSensor(prim_path=self.imu_prim_path, name = "Imu_Sensor")
+        
     
     def create_depth_camera(self):
         self.depth_left_camera_path = f"{self._robot_prim_path}/zed_left_camera_frame/left_cam"
@@ -228,6 +235,31 @@ class ImportBot(BaseSample):
                 ],
             }
         )
+        return
+    def setup_imu_action_graph(self, robot_prim_path):
+        imu_parent = "{}/imu_sensor_link".format(robot_prim_path)
+        imu_graph = "{}/imu_graph".format(imu_parent)
+
+        og.Controller.edit(
+            {"graph_path": imu_graph, "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("ReadImuSensor", "omni.isaac.sensor.IsaacReadIMU"),
+                    ("PublishImu", "omni.isaac.ros2_bridge.ROS2PublishImu"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "ReadImuSensor.inputs:execIn"),
+                    ("ReadImuSensor.outputs:execOut", "PublishImu.inputs:execIn"),
+                    ("ReadImuSensor.outputs:orientation", "PublishImu.inputs:orientation"),
+                ],
+                # og.Controller.Keys.SET_VALUES: [
+                #     ("ReadImuSensor.inputs:imuPrim", self.imu_prim_path),
+                # ],
+            }
+        )
+        set_target_prims(primPath=f"{imu_graph}/ReadImuSensor", targetPrimPaths=[self.imu_prim_path], inputName="inputs:imuPrim")
+
         return
     
     def setup_perspective_cam(self):
@@ -316,6 +348,5 @@ class ImportBot(BaseSample):
         return
     
     def world_cleanup(self):
-        s
         self._world.scene.remove_object(self.robot_name)
         return
