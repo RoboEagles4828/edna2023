@@ -13,3 +13,5 @@ services:
         window: 120s
     volumes:
     - ./:/opt/workspace
+    ports:
+    - "1-65535:1-65535"
