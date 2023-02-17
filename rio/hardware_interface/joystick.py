@@ -7,15 +7,16 @@ SCALING_FACTOR_FIX = 10000
 class Joystick:
     def __init__(self):
         self.joystick = wpilib.XboxController(CONTROLLER_PORT)
+        self.deadzone = 0.1
 
     def getData(self):
         axes = [
-            self.joystick.getLeftX(),
-            self.joystick.getLeftY(),
-            self.joystick.getLeftTriggerAxis(),
-            self.joystick.getRightX(),
-            self.joystick.getRightY(),
-            self.joystick.getRightTriggerAxis()
+            self.joystick.getLeftX() if abs(self.joystick.getLeftX()) > self.deadzone else 0.0,
+            self.joystick.getLeftY() if abs(self.joystick.getLeftY()) > self.deadzone else 0.0,
+            self.joystick.getLeftTriggerAxis() if abs(self.joystick.getLeftTriggerAxis()) > self.deadzone else 0.0,
+            self.joystick.getRightX() if abs(self.joystick.getRightX()) > self.deadzone else 0.0,
+            self.joystick.getRightY() if abs(self.joystick.getRightY()) > self.deadzone else 0.0,
+            self.joystick.getRightTriggerAxis() if abs(self.joystick.getRightTriggerAxis()) > self.deadzone else 0.0
         ]
         buttons = [
             self.joystick.getAButton(),
@@ -32,7 +33,7 @@ class Joystick:
         ]
 
         def scale(a):
-            return int(a * SCALING_FACTOR_FIX)
+            return int(a * SCALING_FACTOR_FIX * -1)
         def toInt(b):
             return int(b)
 

@@ -16,7 +16,7 @@ MODULE_CONFIG = {
         "axle_joint_name": "front_left_axle_joint",
         "axle_motor_port": 7,
         "axle_encoder_port": 8,
-        "encoder_offset": 19.951,
+        "encoder_offset": 248.203,
     },
     "front_right": {
         "wheel_joint_name": "front_right_wheel_joint",
@@ -24,7 +24,7 @@ MODULE_CONFIG = {
         "axle_joint_name": "front_right_axle_joint",
         "axle_motor_port": 10,
         "axle_encoder_port": 11,
-        "encoder_offset": 254.971,
+        "encoder_offset": 15.908,
     },
     "rear_left": {
         "wheel_joint_name": "rear_left_wheel_joint",
@@ -32,7 +32,7 @@ MODULE_CONFIG = {
         "axle_joint_name": "rear_left_axle_joint",
         "axle_motor_port": 4,
         "axle_encoder_port": 5,
-        "encoder_offset": 304.189,
+        "encoder_offset": 327.393,
     },
     "rear_right": {
         "wheel_joint_name": "rear_right_wheel_joint",
@@ -40,11 +40,12 @@ MODULE_CONFIG = {
         "axle_joint_name": "rear_right_axle_joint",
         "axle_motor_port": 1,
         "axle_encoder_port": 2,
-        "encoder_offset": 68.379,
+        "encoder_offset": 201.094,
     }
 }
-AXLE_DIRECTION = True
+AXLE_DIRECTION = False
 WHEEL_DIRECTION = False
+ENCODER_DIRECTION = True
 WHEEL_JOINT_GEAR_RATIO = 6.75 #8.14
 AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048.0
@@ -59,7 +60,6 @@ steer_current_limit = 20.0
 SCALING_FACTOR_FIX = 10000
 
 # Encoder Constants
-ENCODER_DIRECTION = False
 encoder_ticks_per_rev = 4096.0
 encoder_reset_velocity = math.radians(0.5)
 encoder_reset_iterations = 500
@@ -184,7 +184,7 @@ class SwerveModule():
         self.wheel_motor.config_kI(0, wheel_pid_constants["kI"], timeout_ms)
         self.wheel_motor.config_kD(0, wheel_pid_constants["kD"], timeout_ms)
         self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
-        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+        # self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -214,7 +214,7 @@ class SwerveModule():
         currentLimit.currentLimit = steer_current_limit
         self.axle_motor.configSupplyCurrentLimit(currentLimit, timeout_ms)
         self.axle_motor.enableVoltageCompensation(True)
-        self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
+        # self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
 
     def set(self, wheel_motor_vel, axle_position):
