@@ -237,8 +237,7 @@ class ImportBot(BaseSample):
         )
         return
     def setup_imu_action_graph(self, robot_prim_path):
-        imu_parent = "{}/imu_sensor_link".format(robot_prim_path)
-        imu_graph = "{}/imu_graph".format(imu_parent)
+        imu_graph = "{}/imu_graph".format(robot_prim_path)
 
         og.Controller.edit(
             {"graph_path": imu_graph, "evaluator_name": "execution"},
