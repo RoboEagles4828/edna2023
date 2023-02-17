@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  humble2204:
+    image: "ghcr.io/roboeagles4828/jetson:2023"
+    network_mode: "host"
+    environment:
+      - ROS_DOMAIN_ID=0
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 2s
+        max_attempts: 3
+        window: 120s
+    volumes:
+    - ./:/opt/workspace
