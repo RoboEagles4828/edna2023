@@ -23,6 +23,7 @@ swerve_controller:
     chassis_length_meters: 0.7366
     chassis_width_meters: 0.7366
     wheel_radius_meters: 0.1016
+    max_wheel_angular_velocity: 10.0
     #If no new twist commands are created in 1 second the robot will halt 
     cmd_vel_timeout_seconds: 1.0
     use_stamped_vel: false

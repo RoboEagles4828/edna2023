@@ -1,0 +1,7 @@
+#!/bin/bash
+# Preload workspace dependencies
+cd /tmp && 
+    apt-get update -y && 
+    rosdep update --rosdistro=humble &&
+    rosdep install --from-paths src --ignore-src -r -y &&
+    rm -rf /tmp/src
