@@ -1,0 +1,14 @@
+teleop_twist_joy_node:
+  ros__parameters:
+    require_enable_button: false
+    axis_linear:  # Left thumb stick vertical
+      x: 0
+      y: 1
+    scale_linear: #1/10000 to offset shifted 0 in /joystick-data
+      x: 0.0001
+      y: 0.0001
+
+    axis_angular:  # Right thumb stick horizontal
+      yaw: 3
+    scale_angular: #negative to fix turning direction
+      yaw: 0.0001

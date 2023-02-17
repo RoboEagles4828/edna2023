@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+# Topic Publish
+ros2 topic pub /ping std_msgs/msg/Header "{'stamp': 'now', frame_id: 'PING' }"

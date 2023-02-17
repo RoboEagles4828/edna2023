@@ -24,7 +24,7 @@ Wait until both are downloaded and installed.
 
 - **DONE with Omniverse Setup**
 
-### 2. Docker Setup
+### 2. Local Setup
 - **Install Docker and Nvidia Docker** \
 `./scripts/local-setup.sh`
 
@@ -34,7 +34,16 @@ Go to extensions and search for Remote Development and click install
 - **Reopen in Devcontainer** \
 Hit F1 and run the command Reopen in Container and wait for the post install to finsih EST: 10-30min
 
-### 3. Build ROS2 Packages
+### 3. Isaac Setup
+
+- **Create Shaders** \
+This uses a lot of cpu resource and can take up to 20min \
+`isaac-setup`
+
+- **Launch Isaac** \
+`isaac-setup`
+
+### 4. Build ROS2 Packages
 
 - **Install Workspace Dependencies** \
 Press F1, and run this command: \

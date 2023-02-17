@@ -1,0 +1,71 @@
+#!/usr/bin/bash
+IMAGE_NAME="ghcr.io/roboeagles4828/isaac-sim:2022.2.0"
+CONTAINTER_NAME="isaac-sim"
+DEFAULT_CMD="/isaac-sim/isaac-sim.sh --allow-root"
+CMD=${@:-$DEFAULT_CMD}
+
+# Get driver config
+SCRIPT_DIR=$( dirname "${BASH_SOURCE[0]}")
+source $SCRIPT_DIR/config/nvidia_driver_config
+
+if [[ "$1" == "stop" ]]; then
+    docker stop $CONTAINTER_NAME > /dev/null 2>&1
+    exit 0
+fi
+
+if [[ "$1" == "rm" ]]; then
+    docker stop $CONTAINTER_NAME > /dev/null 2>&1
+    docker rm $CONTAINTER_NAME > /dev/null 2>&1
+    exit 0
+fi
+
+launch_isaac() {
+    extension_name="omni.isaac.swerve_bot"
+    docker run -d -t \
+    --name $CONTAINTER_NAME \
+    --entrypoint "" \
+    --gpus all \
+    --network=host -P \
+    --privileged \
+    -e "ACCEPT_EULA=Y" \
+    -e "OMNI_USER=$OMNI_USER" \
+    -e "OMNI_PASS=$OMNI_PASS" \
+    -e "OMNI_SERVER=$OMNI_SERVER" \
+    -e "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES" \
+    -e "NVIDIA_DRIVER_CAPABILITIES=$NVIDIA_DRIVER_CAPABILITIES" \
+    -e "DISPLAY=$DISPLAY" \
+    -e "FASTRTPS_DEFAULT_PROFILES_FILE=/isaac-sim/ros2_workspace/fastdds.xml" \
+    -v /var/run/docker.sock:/var/run/docker.sock:rw \
+    -v ${nvidia_layers}:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
+    -v ${nvidia_icd}:/etc/vulkan/icd.d/nvidia_icd.json \
+    -v ${_10_nvidia}:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
+    -v ${WORKSPACE_LOCAL_PATH}/scripts/config/omniverse.toml:/root/.nvidia-omniverse/config/omniverse.toml:rw \
+    -v ${WORKSPACE_LOCAL_PATH}/:/root/edna/:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/../../.Xauthority:/root/.Xauthority:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/cache/kit:/isaac-sim/kit/cache/Kit:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/cache/ov:/root/.cache/ov:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/cache/pip:/root/.cache/pip:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/cache/glcache:/root/.cache/nvidia/GLCache:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/cache/computecache:/root/.nv/ComputeCache:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/logs:/root/.nvidia-omniverse/logs:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/config:/root/.nvidia-omniverse/config:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/data:/root/.local/share/ov/data:rw \
+    -v ${ISAAC_LOCAL_STORAGE}/documents:/root/Documents:rw \
+    $IMAGE_NAME sleep infinity
+}
+
+# Check if an isaac container already exists
+if [ $( docker ps -a | grep $CONTAINTER_NAME | wc -l ) -gt 0 ]; then
+    status=$( docker container inspect -f '{{.State.Running}}' $CONTAINTER_NAME )
+    if [[ "$status" == "false" ]]; then
+        docker start $CONTAINTER_NAME > /dev/null 2>&1
+    fi
+    docker exec -it $CONTAINTER_NAME $CMD
+else
+    echo "Isaac container does not exist, creating...."
+    launch_isaac
+    docker exec -it $CONTAINTER_NAME $CMD
+fi
+
+# echo "Stopping isaac..."
+# docker stop $CONTAINTER_NAME > /dev/null 2>&1 &

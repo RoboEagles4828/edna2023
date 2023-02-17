@@ -21,6 +21,7 @@ add_library(
   SHARED
   src/isaac_drive.cpp
   src/test_drive.cpp
+  src/real_drive.cpp
 )
 target_include_directories(
   ${PROJECT_NAME}

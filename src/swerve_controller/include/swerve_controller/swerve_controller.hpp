@@ -36,12 +36,10 @@
 #include "realtime_tools/realtime_box.h"
 #include "realtime_tools/realtime_buffer.h"
 #include "realtime_tools/realtime_publisher.h"
-#include <hardware_interface/loaned_command_interface.hpp>
+#include "hardware_interface/loaned_command_interface.hpp"
 
 namespace swerve_controller
 {
-using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-
 
 class Wheel {
   public:
@@ -57,17 +55,19 @@ class Axle {
     // Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> cmd_position_, 
     //           std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position_,
     //           std::string name);
-    Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> velocity_,std::reference_wrapper< const hardware_interface::LoanedStateInterface> position,
+    Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_velocity_,std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_position_,std::reference_wrapper< const hardware_interface::LoanedStateInterface> state_position_,
                          std::string name);
-    void set_velocity(double velocity_);
+    void set_velocity(double command_velocity_);
+    void set_position(double command_position_);
     double get_position (void);
 
   private:
     // std::reference_wrapper<hardware_interface::LoanedCommandInterface> cmd_position_;
     // std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position_;
     // std::string name;
-    std::reference_wrapper<hardware_interface::LoanedCommandInterface> velocity_;
-    std::reference_wrapper<const hardware_interface::LoanedStateInterface> position_;
+    std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_velocity_;
+    std::reference_wrapper<hardware_interface::LoanedCommandInterface> command_position_;
+    std::reference_wrapper<const hardware_interface::LoanedStateInterface> state_position_;
  
     std::string name;
 
@@ -92,37 +92,37 @@ public:
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_init() override;
+  controller_interface::CallbackReturn on_init() override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_error(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_error(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_CONTROLLER_PUBLIC
-  CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
 
 protected:
   std::shared_ptr<Wheel> get_wheel(const std::string & wheel_name);
   std::shared_ptr<Axle> get_axle(const std::string & axle_name);
-  std::shared_ptr<Wheel> front_left_handle_;
-  std::shared_ptr<Wheel> front_right_handle_;
-  std::shared_ptr<Wheel> rear_left_handle_;
-  std::shared_ptr<Wheel> rear_right_handle_;
-  std::shared_ptr<Axle> front_left_handle_2_;
-  std::shared_ptr<Axle> front_right_handle_2_;
-  std::shared_ptr<Axle> rear_left_handle_2_;
-  std::shared_ptr<Axle> rear_right_handle_2_;
+  std::shared_ptr<Wheel> front_left_wheel_command_handle_;
+  std::shared_ptr<Wheel> front_right_wheel_command_handle_;
+  std::shared_ptr<Wheel> rear_left_wheel_command_handle_;
+  std::shared_ptr<Wheel> rear_right_wheel_command_handle_;
+  std::shared_ptr<Axle> front_left_axle_command_handle_;
+  std::shared_ptr<Axle> front_right_axle_command_handle_;
+  std::shared_ptr<Axle> rear_left_axle_command_handle_;
+  std::shared_ptr<Axle> rear_right_axle_command_handle_;
   std::string front_left_wheel_joint_name_;
   std::string front_right_wheel_joint_name_;
   std::string rear_left_wheel_joint_name_;
@@ -139,7 +139,7 @@ protected:
   } wheel_params_;
 
   // Timeout to consider cmd_vel commands old
-  std::chrono::milliseconds cmd_vel_timeout_{500};
+  std::chrono::milliseconds cmd_vel_timeout_milliseconds_{500};
   rclcpp::Time previous_update_timestamp_{0};
 
   // Topic Subscription

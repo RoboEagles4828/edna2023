@@ -1,0 +1,123 @@
+#!/bin/bash
+# Installs Common dev packages.
+# These are the same packages used in common devcontainer features.
+# They are added into the docker image to speed up build times but does not have user setup config.
+
+set -e
+
+INSTALL_ZSH="true"
+
+# Debian / Ubuntu packages
+install_debian_packages() {
+    # Ensure apt is in non-interactive to avoid prompts
+    export DEBIAN_FRONTEND=noninteractive
+
+    local package_list="apt-utils \
+        openssh-client \
+        gnupg2 \
+        dirmngr \
+        iproute2 \
+        procps \
+        lsof \
+        htop \
+        net-tools \
+        psmisc \
+        curl \
+        tree \
+        wget \
+        rsync \
+        ca-certificates \
+        unzip \
+        bzip2 \
+        zip \
+        nano \
+        vim-tiny \
+        less \
+        jq \
+        lsb-release \
+        apt-transport-https \
+        dialog \
+        libc6 \
+        libgcc1 \
+        libkrb5-3 \
+        libgssapi-krb5-2 \
+        libicu[0-9][0-9] \
+        liblttng-ust[0-9] \
+        libstdc++6 \
+        zlib1g \
+        locales \
+        sudo \
+        ncdu \
+        man-db \
+        strace \
+        manpages \
+        manpages-dev \
+        init-system-helpers"
+
+    # Include libssl1.1 if available
+    if [[ ! -z $(apt-cache --names-only search ^libssl1.1$) ]]; then
+        package_list="${package_list} libssl1.1"
+    fi
+
+    # Include libssl3 if available
+    if [[ ! -z $(apt-cache --names-only search ^libssl3$) ]]; then
+        package_list="${package_list} libssl3"
+    fi
+
+    # Include appropriate version of libssl1.0.x if available
+    local libssl_package=$(dpkg-query -f '${db:Status-Abbrev}\t${binary:Package}\n' -W 'libssl1\.0\.?' 2>&1 || echo '')
+    if [ "$(echo "$libssl_package" | grep -o 'libssl1\.0\.[0-9]:' | uniq | sort | wc -l)" -eq 0 ]; then
+        if [[ ! -z $(apt-cache --names-only search ^libssl1.0.2$) ]]; then
+            # Debian 9
+            package_list="${package_list} libssl1.0.2"
+        elif [[ ! -z $(apt-cache --names-only search ^libssl1.0.0$) ]]; then
+            # Ubuntu 18.04
+            package_list="${package_list} libssl1.0.0"
+        fi
+    fi
+
+    # Include git if not already installed (may be more recent than distro version)
+    if ! type git > /dev/null 2>&1; then
+        package_list="${package_list} git"
+    fi
+
+    # Install the list of packages
+    echo "Packages to verify are installed: ${package_list}"
+    rm -rf /var/lib/apt/lists/*
+    apt-get update -y
+    apt-get -y install --no-install-recommends ${package_list} 2> >( grep -v 'debconf: delaying package configuration, since apt-utils is not installed' >&2 )
+
+    # Install zsh (and recommended packages) if needed
+    if [ "${INSTALL_ZSH}" = "true" ] && ! type zsh > /dev/null 2>&1; then
+        apt-get install -y zsh
+    fi
+
+    # Ensure at least the en_US.UTF-8 UTF-8 locale is available = common need for both applications and things like the agnoster ZSH theme.
+    if [ "${LOCALE_ALREADY_SET}" != "true" ] && ! grep -o -E '^\s*en_US.UTF-8\s+UTF-8' /etc/locale.gen > /dev/null; then
+        echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen 
+        locale-gen
+        LOCALE_ALREADY_SET="true"
+    fi
+
+    # Clean up
+    apt-get -y clean 
+    rm -rf /var/lib/apt/lists/*
+    PACKAGES_ALREADY_INSTALLED="true"
+}
+
+
+# Let the feature know that some actions have already been done
+MARKER_FILE="/usr/local/etc/vscode-dev-containers/common"
+if [ ! -d "/usr/local/etc/vscode-dev-containers" ]; then
+    mkdir -p "$(dirname "${MARKER_FILE}")"
+fi
+
+echo -e "\
+PACKAGES_ALREADY_INSTALLED=${PACKAGES_ALREADY_INSTALLED}\n\
+LOCALE_ALREADY_SET=${LOCALE_ALREADY_SET}\n\
+EXISTING_NON_ROOT_USER=${EXISTING_NON_ROOT_USER}\n\
+RC_SNIPPET_ALREADY_ADDED=${RC_SNIPPET_ALREADY_ADDED}\n\
+ZSH_ALREADY_INSTALLED=${ZSH_ALREADY_INSTALLED}" > "${MARKER_FILE}"
+
+install_debian_packages
+echo "Done!"

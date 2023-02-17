@@ -22,12 +22,12 @@ def generate_launch_description():
     # Get paths to other config files
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
-    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic.config.yaml')
+    joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-sim.config.yaml')
     rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
 
     # Save Built URDF file to Description Directory
-    description_source_code_path = os.path.abspath(os.path.join(description_pkg_path, "../../../../src/edna_description"))
-    urdf_save_path = os.path.join(description_source_code_path, "swerve.urdf")
+    description_source_code_path = os.path.abspath(os.path.join(description_pkg_path, "../../../../isaac/exts/omni.isaac.edna/omni/isaac/edna"))
+    urdf_save_path = os.path.join(description_source_code_path, "edna.urdf")
     with open(urdf_save_path, 'w') as f:
         f.write(edna_description_xml)
 
