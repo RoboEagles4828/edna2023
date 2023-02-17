@@ -2,8 +2,8 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <!-- Chassis Properties -->
-    <xacro:property name="axle_radius" value="0.075" />
-    <xacro:property name="axle_length" value=".1" />
+    <xacro:property name="axle_radius" value="0.05" />
+    <xacro:property name="axle_length" value="0.03" />
     <xacro:property name="axle_mass" value="0.23739" />
     <xacro:property name="wheel_radius" value="0.0508" />
     <xacro:property name="wheel_length" value="0.0381" />
@@ -12,20 +12,20 @@
     <!-- Wheel Properties -->
     <!-- NOTE: The below values are **guesses**-->
     <!-- NOTE: Pretty good **guesses**-->
-    <xacro:property name="wheel_pos_x" value="-0.022"/>
-    <xacro:property name="wheel_pos_y" value="0.065"/>
+    <xacro:property name="wheel_pos_y" value="0.022"/>
+    <xacro:property name="wheel_pos_z" value="0.063"/>
 
     <xacro:macro name="swerve_axle" params="prefix parent *origin">
         <link name="${prefix}_axle_link">
             <visual>
-                <origin xyz="0 0 0" rpy="0 0 0" />
+                <origin xyz="0 0 0" rpy="${pi} 0 ${pi/2}" />
                 <geometry>
                     <mesh filename="package://edna_description/meshes/SwerveAxle.stl" scale="0.001 0.001 0.001" />
                 </geometry>
                 <material name="blue" />
             </visual>
-            <xacro:inertial_cylinder mass="${axle_mass}" radius="${axle_radius}" length="${wheel_length}" >
-                <origin xyz="0 0 0" rpy="0 0 0" />
+            <xacro:inertial_cylinder mass="${axle_mass}" radius="${axle_radius}" length="${axle_length}" >
+                <origin xyz="0 0 -${axle_length/2}" rpy="0 0 0" />
             </xacro:inertial_cylinder>
         </link>
 
@@ -33,27 +33,26 @@
             <parent link="${parent}" />
             <child link="${prefix}_axle_link" />
             <xacro:insert_block name="origin" />
-            <axis xyz="0 0 1" />
+            <axis xyz="0 0 -1" />
             <dynamics friction="0.1" />
         </joint>
         
         <link name="${prefix}_wheel_link">
             <visual>
-                <origin xyz="0 0 0" rpy="0 ${pi / 4} 0" />
-                
+                <origin xyz="0 -${wheel_pos_y} 0" rpy="0 ${pi/4} ${pi/2}" />
                 <geometry>
                     <mesh filename="package://edna_description/meshes/SwerveWheel.stl" scale="0.001 0.001 0.001" />
                 </geometry>
                 <material name="yellow" />
             </visual>
             <collision>
-                <origin xyz="0.021 0 0" rpy="0 ${pi / 2} 0"/>
+                <origin xyz="0 0 0" rpy="${pi / 2} 0 0"/>
                 <geometry>
                     <cylinder  length="${wheel_length}" radius="${wheel_radius}"/>
                 </geometry>
             </collision>
             <xacro:inertial_cylinder mass="${wheel_mass}" radius="${wheel_radius}" length="${wheel_length}" >
-                <origin xyz="0 0 0" rpy="0 ${pi / 2} 0" />
+                <origin xyz="0 0 0" rpy="${pi / 2} 0 0" />
             </xacro:inertial_cylinder>
         </link>
 
@@ -61,8 +60,8 @@
         <joint name="${prefix}_wheel_joint" type="continuous">
             <parent link="${prefix}_axle_link" />
             <child link="${prefix}_wheel_link" />
-            <origin xyz="${wheel_pos_x} 0 ${wheel_pos_y}" rpy="0 0 0"/>
-            <axis xyz="1 0 0" />
+            <origin xyz="0 0 -${wheel_pos_z}" rpy="0 0 0"/>
+            <axis xyz="0 1 0" />
             <dynamics friction="0.1" />
         </joint>
 

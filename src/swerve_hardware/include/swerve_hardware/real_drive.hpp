@@ -66,22 +66,24 @@ public:
   hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-  // Parameters for the DiffBot simulation
-  double hw_start_sec_;
-  double hw_stop_sec_;
-  
+  double RIO_CONVERSION_FACTOR = 10000.0;
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
+  std::vector<double> hw_command_position_converted_;
+
+  // The state vectors
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
-  std::vector<double> empty_;
+
+  // Joint name array will align with state and command interface array
+  // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
   std::vector<std::string> joint_names_;
+  std::vector<std::string> joint_types_;
 
-  std::map<std::string, uint> joint_names_map_;
-
-
-  // Pub Sub to Robot
+  // Pub Sub to isaac
+  std::string joint_state_topic_ = "real_joint_states";
+  std::string joint_command_topic_ = "real_joint_commands";
   rclcpp::Node::SharedPtr node_;
   std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_ = nullptr;
   std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
@@ -90,6 +92,11 @@ private:
   bool subscriber_is_active_ = false;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr real_subscriber_ = nullptr;
   realtime_tools::RealtimeBox<std::shared_ptr<sensor_msgs::msg::JointState>> received_joint_msg_ptr_{nullptr};
+
+  // Converts isaac position range -2pi - 2pi into expected ros position range -pi - pi
+  double convertToRosPosition(double real_position);
+  double convertToRosVelocity(double real_velocity);
+  void convertToRealPositions(std::vector<double> ros_positions);
 };
 
 }  // namespace swerve_hardware

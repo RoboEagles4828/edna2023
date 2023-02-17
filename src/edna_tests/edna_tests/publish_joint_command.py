@@ -28,10 +28,9 @@ class PublishJointCmd(Node):
             'rear_right_wheel_joint',
             'rear_right_axle_joint']
         # position_cmds.name = []
-        rad = math.radians(0)
-        rad2 = math.radians(180)
-        velocity_cmds.velocity = [0.0]*8
-        velocity_cmds.position = [rad]*8
+        rad = math.pi
+        # velocity_cmds.velocity = [ 0.0 ] * 8
+        velocity_cmds.velocity = [ 0.0, rad, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         # position_cmds.position = []
 
         self.publisher_.publish(velocity_cmds)

@@ -6,6 +6,7 @@ echo "source /opt/ros/humble/setup.zsh" >> ~/.zshrc
 echo "source /workspaces/edna2023/install/setup.zsh" >> ~/.zshrc
 echo "export ROS_DISTRO=humble" >> ~/.zshrc
 echo "export ROS_DOMAIN_ID=0" >> ~/.zshrc
+echo "export RCUTILS_COLORIZED_OUTPUT=1" >> ~/.zshrc
 
 # Update apt list and rosdep
 sudo apt-get update
