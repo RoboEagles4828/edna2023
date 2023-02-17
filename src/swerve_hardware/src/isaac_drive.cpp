@@ -227,7 +227,7 @@ double IsaacDriveHardware::convertToRosPosition(double isaac_position)
   return isaac_position;
 }
 
-hardware_interface::return_type IsaacDriveHardware::read(const rclcpp::Time & time, const rclcpp::Duration & period)
+hardware_interface::return_type IsaacDriveHardware::read(const rclcpp::Time & time, const rclcpp::Duration & /*period*/)
 {
   rclcpp::spin_some(node_);
   std::shared_ptr<sensor_msgs::msg::JointState> last_command_msg;
@@ -258,7 +258,7 @@ hardware_interface::return_type IsaacDriveHardware::read(const rclcpp::Time & ti
 
 
 
-hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const rclcpp::Time & time, const rclcpp::Duration & period)
+hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   
   // Calculate Axle Velocities using motion magic

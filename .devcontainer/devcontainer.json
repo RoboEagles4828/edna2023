@@ -18,6 +18,7 @@
         "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}" 
     },
     "features": {
+        // Find a better way to assign uid and gid so we can rebuild offline
         "ghcr.io/devcontainers/features/common-utils:2": {
             "configureZshAsDefaultShell": true,
             "upgradePackages": false,
