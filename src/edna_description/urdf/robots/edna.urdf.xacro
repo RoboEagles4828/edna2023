@@ -17,7 +17,7 @@
   <xacro:property name="axle_pos_z" value="${69.056 / 1000}" />
 
   <!-- Camera Position Variables -->
-  <xacro:property name="cam_pos" value=".3575 0.085 0.0"/> <!-- Made up values, replace with real ones later. -->
+  <xacro:property name="cam_pos" value="0 0 0.3"/> <!-- Made up values, replace with real ones later. -->
 
   <!-- X IS FORWARD -->
   <!-- Y IS LEFT -->
@@ -37,9 +37,9 @@
     <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
-  <!-- <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
+  <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
-  </xacro:zed_camera>  -->
+  </xacro:zed_camera> 
 
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" />
 </robot>

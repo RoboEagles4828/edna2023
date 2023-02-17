@@ -183,8 +183,8 @@ class ImportBot(BaseSample):
         )
         return
     def create_imu(self, robot_prim_path):
-        imu_parent = "{}/imu_sensor_link".format(robot_prim_path)
-        imu_path = "/Imu_Sensor"
+        imu_parent = "{}/swerve_chassis_link".format(robot_prim_path)
+        imu_path = "/zed_camera_base_link/zed_camera_camera_center"
         self.imu_prim_path = imu_parent + imu_path
         imusensor = IMUSensor(prim_path=self.imu_prim_path, name = "Imu_Sensor")
         
