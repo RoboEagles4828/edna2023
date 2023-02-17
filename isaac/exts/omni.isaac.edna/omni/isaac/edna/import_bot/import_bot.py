@@ -183,7 +183,7 @@ class ImportBot(BaseSample):
         )
         return
     def create_imu(self, robot_prim_path):
-        imu_parent = "{}/imu_sensor_link".format(robot_prim_path)
+        imu_parent = "{}/zed_camera_camera_center".format(robot_prim_path)
         imu_path = "/Imu_Sensor"
         self.imu_prim_path = imu_parent + imu_path
         imusensor = IMUSensor(prim_path=self.imu_prim_path, name = "Imu_Sensor")
@@ -237,7 +237,7 @@ class ImportBot(BaseSample):
         )
         return
     def setup_imu_action_graph(self, robot_prim_path):
-        imu_parent = "{}/imu_sensor_link".format(robot_prim_path)
+        imu_parent = "{}/zed_camera_camera_center".format(robot_prim_path)
         imu_graph = "{}/imu_graph".format(imu_parent)
 
         og.Controller.edit(
