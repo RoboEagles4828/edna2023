@@ -37,9 +37,9 @@
     <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
-  <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
-    <origin xyz="${cam_pos}" rpy="${pi/2} 0 0" />
-  </xacro:zed_camera> 
+  <!-- <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
+    <origin xyz="${cam_pos}" rpy="0 0 0" />
+  </xacro:zed_camera>  -->
 
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" />
 </robot>
