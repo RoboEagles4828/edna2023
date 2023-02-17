@@ -42,7 +42,7 @@ def threadLoop(name, dds, action):
     global FRC_STAGE
     try:
         while STOP_THREADS == False:
-            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON":
+            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON" or name == "encoder":
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
