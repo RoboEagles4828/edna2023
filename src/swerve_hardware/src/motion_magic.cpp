@@ -42,21 +42,21 @@ namespace swerve_hardware
         double dir = 1.0;
         if (error < 0) dir = -1.0;
         double threshold = (1.0/3.0) * totalDistance;
-        std::cout << "Error: " << absError << std::endl;
+        // std::cout << "Error: " << absError << std::endl;
         if (absError >= 2*threshold) {
-            std::cout << "Acceleration Period" << std::endl;
-            return (sensorVelocity + MAX_ACCELERATION) * dir * dt;
+            // std::cout << "Acceleration Period" << std::endl;
+            return (sensorVelocity + MAX_ACCELERATION) * dt * dir;
         } 
         else if (absError > threshold && absError < 2*threshold) {
-            std::cout << "Cruise Period" << " " << threshold << std::endl;
+            // std::cout << "Cruise Period" << " " << threshold << std::endl;
             return MAX_VELOCITY * dir * dt;
         } 
         else if (absError >= 0 && absError <= tolerance) {
-            std::cout << "STOP" << std::endl;
+            // std::cout << "STOP" << std::endl;
             return 0.0;
         }
         else if (absError < threshold) {
-            std::cout << "Deceleration Period" << " " << threshold << std::endl;
+            // std::cout << "Deceleration Period" << " " << threshold << std::endl;
             double vel = (sensorVelocity - MAX_ACCELERATION) * dt;
             if (vel <= 0) vel = 0;
             return vel;

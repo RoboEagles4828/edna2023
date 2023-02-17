@@ -2,9 +2,8 @@ teleop_twist_joy_node:
   ros__parameters:
     require_enable_button: false
     axis_linear:  # Left thumb stick vertical
-      y: 0
       x: 1
-      z: 5
+      y: 0
     scale_linear:
       x: 3.0
       y: 3.0
