@@ -36,6 +36,7 @@
 #include "realtime_tools/realtime_buffer.h"
 #include "realtime_tools/realtime_publisher.h"
 #include "swerve_hardware/visibility_control.h"
+#include "swerve_hardware/motion_magic.hpp"
 
 namespace swerve_hardware
 {
@@ -66,24 +67,27 @@ public:
   hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-  // Parameters for the DiffBot simulation
-  double hw_start_sec_;
-  double hw_stop_sec_;
-
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
+  std::vector<double> hw_command_velocity_converted_;
+
+  // The state vectors
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
-  std::vector<double> empty_;
+
+  // Joint name array will align with state and command interface array
+  // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
   std::vector<std::string> joint_names_;
-  std::vector<std::string> joint_names_velocity_;
-  std::vector<std::string> joint_names_position_;
+  std::vector<std::string> joint_types_;
 
-  std::map<std::string, uint> joint_names_map_;
-
+  double MAX_VELOCITY = 30.0;
+  double MAX_ACCELERATION = 30.0;
+  std::vector<MotionMagic> motion_magic_;
 
   // Pub Sub to isaac
+  std::string joint_state_topic_ = "isaac_joint_states";
+  std::string joint_command_topic_ = "isaac_joint_commands";
   rclcpp::Node::SharedPtr node_;
   std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> isaac_publisher_ = nullptr;
   std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
@@ -92,6 +96,11 @@ private:
   bool subscriber_is_active_ = false;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr isaac_subscriber_ = nullptr;
   realtime_tools::RealtimeBox<std::shared_ptr<sensor_msgs::msg::JointState>> received_joint_msg_ptr_{nullptr};
+
+  // Converts isaac position range -2pi - 2pi into expected ros position range -pi - pi
+  double convertToRosPosition(double isaac_position);
+  double convertToRosVelocity(double isaac_velocity);
+  void convertToIsaacVelocities(std::vector<double> ros_velocities);
 };
 
 }  // namespace swerve_hardware
