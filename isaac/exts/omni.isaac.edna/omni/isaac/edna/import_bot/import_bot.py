@@ -155,7 +155,6 @@ class ImportBot(BaseSample):
         # set_drive_params(base,1,1000,98.0)
         #self.create_lidar(robot_prim_path)
         #self.create_depth_camera()
-        # self.create_imu(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)
         return
@@ -181,13 +180,7 @@ class ImportBot(BaseSample):
             yaw_offset=0.0,
             enable_semantics=False
         )
-        return
-    # def create_imu(self, robot_prim_path): # We're using Compute Odometry instead of Publish IMU, so this isn't needed
-    #     imu_parent = "{}/zed_camera_camera_center".format(robot_prim_path)
-    #     imu_path = "/Imu_Sensor"
-    #     self.imu_prim_path = imu_parent + imu_path
-    #     imusensor = IMUSensor(prim_path=self.imu_prim_path, name = "Imu_Sensor")
-        
+        return        
     
     def create_depth_camera(self):
         self.depth_left_camera_path = f"{self._robot_prim_path}/zed_left_camera_frame/left_cam"
@@ -236,6 +229,7 @@ class ImportBot(BaseSample):
             }
         )
         return
+    
     def setup_imu_action_graph(self, robot_prim_path):
         imu_graph = "{}/sensor_graph".format(robot_prim_path)
         swerve_link = "{}/swerve_chassis_link".format(robot_prim_path)
@@ -263,7 +257,6 @@ class ImportBot(BaseSample):
             }
         )
         set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim")
-
         return
     
     def setup_perspective_cam(self):
