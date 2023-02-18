@@ -32,44 +32,17 @@ namespace swerve_hardware
         // Basic implementation for now
         double error = getPositionDifference(targetPosition, sensorPosition);
         double absError = std::abs(error);
-        if (targetPosition != prevTargetPosition) {
-                totalDistance = absError;
-                prevTargetPosition = targetPosition;
-        }
         if (absError < tolerance) {
             return 0.0;
         }
         double dir = 1.0;
         if (error < 0) dir = -1.0;
-        double threshold = (1.0/3.0) * totalDistance;
-        // std::cout << "Error: " << absError << std::endl;
-        if (absError >= 2*threshold) {
-            // std::cout << "Acceleration Period" << std::endl;
-            return (sensorVelocity + MAX_ACCELERATION) * dt * dir;
-        } 
-        else if (absError > threshold && absError < 2*threshold) {
-            // std::cout << "Cruise Period" << " " << threshold << std::endl;
-            return MAX_VELOCITY * dir * dt;
-        } 
-        else if (absError >= 0 && absError <= tolerance) {
-            // std::cout << "STOP" << std::endl;
-            return 0.0;
+        if (absError <= rampWindow1) {
+            return velocityInRampWindow1 * dir;
+        } else if (absError <= rampWindow2) {
+            return velocityInRampWindow2 * dir;
+        } else {
+            return velocityInCruiseWindow * dir;
         }
-        else if (absError < threshold) {
-            // std::cout << "Deceleration Period" << " " << threshold << std::endl;
-            double vel = (sensorVelocity - MAX_ACCELERATION) * dt;
-            if (vel <= 0) vel = 0;
-            return vel;
-        }
-        else {        
-            return 0.0;
-        }
-        // if (absError <= rampWindow1) {
-        //     return velocityInRampWindow1 * dir;
-        // } else if (absError <= rampWindow2) {
-        //     return velocityInRampWindow2 * dir;
-        // } else {
-        //     return velocityInCruiseWindow * dir;
-        // }
     }
 } // namespace swerve_hardware
