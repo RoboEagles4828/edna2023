@@ -15,6 +15,7 @@ import os
 import numpy as np
 import math
 import carb
+from omni.isaac.dynamic_control import CompositeMaterialBuilder
 
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
@@ -28,7 +29,16 @@ class ImportBot(BaseSample):
         super().__init__()
         return
 
-    
+
+    def set_friction(self, robot_prim_path):
+        stage = self._world.stage
+
+        front_left_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/front_left_axle_link/front_left_wheel_joint"))
+        front_right_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint"))
+        rear_left_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint"))
+        rear_right_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint"))
+
+        front_left_wheel_material.
 
     def setup_scene(self):
         world = self.get_world()
@@ -256,7 +266,7 @@ class ImportBot(BaseSample):
                 ],
             }
         )
-        set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim")
+        set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
         return
     
     def setup_perspective_cam(self):
