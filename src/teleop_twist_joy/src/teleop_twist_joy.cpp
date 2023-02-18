@@ -35,12 +35,10 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include <rcutils/logging_macros.h>
 #include <sensor_msgs/msg/joy.hpp>
 #include "nav_msgs/msg/odometry.hpp"
-#include "message_filters/subscriber.h"
-#include "message_filters/time_synchronizer.h"
-#include "message_filters/synchronizer.h"
-#include "message_filters/sync_policies/approximate_time.h"
-#include "boost/bind.hpp"
-#include <boost/filesystem.hpp>                                    
+// #include "message_filters/subscriber.h"
+// #include "message_filters/time_synchronizer.h"
+// #include "message_filters/synchronizer.h"
+// #include "message_filters/sync_policies/approximate_time.h"                               
 
 #include "teleop_twist_joy/teleop_twist_joy.hpp"
 
@@ -57,12 +55,14 @@ namespace teleop_twist_joy
  */
 struct TeleopTwistJoy::Impl
 {
-  void joyCallback( sensor_msgs::msg::Joy::SharedPtr joy, nav_msgs::msg::Odometry::SharedPtr odom_msg);
-  void sendCmdVelMsg( sensor_msgs::msg::Joy::SharedPtr&, nav_msgs::msg::Odometry::SharedPtr&, const std::string& which_map);
+  void joyCallback( const sensor_msgs::msg::Joy::SharedPtr joy);
+  void sendCmdVelMsg( const sensor_msgs::msg::Joy::SharedPtr&, const std::string& which_map);
+  void odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg);
 
-  // rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
-  // rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub;
+  rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub;
+  nav_msgs::msg::Odometry::SharedPtr last_msg;
 
   bool require_enable_button;
   int64_t enable_button;
@@ -85,18 +85,19 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   pimpl_ = new Impl;
   // rclcpp::Node node = Node("teleop_twist_joy_node", options);
   pimpl_->cmd_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-  // pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10),
-  //   std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
-  // pimpl_->odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("odom", rclcpp::QoS(10),
-  //   std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
-  message_filters::Subscriber<sensor_msgs::msg::Joy> joy_sub(this , "joy");
-  message_filters::Subscriber<nav_msgs::msg::Odometry> odom_sub(this, "odom");
-  // typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Joy, nav_msgs::msg::Odometry> MySyncPolicy;
+  pimpl_->odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("odom", rclcpp::QoS(10),
+    std::bind(&TeleopTwistJoy::Impl::odomCallback, this->pimpl_, std::placeholders::_1));
+  pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10),
+    std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
+  
+  // message_filters::Subscriber<sensor_msgs::msg::Joy> joy_sub(this , "joy");
+  // message_filters::Subscriber<nav_msgs::msg::Odometry> odom_sub(this, "odom");
+  // // typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Joy, nav_msgs::msg::Odometry> MySyncPolicy;
 
-  // message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), joy_sub, odom_sub);
-  // sync.registerCallback(boost::bind(&TeleopTwistJoy::Impl::joyCallback,this, _1, _2));
-  message_filters::TimeSynchronizer<sensor_msgs::msg::Joy, nav_msgs::msg::Odometry> sync(joy_sub, odom_sub, 1);
-  sync.registerCallback(boost::bind(&TeleopTwistJoy::Impl::joyCallback, this, _1, _2));
+  // // message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), joy_sub, odom_sub);
+  // // sync.registerCallback(boost::bind(&TeleopTwistJoy::Impl::joyCallback,this, _1, _2));
+  // message_filters::TimeSynchronizer<sensor_msgs::msg::Joy, nav_msgs::msg::Odometry> sync(joy_sub, odom_sub, 1);
+  // sync.registerCallback(boost::bind(&TeleopTwistJoy::Impl::joyCallback, this, _1, _2));
   // _3, _4, _5, _6,_7,_8,_9
 
   pimpl_->require_enable_button = this->declare_parameter("require_enable_button", true);
@@ -353,21 +354,21 @@ double get_scale_val(const std::map<std::string, int64_t>& axis_map,
 }
 double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
 {
-  // odom_msg->
-  return 0.0;
+  
+  return odom_msg-> pose.pose.orientation.w;
 }
 
-void TeleopTwistJoy::Impl::sendCmdVelMsg(sensor_msgs::msg::Joy::SharedPtr& joy_msg, nav_msgs::msg::Odometry::SharedPtr& odom_msg,
+void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
                                          const std::string& which_map)
 {
   // Initializes with zeros by default.
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
-  float lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
-  float lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
-  float lin_vel_diretion = 0.0;
-  float ang_z_vel = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
-  float lin_magnitude = sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2));
-  float robot_odom_orientation = get_orientation_val(odom_msg);
+  double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
+  double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  double lin_vel_diretion = 0.0;
+  double lin_magnitude = sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2));
+  auto odom_msg = std::make_unique<nav_msgs::msg::Odometry>();
+  double robot_odom_orientation = get_orientation_val(last_msg)* M_1_PI + M_1_PI/2;
   if(lin_magnitude>get_scale_val(axis_linear_map, scale_linear_map[which_map], "x")){
     if(lin_x_vel<1.10){
       lin_vel_diretion = acos(lin_x_vel/get_scale_val(axis_linear_map, scale_linear_map[which_map], "x"));
@@ -387,6 +388,9 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(sensor_msgs::msg::Joy::SharedPtr& joy_m
       
     }
   }
+  double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
+  lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
+  lin_x_vel = temp;
   
   cmd_vel_msg->linear.x = lin_x_vel;
   cmd_vel_msg->linear.y = lin_y_vel;
@@ -394,24 +398,23 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(sensor_msgs::msg::Joy::SharedPtr& joy_m
   cmd_vel_msg->angular.z = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
   cmd_vel_msg->angular.y = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "pitch");
   cmd_vel_msg->angular.x = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "roll");
-
   cmd_vel_pub->publish(std::move(cmd_vel_msg));
   sent_disable_msg = false;
 }
 
-void TeleopTwistJoy::Impl::joyCallback(sensor_msgs::msg::Joy::SharedPtr joy_msg, nav_msgs::msg::Odometry::SharedPtr odom_msg)
+void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::msg::Joy::SharedPtr joy_msg)
 {
   if (enable_turbo_button >= 0 &&
       static_cast<int>(joy_msg->buttons.size()) > enable_turbo_button &&
       joy_msg->buttons[enable_turbo_button])
   {
-    sendCmdVelMsg(joy_msg, odom_msg, "turbo");
+    sendCmdVelMsg(joy_msg,"turbo");
   }
   else if (!require_enable_button ||
 	   (static_cast<int>(joy_msg->buttons.size()) > enable_button &&
            joy_msg->buttons[enable_button]))
   {
-    sendCmdVelMsg(joy_msg, odom_msg, "normal");
+    sendCmdVelMsg(joy_msg,"normal");
   }
   else
   {
@@ -426,33 +429,10 @@ void TeleopTwistJoy::Impl::joyCallback(sensor_msgs::msg::Joy::SharedPtr joy_msg,
     }
   }
 }
-// void TeleopTwistJoy::Impl::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg)
-// {
-//   if (enable_turbo_button >= 0 &&
-//       static_cast<int>(joy_msg->buttons.size()) > enable_turbo_button &&
-//       joy_msg->buttons[enable_turbo_button])
-//   {
-//     sendCmdVelMsg(joy_msg, "turbo");
-//   }
-//   else if (!require_enable_button ||
-// 	   (static_cast<int>(joy_msg->buttons.size()) > enable_button &&
-//            joy_msg->buttons[enable_button]))
-//   {
-//     sendCmdVelMsg(joy_msg, "normal");
-//   }
-//   else
-//   {
-//     // When enable button is released, immediately send a single no-motion command
-//     // in order to stop the robot.
-//     if (!sent_disable_msg)
-//     {
-//       // Initializes with zeros by default.
-//       auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
-//       cmd_vel_pub->publish(std::move(cmd_vel_msg));
-//       sent_disable_msg = true;
-//     }
-//   }
-// }
+void TeleopTwistJoy::Impl::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg)
+{
+ last_msg = odom_msg;
+}
 
 }  // namespace teleop_twist_joy
 
