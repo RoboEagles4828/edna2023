@@ -155,7 +155,6 @@ class ImportBot(BaseSample):
         # set_drive_params(base,1,1000,98.0)
         #self.create_lidar(robot_prim_path)
         #self.create_depth_camera()
-        self.create_imu(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)
         return
@@ -181,13 +180,7 @@ class ImportBot(BaseSample):
             yaw_offset=0.0,
             enable_semantics=False
         )
-        return
-    def create_imu(self, robot_prim_path):
-        imu_parent = "{}/swerve_chassis_link".format(robot_prim_path)
-        imu_path = "/zed_camera_base_link/zed_camera_camera_center"
-        self.imu_prim_path = imu_parent + imu_path
-        imusensor = IMUSensor(prim_path=self.imu_prim_path, name = "Imu_Sensor")
-        
+        return        
     
     def create_depth_camera(self):
         self.depth_left_camera_path = f"{self._robot_prim_path}/zed_left_camera_frame/left_cam"
@@ -236,29 +229,34 @@ class ImportBot(BaseSample):
             }
         )
         return
+    
     def setup_imu_action_graph(self, robot_prim_path):
-        imu_graph = "{}/imu_graph".format(robot_prim_path)
+        imu_graph = "{}/sensor_graph".format(robot_prim_path)
+        swerve_link = "{}/swerve_chassis_link".format(robot_prim_path)
 
         og.Controller.edit(
             {"graph_path": imu_graph, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("ReadImuSensor", "omni.isaac.sensor.IsaacReadIMU"),
-                    ("PublishImu", "omni.isaac.ros2_bridge.ROS2PublishImu"),
+                    ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                    ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry")
                 ],
                 og.Controller.Keys.CONNECT: [
-                    ("OnPlaybackTick.outputs:tick", "ReadImuSensor.inputs:execIn"),
-                    ("ReadImuSensor.outputs:execOut", "PublishImu.inputs:execIn"),
-                    ("ReadImuSensor.outputs:orientation", "PublishImu.inputs:orientation"),
+                    ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
+                    ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
+                    ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
+                    ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
+                    ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
+                    ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
+                    ("Context.outputs:context", "PublishOdometry.inputs:context"),
+                    ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp")
                 ],
-                # og.Controller.Keys.SET_VALUES: [
-                #     ("ReadImuSensor.inputs:imuPrim", self.imu_prim_path),
-                # ],
             }
         )
-        set_target_prims(primPath=f"{imu_graph}/ReadImuSensor", targetPrimPaths=[self.imu_prim_path], inputName="inputs:imuPrim")
-
+        set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim")
         return
     
     def setup_perspective_cam(self):
