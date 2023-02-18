@@ -362,6 +362,7 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr 
       
     }
   }
+  
   cmd_vel_msg->linear.x = lin_x_vel;
   cmd_vel_msg->linear.y = lin_y_vel;
   cmd_vel_msg->linear.z = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "z");
