@@ -9,7 +9,7 @@ from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.kit.viewport_legacy import get_default_viewport_window
 from omni.isaac.sensor import IMUSensor
-from pxr import UsdPhysics
+from pxr import UsdPhysics, UsdShade, Sdf, Gf
 import omni.kit.commands
 import os
 import numpy as np
@@ -33,12 +33,12 @@ class ImportBot(BaseSample):
     def set_friction(self, robot_prim_path):
         stage = self._world.stage
 
-        front_left_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/front_left_axle_link/front_left_wheel_joint"))
-        front_right_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint"))
-        rear_left_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint"))
-        rear_right_wheel_material = UsdPhysics.MaterialAPI(stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint"))
+        front_left_wheel_material = stage.GetPrimAtPath(f"{robot_prim_path}/front_left_axle_link/front_left_wheel_joint")
+        front_right_wheel_material = stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint")
+        rear_left_wheel_material = stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint")
+        rear_right_wheel_material = stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint")
 
-        front_left_wheel_material.
+        
 
     def setup_scene(self):
         world = self.get_world()
