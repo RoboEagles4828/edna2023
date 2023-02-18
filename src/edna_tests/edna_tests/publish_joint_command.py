@@ -9,8 +9,8 @@ class PublishJointCmd(Node):
 
     def __init__(self):
         super().__init__('publish_joint_commands')
-        self.publisher_ = self.create_publisher(JointState, 'isaac_joint_commands', 10)
-        timer_period = 0.1  # seconds
+        self.publisher_ = self.create_publisher(JointState, 'real_joint_commands', 10)
+        timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
 
@@ -29,8 +29,8 @@ class PublishJointCmd(Node):
             'rear_right_axle_joint']
         # position_cmds.name = []
         rad = math.pi
-        velocity_cmds.velocity = [ rad, 0.0, rad, 0.0, rad, 0.0, rad, 0.0]
-        # velocity_cmds.position = [ 0.0, 0.0, 0.0, 0.0, rad, rad, rad, rad]
+        # velocity_cmds.velocity = [ 0.0 ] * 8
+        velocity_cmds.velocity = [ 0.0, rad, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         # position_cmds.position = []
 
         self.publisher_.publish(velocity_cmds)

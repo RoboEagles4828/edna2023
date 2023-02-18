@@ -11,35 +11,35 @@
   <xacro:include filename="$(find edna_description)/urdf/parts/square_chassis.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/swerve_axle.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/zed_macro.urdf.xacro" />
-  <xacro:include filename="$(find edna_description)/urdf/parts/imu.urdf.xacro" />
 
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
-  <xacro:property name="axle_pos_y" value="${69.056 / 1000}" />
+  <xacro:property name="axle_pos_z" value="${69.056 / 1000}" />
 
   <!-- Camera Position Variables -->
-  <xacro:property name="cam_pos" value=".3575 0.085 0.0"/> <!-- Made up values, replace with real ones later. -->
+  <xacro:property name="cam_pos" value="0 0 0.3"/> <!-- Made up values, replace with real ones later. -->
+
+  <!-- X IS FORWARD -->
+  <!-- Y IS LEFT -->
+  <!-- Z IS UP -->
 
   <xacro:square_chassis prefix="swerve" />
   <xacro:swerve_axle prefix="front_left" parent="swerve_chassis_link">
-    <origin xyz="${axle_pos} ${axle_pos_y} ${axle_pos}" rpy="${pi / 2} 0 0" />
+    <origin xyz="${axle_pos} ${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   <xacro:swerve_axle prefix="front_right" parent="swerve_chassis_link">
-    <origin xyz="-${axle_pos} ${axle_pos_y} ${axle_pos}" rpy="${pi / 2} 0 0" />
+    <origin xyz="${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   <xacro:swerve_axle prefix="rear_left" parent="swerve_chassis_link">
-    <origin xyz="${axle_pos} ${axle_pos_y} -${axle_pos}" rpy="${pi / 2} 0 0" />
+    <origin xyz="-${axle_pos} ${axle_pos} ${axle_pos_z} " rpy="0 0 0" />
   </xacro:swerve_axle>
   <xacro:swerve_axle prefix="rear_right" parent="swerve_chassis_link">
-    <origin xyz="-${axle_pos} ${axle_pos_y} -${axle_pos}" rpy="${pi / 2} 0 0" />
+    <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
   <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
-    <origin xyz="${cam_pos}" rpy="${pi/2} 0 0" />
-  </xacro:zed_camera>
-  <xacro:imu_sensor parent="swerve_chassis_link">
-    <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
-  </xacro:imu_sensor> 
+    <origin xyz="${cam_pos}" rpy="0 0 0" />
+  </xacro:zed_camera> 
 
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" />
 </robot>

@@ -17,7 +17,6 @@
 -->
 
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
-  <xacro:include filename="$(find edna_description)/urdf/util/materials.xacro" />
   <xacro:property name="M_PI"     value="3.1415926535897931" />
 
   <!--
