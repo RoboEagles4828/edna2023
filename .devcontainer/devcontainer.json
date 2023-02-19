@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/developer-environment:2023",
+    "image": "ghcr.io/roboeagles4828/developer-environment:2",
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
         "XAUTHORITY": "/tmp/.docker.xauth",

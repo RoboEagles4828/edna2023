@@ -38,6 +38,7 @@ launch_isaac() {
     -e "FASTRTPS_DEFAULT_PROFILES_FILE=/isaac-sim/ros2_workspace/fastdds.xml" \
     -v /var/run/docker.sock:/var/run/docker.sock:rw \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw \
     -v ${nvidia_layers}:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
     -v ${nvidia_icd}:/etc/vulkan/icd.d/nvidia_icd.json \
     -v ${_10_nvidia}:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \

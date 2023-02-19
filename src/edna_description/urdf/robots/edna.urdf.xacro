@@ -30,21 +30,21 @@
   </xacro:square_chassis>
 
   <!-- Drive Train -->
-  <xacro:swerve_axle prefix="front_left" parent="base_link">
+  <xacro:swerve_axle prefix="front_left" parent="swerve_chassis_link">
     <origin xyz="${axle_pos} ${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="front_right" parent="base_link">
+  <xacro:swerve_axle prefix="front_right" parent="swerve_chassis_link">
     <origin xyz="${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="rear_left" parent="base_link">
+  <xacro:swerve_axle prefix="rear_left" parent="swerve_chassis_link">
     <origin xyz="-${axle_pos} ${axle_pos} ${axle_pos_z} " rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="rear_right" parent="base_link">
+  <xacro:swerve_axle prefix="rear_right" parent="swerve_chassis_link">
     <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
   <!-- Sensors -->
-  <xacro:zed_camera name="zed_camera" model="zed2i" parent="swerve_chassis_link">
+  <xacro:zed_camera prefix="zed" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 

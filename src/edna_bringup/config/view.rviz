@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1/Description Topic1
+        - /TF1
         - /Odometry1/Topic1
         - /Odometry1/Shape1
         - /Odometry1/Covariance1
@@ -118,28 +119,28 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        zed_camera_base_link:
+        zed_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        zed_camera_camera_center:
+        zed_camera_center:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        zed_camera_left_camera_frame:
+        zed_left_camera_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        zed_camera_left_camera_optical_frame:
+        zed_left_camera_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        zed_camera_right_camera_frame:
+        zed_right_camera_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        zed_camera_right_camera_optical_frame:
+        zed_right_camera_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -178,17 +179,17 @@ Visualization Manager:
           Value: false
         swerve_chassis_link:
           Value: false
-        zed_camera_base_link:
+        zed_base_link:
           Value: false
-        zed_camera_camera_center:
+        zed_camera_center:
           Value: false
-        zed_camera_left_camera_frame:
+        zed_left_camera_frame:
           Value: false
-        zed_camera_left_camera_optical_frame:
+        zed_left_camera_optical_frame:
           Value: false
-        zed_camera_right_camera_frame:
+        zed_right_camera_frame:
           Value: false
-        zed_camera_right_camera_optical_frame:
+        zed_right_camera_optical_frame:
           Value: false
       Marker Scale: 1
       Name: TF
@@ -198,26 +199,26 @@ Visualization Manager:
       Tree:
         odom:
           base_link:
-            front_left_axle_link:
-              front_left_wheel_link:
-                {}
-            front_right_axle_link:
-              front_right_wheel_link:
-                {}
-            rear_left_axle_link:
-              rear_left_wheel_link:
-                {}
-            rear_right_axle_link:
-              rear_right_wheel_link:
-                {}
             swerve_chassis_link:
-              zed_camera_base_link:
-                zed_camera_camera_center:
-                  zed_camera_left_camera_frame:
-                    zed_camera_left_camera_optical_frame:
+              front_left_axle_link:
+                front_left_wheel_link:
+                  {}
+              front_right_axle_link:
+                front_right_wheel_link:
+                  {}
+              rear_left_axle_link:
+                rear_left_wheel_link:
+                  {}
+              rear_right_axle_link:
+                rear_right_wheel_link:
+                  {}
+              zed_base_link:
+                zed_camera_center:
+                  zed_left_camera_frame:
+                    zed_left_camera_optical_frame:
                       {}
-                  zed_camera_right_camera_frame:
-                    zed_camera_right_camera_optical_frame:
+                  zed_right_camera_frame:
+                    zed_right_camera_optical_frame:
                       {}
       Update Interval: 0
       Value: true
