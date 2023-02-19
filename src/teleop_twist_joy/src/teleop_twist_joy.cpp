@@ -34,6 +34,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include <rclcpp_components/register_node_macro.hpp>
 #include <rcutils/logging_macros.h>
 #include <sensor_msgs/msg/joy.hpp>
+#include "nav_msgs/msg/odometry.hpp"
+                              
 
 #include "teleop_twist_joy/teleop_twist_joy.hpp"
 
@@ -50,11 +52,14 @@ namespace teleop_twist_joy
  */
 struct TeleopTwistJoy::Impl
 {
-  void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joy);
-  void sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr, const std::string& which_map);
+  void joyCallback( const sensor_msgs::msg::Joy::SharedPtr joy);
+  void sendCmdVelMsg( const sensor_msgs::msg::Joy::SharedPtr&, const std::string& which_map);
+  void odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg);
 
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub;
+  nav_msgs::msg::Odometry::SharedPtr last_msg;
 
   bool require_enable_button;
   int64_t enable_button;
@@ -75,10 +80,13 @@ struct TeleopTwistJoy::Impl
 TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleop_twist_joy_node", options)
 {
   pimpl_ = new Impl;
-
+  // rclcpp::Node node = Node("teleop_twist_joy_node", options);
   pimpl_->cmd_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+  pimpl_->odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("odom", rclcpp::QoS(10),
+    std::bind(&TeleopTwistJoy::Impl::odomCallback, this->pimpl_, std::placeholders::_1));
   pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10),
     std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
+
 
   pimpl_->require_enable_button = this->declare_parameter("require_enable_button", true);
 
@@ -307,7 +315,7 @@ TeleopTwistJoy::~TeleopTwistJoy()
   delete pimpl_;
 }
 
-double getVal(const sensor_msgs::msg::Joy::SharedPtr joy_msg, const std::map<std::string, int64_t>& axis_map,
+double getVal(sensor_msgs::msg::Joy::SharedPtr joy_msg, const std::map<std::string, int64_t>& axis_map,
               const std::map<std::string, double>& scale_map, const std::string& fieldname)
 {
   if (axis_map.find(fieldname) == axis_map.end() ||
@@ -320,20 +328,45 @@ double getVal(const sensor_msgs::msg::Joy::SharedPtr joy_msg, const std::map<std
 
   return joy_msg->axes[axis_map.at(fieldname)] * scale_map.at(fieldname);
 }
+double get_scale_val(const std::map<std::string, int64_t>& axis_map,
+              const std::map<std::string, double>& scale_map, const std::string& fieldname)
+{
+  if (axis_map.find(fieldname) == axis_map.end() ||
+      axis_map.at(fieldname) == -1L ||
+      scale_map.find(fieldname) == scale_map.end())
+  {
+    return 0.0;
+  }
 
-void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr joy_msg,
+  return scale_map.at(fieldname);
+}
+double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
+{
+  return acos(odom_msg-> pose.pose.orientation.w);
+}
+
+void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
                                          const std::string& which_map)
 {
   // Initializes with zeros by default.
-  auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
+  
 
-  cmd_vel_msg->linear.x = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
-  cmd_vel_msg->linear.y = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
+  double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
+  double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  double robot_odom_orientation = ((get_orientation_val(last_msg))* 2);
+// Math for field oriented drive
+  double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
+  lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
+  lin_x_vel = temp;
+
+  //Set Velocities in twist msg and publish
+  cmd_vel_msg->linear.x = lin_x_vel;
+  cmd_vel_msg->linear.y = lin_y_vel;
   cmd_vel_msg->linear.z = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "z");
   cmd_vel_msg->angular.z = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
   cmd_vel_msg->angular.y = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "pitch");
   cmd_vel_msg->angular.x = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "roll");
-
   cmd_vel_pub->publish(std::move(cmd_vel_msg));
   sent_disable_msg = false;
 }
@@ -344,13 +377,13 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::msg::Joy::SharedPtr jo
       static_cast<int>(joy_msg->buttons.size()) > enable_turbo_button &&
       joy_msg->buttons[enable_turbo_button])
   {
-    sendCmdVelMsg(joy_msg, "turbo");
+    sendCmdVelMsg(joy_msg,"turbo");
   }
   else if (!require_enable_button ||
 	   (static_cast<int>(joy_msg->buttons.size()) > enable_button &&
            joy_msg->buttons[enable_button]))
   {
-    sendCmdVelMsg(joy_msg, "normal");
+    sendCmdVelMsg(joy_msg,"normal");
   }
   else
   {
@@ -364,6 +397,11 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::msg::Joy::SharedPtr jo
       sent_disable_msg = true;
     }
   }
+}
+void TeleopTwistJoy::Impl::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg)
+{
+//Saves current message as global pointer
+ last_msg = odom_msg;
 }
 
 }  // namespace teleop_twist_joy
