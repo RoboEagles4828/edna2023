@@ -354,43 +354,53 @@ double get_scale_val(const std::map<std::string, int64_t>& axis_map,
 }
 double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
 {
-  
-  return odom_msg-> pose.pose.orientation.w;
+  return acos(odom_msg-> pose.pose.orientation.w);
 }
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
                                          const std::string& which_map)
 {
   // Initializes with zeros by default.
+  
+
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
   double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
   double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  double ang_z_vel =  getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
   double lin_vel_diretion = 0.0;
   double lin_magnitude = sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2));
-  auto odom_msg = std::make_unique<nav_msgs::msg::Odometry>();
-  double robot_odom_orientation = get_orientation_val(last_msg)* M_1_PI + M_1_PI/2;
-  if(lin_magnitude>get_scale_val(axis_linear_map, scale_linear_map[which_map], "x")){
-    if(lin_x_vel<1.10){
-      lin_vel_diretion = acos(lin_x_vel/get_scale_val(axis_linear_map, scale_linear_map[which_map], "x"));
-      lin_y_vel = sin(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "y");
-    }
-    else if(lin_y_vel<1.10){
-      lin_vel_diretion = asin(lin_y_vel/get_scale_val(axis_linear_map, scale_linear_map[which_map], "y"));
-      lin_x_vel = cos(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "x");
+  double robot_odom_orientation = ((get_orientation_val(last_msg))* 2);
+  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "input:%f", get_orientation_val(last_msg));
+  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "output:%f", robot_odom_orientation);
+  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "angular velocity:%f", ang_z_vel);
+  
 
-    }
-    else{
-      lin_vel_diretion = atan2(lin_x_vel, lin_y_vel);
-      lin_x_vel = cos(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "x");
-      lin_y_vel = sin(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "y");
+  // if(lin_magnitude>get_scale_val(axis_linear_map, scale_linear_map[which_map], "x")){
+  //   if(lin_x_vel<1.10){
+  //     lin_vel_diretion = acos(lin_x_vel/get_scale_val(axis_linear_map, scale_linear_map[which_map], "x"));
+  //     lin_y_vel = sin(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "y");
+  //   }
+  //   else if(lin_y_vel<1.10){
+  //     lin_vel_diretion = asin(lin_y_vel/get_scale_val(axis_linear_map, scale_linear_map[which_map], "y"));
+  //     lin_x_vel = cos(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "x");
+
+  //   }
+  //   else{
+  //     lin_vel_diretion = atan2(lin_x_vel, lin_y_vel);
+  //     lin_x_vel = cos(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "x");
+  //     lin_y_vel = sin(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "y");
 
 
       
-    }
-  }
+  //   }
+  // }
+  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "x velocity:%f", lin_x_vel);
+  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "y velocity:%f", lin_y_vel);
   double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
   lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
   lin_x_vel = temp;
+    // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "after velocity:%f", lin_x_vel);
+
   
   cmd_vel_msg->linear.x = lin_x_vel;
   cmd_vel_msg->linear.y = lin_y_vel;

@@ -247,10 +247,10 @@ class ImportBot(BaseSample):
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
                     ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
-                    ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
-                    ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
+                    # ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
+                    # ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
                     ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
-                    ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
+                    # ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
                     ("Context.outputs:context", "PublishOdometry.inputs:context"),
                     ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp")
                 ],
