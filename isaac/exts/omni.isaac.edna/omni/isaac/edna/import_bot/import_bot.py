@@ -16,6 +16,8 @@ import numpy as np
 import math
 import carb
 
+USE_DOMAIN_ENV_VAR = True
+
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
     drive.GetDampingAttr().Set(damping)
@@ -221,6 +223,9 @@ class ImportBot(BaseSample):
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                 ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
+                ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
                     ("Context.outputs:context", "PublishClock.inputs:context"),
@@ -231,7 +236,7 @@ class ImportBot(BaseSample):
         return
     
     def setup_imu_action_graph(self, robot_prim_path):
-        imu_graph = "{}/sensor_graph".format(robot_prim_path)
+        imu_graph = "{}/imu_sensor_graph".format(robot_prim_path)
         swerve_link = "{}/swerve_chassis_link".format(robot_prim_path)
 
         og.Controller.edit(
@@ -242,58 +247,30 @@ class ImportBot(BaseSample):
                     ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
-                    ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry")
+                    ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
+                    ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree")
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
+                    ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
                     ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
                     # ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
                     # ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
                     ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
-                    # ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
+                    ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
+                    ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
+                    ("ComputeOdometry.outputs:position", "RawOdomTransform.inputs:translation"),
                     ("Context.outputs:context", "PublishOdometry.inputs:context"),
-                    ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp")
+                    ("Context.outputs:context", "RawOdomTransform.inputs:context"),
+                    ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
+                    ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
                 ],
             }
         )
         set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim")
-        return
-    
-    def setup_perspective_cam(self):
-        # Get the Viewport and the Default Camera
-        viewport_window = get_default_viewport_window()
-        camera = self.get_world().stage.GetPrimAtPath(viewport_window.get_active_camera())
-
-        # Get Default Cam Values
-        camAttributes = {}
-        camOrientation = None
-        camTranslation = None
-        for att in camera.GetAttributes():
-            name = att.GetName()
-            if not (name.startswith('omni') or name.startswith('xform')):
-                camAttributes[att.GetName()] = att.Get()
-            elif name == 'xformOp:orient':
-                convertedQuat = [att.Get().GetReal()] + list(att.Get().GetImaginary())
-                camOrientation = np.array(convertedQuat)
-            elif name == 'xformOp:translate':
-                camTranslation = np.array(list(att.Get()))
-
-        # Modify what we want
-        camAttributes["clippingRange"] = (0.1, 1000000)
-        camAttributes["clippingPlanes"] = np.array([1.0, 0.0, 1.0, 1.0])
-
-        # Create a new camera with desired values
-        cam_path = "/World/PerspectiveCam"
-        prims.create_prim(
-            prim_path=cam_path,
-            prim_type="Camera",
-            translation=camTranslation,
-            orientation=camOrientation,
-            attributes=camAttributes,
-        )
-
-        # Use the camera for our viewport
-        viewport_window.set_active_camera(cam_path)
         return
 
     def setup_robot_action_graph(self, robot_prim_path):
@@ -314,7 +291,7 @@ class ImportBot(BaseSample):
                     ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                     ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                     ("articulation_controller.inputs:usePath", False),
-                   
+                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),

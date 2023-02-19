@@ -11,7 +11,10 @@ class DDS_Subscriber:
 
     def read(self) -> dict:
         # Take the input data off of queue and read it
-        self.input.take()
+        try:
+            self.input.take()
+        except rti.Error as e:
+            logging.warn("RTI Read Error", e.args)
         # Return the first valid data sample
         data = None
         for sample in self.input.samples.valid_data_iter:
@@ -32,7 +35,10 @@ class DDS_Publisher:
     def write(self, data) -> None:
         if data:
             self.output.instance.set_dictionary(data)
-            self.output.write()
+            try:
+                self.output.write()
+            except rti.Error as e:
+                logging.warn("RTI Write Error", e.args)
         else:
             logging.warn("No data to write")
 

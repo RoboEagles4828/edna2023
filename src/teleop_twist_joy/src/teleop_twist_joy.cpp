@@ -370,38 +370,12 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   double lin_vel_diretion = 0.0;
   double lin_magnitude = sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2));
   double robot_odom_orientation = ((get_orientation_val(last_msg))* 2);
-  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "input:%f", get_orientation_val(last_msg));
-  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "output:%f", robot_odom_orientation);
-  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "angular velocity:%f", ang_z_vel);
-  
-
-  // if(lin_magnitude>get_scale_val(axis_linear_map, scale_linear_map[which_map], "x")){
-  //   if(lin_x_vel<1.10){
-  //     lin_vel_diretion = acos(lin_x_vel/get_scale_val(axis_linear_map, scale_linear_map[which_map], "x"));
-  //     lin_y_vel = sin(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "y");
-  //   }
-  //   else if(lin_y_vel<1.10){
-  //     lin_vel_diretion = asin(lin_y_vel/get_scale_val(axis_linear_map, scale_linear_map[which_map], "y"));
-  //     lin_x_vel = cos(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "x");
-
-  //   }
-  //   else{
-  //     lin_vel_diretion = atan2(lin_x_vel, lin_y_vel);
-  //     lin_x_vel = cos(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "x");
-  //     lin_y_vel = sin(lin_vel_diretion) * get_scale_val(axis_linear_map, scale_linear_map[which_map], "y");
-
-
-      
-  //   }
-  // }
-  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "x velocity:%f", lin_x_vel);
-  // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "y velocity:%f", lin_y_vel);
+// Math for field oriented drive
   double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
   lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
   lin_x_vel = temp;
-    // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "after velocity:%f", lin_x_vel);
 
-  
+  //Set Velocities in twist msg and publish
   cmd_vel_msg->linear.x = lin_x_vel;
   cmd_vel_msg->linear.y = lin_y_vel;
   cmd_vel_msg->linear.z = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "z");
@@ -441,6 +415,7 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::msg::Joy::SharedPtr jo
 }
 void TeleopTwistJoy::Impl::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg)
 {
+//Saves current message as global pointer
  last_msg = odom_msg;
 }
 

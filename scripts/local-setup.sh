@@ -4,6 +4,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+# Graphics Driver Check
 hasDriver=$(nvidia-smi | grep "Version: 525")
 if [[ -z "$hasDriver" ]]; then
   echo -e "${RED}Please install nvidia driver 525 before this install script${NC}"
@@ -18,13 +19,29 @@ sudo apt-get install \
     curl \
     gnupg-agent \
     software-properties-common \
-    git-lfs
+    git-lfs -y
 
-# Git lfs for ros-isaac
-# git lfs install
 # Stop ubuntu pop ups that applications are not responding
 gsettings set org.gnome.mutter check-alive-timeout 60000
 
+# Setup a unique domain 
+# Avoids conflicts with others on the same network
+requre_reload=false
+if [ -z "$(cat ~/.bashrc | grep ROS_DOMAIN_ID)" ]; then
+  echo -e "${ORANGE}SETTING ROS_DOMAIN_ID${NC}"
+  read -p "Enter a unique number that is not zero for ROS_DOMAIN_ID: " domain_id
+  echo "export ROS_DOMAIN_ID=${domain_id}" >> ~/.bashrc
+  requre_reload=true
+elif [ "$ROS_DOMAIN_ID" == "0" ]; then
+  echo -e "${RED}ROS_DOMAIN_ID is set to 0, please change it to a unique number${NC}"
+  read -p "Enter a unique number for ROS_DOMAIN_ID: " domain_id
+  sed -i "s/ROS_DOMAIN_ID=0/ROS_DOMAIN_ID=${domain_id}/g" ~/.bashrc
+  requre_reload=true
+else
+  echo -e "${GREEN}ROS_DOMAIN_ID ALREADY SET${NC}"
+fi
+
+# Docker
 if [[ -z "$(which docker)" ]]; then
   echo -e "${ORANGE}INSTALLING DOCKER${NC}"
   curl https://get.docker.com | sh \
@@ -35,7 +52,8 @@ else
 fi
 
 
-if [[ -z "$(apt list 2> /dev/null | grep nvidia-docker2)" ]]; then
+# Nividia Docker
+if ! dpkg -s nvidia-docker2 > /dev/null; then
   echo -e "${ORANGE}INSTALLING NVIDIA DOCKER${NC}"
   distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
   && curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
@@ -47,4 +65,8 @@ if [[ -z "$(apt list 2> /dev/null | grep nvidia-docker2)" ]]; then
   sudo systemctl restart docker
 else
   echo -e "${GREEN}NVIDIA DOCKER ALREADY INSTALLED${NC}"
+fi
+
+if [ requre_reload ]; then
+  echo "Reload VS Code to apply changes"
 fi

@@ -23,7 +23,7 @@ find_package(message_filters REQUIRED)
 add_library(
   ${PROJECT_NAME} 
   SHARED 
-  src/${PROJECT_NAME})
+  src/teleop_twist_joy.cpp)
 
 include(GenerateExportHeader)
 generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJECT_NAME}_export.h)
@@ -66,9 +66,6 @@ install(DIRECTORY include/
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}_export.h
   DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME})
-
-install(DIRECTORY launch config
-  DESTINATION share/${PROJECT_NAME})
 
 # Export old-style CMake variables
 ament_export_include_directories("include/${PROJECT_NAME}")

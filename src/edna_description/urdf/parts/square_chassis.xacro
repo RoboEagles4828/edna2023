@@ -9,8 +9,8 @@
   <xacro:property name="chassis_height" value="0.05588" />
   <xacro:property name="chassis_weight" value="19.0508795" />
 
-  <xacro:macro name="square_chassis" params="prefix">
-    <link name="base_link"></link>
+  <xacro:macro name="square_chassis" params="prefix parent *origin">
+    
 
     <link name="${prefix}_chassis_link">
       <xacro:inertial_box mass="${chassis_weight}" x="${chassis_length}" y="${chassis_width}" z="${chassis_height}">
@@ -32,9 +32,9 @@
     </link>
 
     <joint name="${prefix}_chassis_joint" type="fixed">
-      <parent link="base_link" />
+      <parent link="${parent}" />
       <child link="${prefix}_chassis_link" />
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <xacro:insert_block name="origin" />
     </joint>
   </xacro:macro>
 

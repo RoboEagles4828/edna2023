@@ -32,7 +32,7 @@ def generate_launch_description():
         f.write(edna_description_xml)
 
     # Create a robot_state_publisher node
-    params = {'robot_description': edna_description_xml, 'use_sim_time': use_sim_time}
+    params = {'robot_description': edna_description_xml, 'use_sim_time': use_sim_time, 'publish_frequency': 50.0}
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
