@@ -27,18 +27,13 @@ gsettings set org.gnome.mutter check-alive-timeout 60000
 # Setup a unique domain 
 # Avoids conflicts with others on the same network
 requre_reload=false
-if [ -z "$(cat ~/.bashrc | grep ROS_DOMAIN_ID)" ]; then
-  echo -e "${ORANGE}SETTING ROS_DOMAIN_ID${NC}"
-  read -p "Enter a unique number that is not zero for ROS_DOMAIN_ID: " domain_id
-  echo "export ROS_DOMAIN_ID=${domain_id}" >> ~/.bashrc
-  requre_reload=true
-elif [ "$ROS_DOMAIN_ID" == "0" ]; then
-  echo -e "${RED}ROS_DOMAIN_ID is set to 0, please change it to a unique number${NC}"
-  read -p "Enter a unique number for ROS_DOMAIN_ID: " domain_id
-  sed -i "s/ROS_DOMAIN_ID=0/ROS_DOMAIN_ID=${domain_id}/g" ~/.bashrc
+if [ -z "$(cat ~/.bashrc | grep ROS_NAMESPACE)" ]; then
+  echo -e "${ORANGE}SETTING ROS_NAMESPACE${NC}"
+  read -p "Enter a name for your ROS_NAMESPACE: " ros_namespace
+  echo "export ROS_NAMESPACE=${ros_namespace}" >> ~/.bashrc
   requre_reload=true
 else
-  echo -e "${GREEN}ROS_DOMAIN_ID ALREADY SET${NC}"
+  echo -e "${GREEN}ROS_NAMESPACE ALREADY SET${NC}"
 fi
 
 # Docker
