@@ -35,10 +35,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include <rcutils/logging_macros.h>
 #include <sensor_msgs/msg/joy.hpp>
 #include "nav_msgs/msg/odometry.hpp"
-// #include "message_filters/subscriber.h"
-// #include "message_filters/time_synchronizer.h"
-// #include "message_filters/synchronizer.h"
-// #include "message_filters/sync_policies/approximate_time.h"                               
+                              
 
 #include "teleop_twist_joy/teleop_twist_joy.hpp"
 
@@ -89,16 +86,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
     std::bind(&TeleopTwistJoy::Impl::odomCallback, this->pimpl_, std::placeholders::_1));
   pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10),
     std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
-  
-  // message_filters::Subscriber<sensor_msgs::msg::Joy> joy_sub(this , "joy");
-  // message_filters::Subscriber<nav_msgs::msg::Odometry> odom_sub(this, "odom");
-  // // typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Joy, nav_msgs::msg::Odometry> MySyncPolicy;
 
-  // // message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), joy_sub, odom_sub);
-  // // sync.registerCallback(boost::bind(&TeleopTwistJoy::Impl::joyCallback,this, _1, _2));
-  // message_filters::TimeSynchronizer<sensor_msgs::msg::Joy, nav_msgs::msg::Odometry> sync(joy_sub, odom_sub, 1);
-  // sync.registerCallback(boost::bind(&TeleopTwistJoy::Impl::joyCallback, this, _1, _2));
-  // _3, _4, _5, _6,_7,_8,_9
 
   pimpl_->require_enable_button = this->declare_parameter("require_enable_button", true);
 
@@ -366,9 +354,6 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
   double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
   double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
-  double ang_z_vel =  getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
-  double lin_vel_diretion = 0.0;
-  double lin_magnitude = sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2));
   double robot_odom_orientation = ((get_orientation_val(last_msg))* 2);
 // Math for field oriented drive
   double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
