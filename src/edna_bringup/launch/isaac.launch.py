@@ -96,6 +96,7 @@ def generate_launch_description():
             package='joy', 
             executable='joy_node', 
             name='joy_node',
+            namespace=NAMESPACE,
             parameters=[{
                 'dev': '/dev/input/js0',
                 'deadzone': 0.3,
