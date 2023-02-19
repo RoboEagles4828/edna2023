@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/developer-environment:2",
+    "image": "ghcr.io/roboeagles4828/developer-environment:3",
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
         "XAUTHORITY": "/tmp/.docker.xauth",
@@ -10,7 +10,7 @@
         "ACCEPT_EULA": "Y",
         "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
         "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
-        "ROS_DOMAIN_ID": "${localEnv:ROS_DOMAIN_ID}",
+        "ROS_DOMAIN_ID": "0",
         "OMNI_USER": "admin",
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0",
@@ -44,9 +44,11 @@
         "--runtime=nvidia",
         "--gpus", "all",
         "--network=host",
-        "--name=edna"
+        "--name=edna",
+        "--init"
     ],
     "privileged": true,
+    "overrideCommand": false,
     "customizations": {
         "vscode": {
             "extensions": [
