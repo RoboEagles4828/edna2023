@@ -16,8 +16,6 @@ import numpy as np
 import math
 import carb
 
-USE_DOMAIN_ENV_VAR = True
-
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
     drive.GetDampingAttr().Set(damping)
@@ -223,9 +221,6 @@ class ImportBot(BaseSample):
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                 ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
-                ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
                     ("Context.outputs:context", "PublishClock.inputs:context"),
@@ -250,18 +245,12 @@ class ImportBot(BaseSample):
                     ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
                     ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree")
                 ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
-                ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
-                ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
                     ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
                     ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
-                    # ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
-                    # ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
+                    ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
+                    ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
                     ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
                     ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
                     ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
@@ -294,7 +283,6 @@ class ImportBot(BaseSample):
                     ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                     ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                     ("articulation_controller.inputs:usePath", False),
-                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
