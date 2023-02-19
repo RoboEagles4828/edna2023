@@ -342,7 +342,10 @@ double get_scale_val(const std::map<std::string, int64_t>& axis_map,
 }
 double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
 {
-  return acos(odom_msg-> pose.pose.orientation.w);
+  double theta = acos(odom_msg-> pose.pose.orientation.w);
+  double direction = asin(odom_msg-> pose.pose.orientation.z);
+
+  return ((direction/std::abs(direction))*theta)*2;
 }
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
@@ -354,7 +357,7 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
   double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
   double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
-  double robot_odom_orientation = ((get_orientation_val(last_msg))* 2);
+  double robot_odom_orientation = ((get_orientation_val(last_msg)));
 // Math for field oriented drive
   double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
   lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
