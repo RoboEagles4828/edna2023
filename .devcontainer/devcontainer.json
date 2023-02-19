@@ -9,6 +9,7 @@
         "ACCEPT_EULA": "Y",
         "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
         "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
+        "ROS_DOMAIN_ID": "${localEnv:ROS_DOMAIN_ID}",
         "OMNI_USER": "admin",
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0",
