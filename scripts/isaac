@@ -33,7 +33,7 @@ launch_isaac() {
     -e "OMNI_SERVER=$OMNI_SERVER" \
     -e "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES" \
     -e "NVIDIA_DRIVER_CAPABILITIES=$NVIDIA_DRIVER_CAPABILITIES" \
-    -e "ROS_DOMAIN_ID=$ROS_DOMAIN_ID" \
+    -e "XAUTHORITY=$XAUTHORITY" \
     -e "DISPLAY=$DISPLAY" \
     -e "FASTRTPS_DEFAULT_PROFILES_FILE=/isaac-sim/ros2_workspace/fastdds.xml" \
     -v /var/run/docker.sock:/var/run/docker.sock:rw \
