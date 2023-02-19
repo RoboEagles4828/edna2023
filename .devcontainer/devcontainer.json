@@ -3,6 +3,7 @@
     "image": "ghcr.io/roboeagles4828/developer-environment:2023",
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
+        "XAUTHORITY": "/tmp/.docker.xauth",
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
         "SHELL": "/usr/bin/zsh",
@@ -35,7 +36,9 @@
     ],
     "runArgs": [
         "-v",
-        "/root/.Xauthority:/root/.Xauthority",
+        "/tmp/.X11-unix:/tmp/.X11-unix:rw",
+        "-v",
+        "/tmp/.docker.xauth:/tmp/.docker.xauth:rw",
         "-v",
         "/dev:/dev:rw",
         "--runtime=nvidia",
