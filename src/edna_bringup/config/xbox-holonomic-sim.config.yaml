@@ -19,4 +19,5 @@ teleop_twist_joy_node:
       yaw: 7.0
     
     enable_turbo_button: 1
+    enable_field_oriented_button: 8
       
