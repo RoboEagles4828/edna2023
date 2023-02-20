@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/developer-environment:2",
+    "image": "ghcr.io/roboeagles4828/developer-environment:3",
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
         "XAUTHORITY": "/tmp/.docker.xauth",
@@ -45,9 +45,11 @@
         "--runtime=nvidia",
         "--gpus", "all",
         "--network=host",
-        "--name=edna"
+        "--name=edna",
+        "--init"
     ],
     "privileged": true,
+    "overrideCommand": false,
     "customizations": {
         "vscode": {
             "extensions": [
