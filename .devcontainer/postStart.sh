@@ -27,3 +27,4 @@ echo -e "\n----Build Command----"
 echo -e "ctrl + shift + b  : Build"
 
 echo -e "\n----ROS DOMAIN ID: ${GREEN}$ROS_DOMAIN_ID${NC}"
+echo -e "----ROS NAMESPACE: ${GREEN}$ROS_NAMESPACE${NC}"

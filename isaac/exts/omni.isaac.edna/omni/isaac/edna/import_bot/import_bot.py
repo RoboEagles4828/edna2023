@@ -16,6 +16,8 @@ import numpy as np
 import math
 import carb
 
+NAMESPACE = f"/{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else '/default'
+
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
     drive.GetDampingAttr().Set(damping)
@@ -277,6 +279,10 @@ class ImportBot(BaseSample):
                     ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
                     ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree")
                 ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("PublishOdometry.inputs:nodeNamespace", NAMESPACE),
+                    ("RawOdomTransform.inputs:nodeNamespace", NAMESPACE),
+                ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
                     ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
@@ -315,6 +321,8 @@ class ImportBot(BaseSample):
                     ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                     ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                     ("articulation_controller.inputs:usePath", False),
+                    ("SubscribeJointState.inputs:nodeNamespace", NAMESPACE),
+                    ("PublishJointState.inputs:nodeNamespace", NAMESPACE),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
