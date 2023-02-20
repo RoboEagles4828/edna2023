@@ -1,6 +1,8 @@
 controller_manager:
   ros__parameters:
     update_rate: 10  # Hz
+    use_sim_time: false
+    robot_description: 'placeholder'
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -27,3 +29,9 @@ swerve_controller:
     #If no new twist commands are created in 1 second the robot will halt 
     cmd_vel_timeout_seconds: 1.0
     use_stamped_vel: false
+    use_sim_time: false
+
+
+joint_state_broadcaster:
+  ros__parameters:
+    use_sim_time: false
