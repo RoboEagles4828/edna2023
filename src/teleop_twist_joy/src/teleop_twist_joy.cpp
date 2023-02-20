@@ -342,6 +342,10 @@ double get_scale_val(const std::map<std::string, int64_t>& axis_map,
 }
 double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
 {
+  if(!odom_msg){
+    return 0.0;
+  }
+  
   return acos(odom_msg-> pose.pose.orientation.w);
 }
 
