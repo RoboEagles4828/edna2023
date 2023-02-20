@@ -27,12 +27,18 @@ drive_train = None
 def initDriveTrain():
     global drive_train
     drive_train = DriveTrain()
+    logging.info("Success: DriveTrain created")
 
 joystick = None
 def initJoystick():
-    global joystick
-    joystick = Joystick()
-
+    try:
+        global joystick
+        joystick = Joystick()
+        logging.info("Success: Joystick created")
+        return True
+    except Exception as e:
+        logging.error("Failed to create joystick")
+        return False
 
 
 ## Generic Loop that is used for all threads
@@ -119,7 +125,12 @@ def joystickThread():
 
 def joystickAction(publisher):
     global joystick
-    data = joystick.getData()
+    data = None
+    try:
+        data = joystick.getData()
+    except:
+        logging.warn("No joystick data could be fetched!")
+        initJoystick()
     publisher.write(data)
 
 

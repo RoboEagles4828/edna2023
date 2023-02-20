@@ -33,15 +33,17 @@ launch_isaac() {
     -e "OMNI_SERVER=$OMNI_SERVER" \
     -e "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES" \
     -e "NVIDIA_DRIVER_CAPABILITIES=$NVIDIA_DRIVER_CAPABILITIES" \
+    -e "XAUTHORITY=$XAUTHORITY" \
     -e "DISPLAY=$DISPLAY" \
     -e "FASTRTPS_DEFAULT_PROFILES_FILE=/isaac-sim/ros2_workspace/fastdds.xml" \
     -v /var/run/docker.sock:/var/run/docker.sock:rw \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw \
     -v ${nvidia_layers}:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
     -v ${nvidia_icd}:/etc/vulkan/icd.d/nvidia_icd.json \
     -v ${_10_nvidia}:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
     -v ${WORKSPACE_LOCAL_PATH}/scripts/config/omniverse.toml:/root/.nvidia-omniverse/config/omniverse.toml:rw \
     -v ${WORKSPACE_LOCAL_PATH}/:/root/edna/:rw \
-    -v ${ISAAC_LOCAL_STORAGE}/../../.Xauthority:/root/.Xauthority:rw \
     -v ${ISAAC_LOCAL_STORAGE}/cache/kit:/isaac-sim/kit/cache/Kit:rw \
     -v ${ISAAC_LOCAL_STORAGE}/cache/ov:/root/.cache/ov:rw \
     -v ${ISAAC_LOCAL_STORAGE}/cache/pip:/root/.cache/pip:rw \
