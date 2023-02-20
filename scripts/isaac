@@ -63,7 +63,7 @@ if [ $( docker ps -a | grep $CONTAINTER_NAME | wc -l ) -gt 0 ]; then
     if [[ "$status" == "false" ]]; then
         docker start $CONTAINTER_NAME > /dev/null 2>&1
     fi
-    docker exec -it $CONTAINTER_NAME $CMD
+    docker exec -it -e "DISPLAY=$DISPLAY" $CONTAINTER_NAME $CMD
 else
     echo "Isaac container does not exist, creating...."
     launch_isaac
