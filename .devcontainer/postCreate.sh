@@ -13,3 +13,4 @@ echo "export RCUTILS_COLORIZED_OUTPUT=1" >> ~/.zshrc
 sudo apt-get update
 rosdep update --rosdistro=humble
 rosdep install --from-paths src --ignore-src -r -y
+isaac rm
