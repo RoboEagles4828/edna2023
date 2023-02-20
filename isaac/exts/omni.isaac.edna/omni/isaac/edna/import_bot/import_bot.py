@@ -15,7 +15,6 @@ import os
 import numpy as np
 import math
 import carb
-from omni.isaac.dynamic_control import CompositeMaterialBuilder
 
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
@@ -23,6 +22,11 @@ def set_drive_params(drive, stiffness, damping, max_force):
     if(max_force != 0.0):
         drive.GetMaxForceAttr().Set(max_force)
     return
+
+def add_physics_material_to_prim(prim, materialPath):
+    bindingAPI = UsdShade.MaterialBindingAPI.Apply(prim)
+    materialPrim = UsdShade.Material(materialPath)
+    bindingAPI.Bind(materialPrim, UsdShade.Tokens.weakerThanDescendants, "physics")
 
 class ImportBot(BaseSample):
     def __init__(self) -> None:
@@ -36,26 +40,26 @@ class ImportBot(BaseSample):
         omni.kit.commands.execute(
             "CreateAndBindMdlMaterialFromLibrary",
             mdl_name="OmniPBR.mdl",
-            mtl_name="OmniPBR",
+            mtl_name="Rubber",
             mtl_created_list=mtl_created_list,
         )
         # Get reference to created material
         stage = omni.usd.get_context().get_stage()
         mtl_prim = stage.GetPrimAtPath(mtl_created_list[0])
 
-        front_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_left_axle_link/front_left_wheel_joint")
-        front_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint")
-        rear_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint")
-        rear_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint")
-
-        friction_material = UsdPhysics.MaterialAPI.UsdPhysicsMaterialAPI(mtl_prim)
+        friction_material = UsdPhysics.MaterialAPI.Apply(mtl_prim)
         friction_material.CreateDynamicFrictionAttr(1.0)
         friction_material.CreateStaticFrictionAttr(1.0)
-        UsdShade.MaterialBindingAPI(front_left_wheel_prim).Bind(friction_material, UsdShade.Tokens.strongerThanDescendants)
-        UsdShade.MaterialBindingAPI(front_right_wheel_prim).Bind(friction_material, UsdShade.Tokens.strongerThanDescendants)
-        UsdShade.MaterialBindingAPI(rear_left_wheel_prim).Bind(friction_material, UsdShade.Tokens.strongerThanDescendants)
-        UsdShade.MaterialBindingAPI(rear_right_wheel_prim).Bind(friction_material, UsdShade.Tokens.strongerThanDescendants)
 
+        front_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_left_wheel_link/collisions")
+        front_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_right_wheel_link/collisions")
+        rear_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_wheel_link/collisions")
+        rear_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_wheel_link/collisions")
+
+        add_physics_material_to_prim(front_left_wheel_prim, mtl_prim)
+        add_physics_material_to_prim(front_right_wheel_prim, mtl_prim)
+        add_physics_material_to_prim(rear_left_wheel_prim, mtl_prim)
+        add_physics_material_to_prim(rear_right_wheel_prim, mtl_prim)
 
     def setup_scene(self):
         world = self.get_world()
@@ -184,6 +188,7 @@ class ImportBot(BaseSample):
         #self.create_depth_camera()
         self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)
+        self.set_friction(robot_prim_path)
         return
 
     def create_lidar(self, robot_prim_path):
