@@ -5,7 +5,7 @@ from launch import LaunchDescription
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
-from nav2_common.launch import RewrittenYaml
+import yaml
 
 import xacro
 
@@ -25,23 +25,29 @@ def generate_launch_description():
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
     joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-sim.config.yaml')
     rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
-
-    # Modify Controller params
-    controller_rewrite = RewrittenYaml(
-        source_file=controllers_file,
-        root_key=NAMESPACE,
-        convert_types=True,
-        param_rewrites={
-            'use_sim_time': str(use_sim_time).lower(),
-            'robot_description': edna_description_xml,
-        })
-
+    tmp_rviz_file = os.path.join(bringup_pkg_path, 'config', 'tmp_view.rviz')
     
     # Save Built URDF file to Description Directory
     description_source_code_path = os.path.abspath(os.path.join(description_pkg_path, "../../../../src/edna_description/urdf"))
     urdf_save_path = os.path.join(description_source_code_path, "edna.urdf")
     with open(urdf_save_path, 'w') as f:
         f.write(edna_description_xml)
+
+    # Modify the Rviz file for the correct namespace
+    rviz_data = None
+    with open(rviz_file, 'r') as stream:
+        rviz_data = yaml.safe_load(stream)
+
+    for display in rviz_data['Visualization Manager']['Displays']:
+        for k, v in display.items():
+            if 'Topic' in k and 'Value' in v:
+                print(f"mapping {v['Value']} -> /{NAMESPACE}{v['Value']}")
+                v['Value'] = f"/{NAMESPACE}{v['Value']}"
+
+    print("Writing tmp rviz file")
+    with open(tmp_rviz_file, 'w') as stream:
+        yaml.dump(rviz_data, stream)
+    
 
     # Create a robot_state_publisher node
     params = {'robot_description': edna_description_xml, 'use_sim_time': use_sim_time, 'publish_frequency': 50.0}
@@ -58,7 +64,7 @@ def generate_launch_description():
         package="controller_manager",
         namespace=NAMESPACE,
         executable="ros2_control_node",
-        parameters=[controller_rewrite],
+        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': use_sim_time }, controllers_file],
         output="both",
     )
 
@@ -92,7 +98,7 @@ def generate_launch_description():
         parameters=[{ 'use_sim_time': True }],
         name='isaac_rviz2',
         output='screen',
-        arguments=[["-d"], [rviz_file]],
+        arguments=[["-d"], [tmp_rviz_file]],
     )
     rviz2_delay = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -138,8 +144,8 @@ def generate_launch_description():
         node_robot_state_publisher,
         joint_state_broadcaster_spawner,
         swerve_drive_controller_delay,
-        # rviz2_delay,
+        rviz2_delay,
         joy,
         joy_teleop,
-        foxglove
+        # foxglove
     ])

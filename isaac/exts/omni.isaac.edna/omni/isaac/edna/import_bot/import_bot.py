@@ -223,9 +223,6 @@ class ImportBot(BaseSample):
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                 ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("PublishClock.inputs:nodeNamespace", NAMESPACE),
-                ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
                     ("Context.outputs:context", "PublishClock.inputs:context"),
