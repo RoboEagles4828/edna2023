@@ -28,15 +28,29 @@ namespace swerve_hardware
         return std::fmod(copy_targetPosition - sensorPosition, M_PI);
     }
 
+    // (maxV - curr)t1 + curr
+    // (curr - maxV)tf + b = 0
+    // 2 10
+    // 4(t1)
+    
+
     double MotionMagic::getNextVelocity(const double targetPosition, const double sensorPosition, const double sensorVelocity, const double dt) {
         // Basic implementation for now
         double error = getPositionDifference(targetPosition, sensorPosition);
         double absError = std::abs(error);
+        if (targetPosition != prevTargetPosition) {
+                totalDistance = absError;
+                prevTargetPosition = targetPosition;
+        }
         if (absError < tolerance) {
             return 0.0;
         }
+
         double dir = 1.0;
-        if (error < 0) dir = -1.0;
+        if (error < 0.0) {
+            dir = -1.0;
+        }
+        
         if (absError <= rampWindow1) {
             return velocityInRampWindow1 * dir;
         } else if (absError <= rampWindow2) {
@@ -44,5 +58,11 @@ namespace swerve_hardware
         } else {
             return velocityInCruiseWindow * dir;
         }
+
+        // if(targetPosition >= sensorPosition) {
+        //     if(abs(sensorVelocity - MAX_VELOCITY) <= epsilon) {
+
+        //     }
+        // }
     }
 } // namespace swerve_hardware

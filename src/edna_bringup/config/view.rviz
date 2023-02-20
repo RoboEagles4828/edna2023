@@ -70,80 +70,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_left_axle_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_left_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_right_axle_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_right_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rear_left_axle_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rear_left_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rear_right_axle_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rear_right_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        swerve_chassis_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        zed_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        zed_camera_center:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        zed_left_camera_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        zed_left_camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        zed_right_camera_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        zed_right_camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -167,8 +93,6 @@ Visualization Manager:
           Value: true
         front_right_wheel_link:
           Value: false
-        odom:
-          Value: true
         rear_left_axle_link:
           Value: true
         rear_left_wheel_link:
@@ -197,29 +121,28 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        odom:
-          base_link:
-            swerve_chassis_link:
-              front_left_axle_link:
-                front_left_wheel_link:
-                  {}
-              front_right_axle_link:
-                front_right_wheel_link:
-                  {}
-              rear_left_axle_link:
-                rear_left_wheel_link:
-                  {}
-              rear_right_axle_link:
-                rear_right_wheel_link:
-                  {}
-              zed_base_link:
-                zed_camera_center:
-                  zed_left_camera_frame:
-                    zed_left_camera_optical_frame:
-                      {}
-                  zed_right_camera_frame:
-                    zed_right_camera_optical_frame:
-                      {}
+        base_link:
+          swerve_chassis_link:
+            front_left_axle_link:
+              front_left_wheel_link:
+                {}
+            front_right_axle_link:
+              front_right_wheel_link:
+                {}
+            rear_left_axle_link:
+              rear_left_wheel_link:
+                {}
+            rear_right_axle_link:
+              rear_right_wheel_link:
+                {}
+            zed_base_link:
+              zed_camera_center:
+                zed_left_camera_frame:
+                  zed_left_camera_optical_frame:
+                    {}
+                zed_right_camera_frame:
+                  zed_right_camera_optical_frame:
+                    {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.20000000298023224
@@ -264,7 +187,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: odom
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:

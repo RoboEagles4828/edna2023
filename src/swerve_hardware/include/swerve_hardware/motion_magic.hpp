@@ -30,12 +30,12 @@ public:
 private:
     double MAX_ACCELERATION;
     double MAX_VELOCITY;
-    // double prevVel = 0.0;
-    // double prevAcceleration = 0.0;
-    // double prevError = 0.0;
-    // double prevTargetPosition = 0.0;
-    // double totalDistance = 0.0;
-    // double zeroTime = 0.0;
+    double prevVel = 0.0;
+    double prevAcceleration = 0.0;
+    double prevError = 0.0;
+    double prevTargetPosition = 0.0;
+    double totalDistance = 0.0;
+    double zeroTime = 0.0;
 
     double tolerance = 0.1;
     double rampWindow1 = 0.3;

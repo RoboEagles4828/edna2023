@@ -10,11 +10,11 @@
 ### 1. Install Graphics Drivers
 
  **Install Nvidia Drivers** \
-`sudo apt-get install nvidia-driver-525`
+`sudo apt-get install nvidia-driver-525` then restart your machine
 
 ### 2. Local Setup
 - **Install Docker and Nvidia Docker** \
-`./scripts/local-setup.sh`
+`./scripts/local-setup.sh` then restart your machine
 
 - **Install Remote Development VS Code Extension** \
 Go to extensions and search for Remote Development and click install

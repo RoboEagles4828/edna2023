@@ -9,14 +9,14 @@ from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.kit.viewport_legacy import get_default_viewport_window
 from omni.isaac.sensor import IMUSensor
-from pxr import UsdPhysics
+from pxr import UsdPhysics, UsdShade, Sdf, Gf
 import omni.kit.commands
 import os
 import numpy as np
 import math
 import carb
 
-USE_DOMAIN_ENV_VAR = True
+NAMESPACE = f"/{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else '/default'
 
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
@@ -25,12 +25,43 @@ def set_drive_params(drive, stiffness, damping, max_force):
         drive.GetMaxForceAttr().Set(max_force)
     return
 
+def add_physics_material_to_prim(prim, materialPath):
+    bindingAPI = UsdShade.MaterialBindingAPI.Apply(prim)
+    materialPrim = UsdShade.Material(materialPath)
+    bindingAPI.Bind(materialPrim, UsdShade.Tokens.weakerThanDescendants, "physics")
+
 class ImportBot(BaseSample):
     def __init__(self) -> None:
         super().__init__()
         return
 
-    
+
+    def set_friction(self, robot_prim_path):
+        mtl_created_list = []
+        # Create a new material using OmniGlass.mdl
+        omni.kit.commands.execute(
+            "CreateAndBindMdlMaterialFromLibrary",
+            mdl_name="OmniPBR.mdl",
+            mtl_name="Rubber",
+            mtl_created_list=mtl_created_list,
+        )
+        # Get reference to created material
+        stage = omni.usd.get_context().get_stage()
+        mtl_prim = stage.GetPrimAtPath(mtl_created_list[0])
+
+        friction_material = UsdPhysics.MaterialAPI.Apply(mtl_prim)
+        friction_material.CreateDynamicFrictionAttr(1.0)
+        friction_material.CreateStaticFrictionAttr(1.0)
+
+        front_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_left_wheel_link/collisions")
+        front_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_right_wheel_link/collisions")
+        rear_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_wheel_link/collisions")
+        rear_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_wheel_link/collisions")
+
+        add_physics_material_to_prim(front_left_wheel_prim, mtl_prim)
+        add_physics_material_to_prim(front_right_wheel_prim, mtl_prim)
+        add_physics_material_to_prim(rear_left_wheel_prim, mtl_prim)
+        add_physics_material_to_prim(rear_right_wheel_prim, mtl_prim)
 
     def setup_scene(self):
         world = self.get_world()
@@ -159,6 +190,7 @@ class ImportBot(BaseSample):
         #self.create_depth_camera()
         self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)
+        self.set_friction(robot_prim_path)
         return
 
     def create_lidar(self, robot_prim_path):
@@ -223,9 +255,6 @@ class ImportBot(BaseSample):
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                 ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
-                ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
                     ("Context.outputs:context", "PublishClock.inputs:context"),
@@ -251,14 +280,15 @@ class ImportBot(BaseSample):
                     ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree")
                 ],
                 og.Controller.Keys.SET_VALUES: [
-                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
+                    ("PublishOdometry.inputs:nodeNamespace", NAMESPACE),
+                    ("RawOdomTransform.inputs:nodeNamespace", NAMESPACE),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
                     ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
                     ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
-                    # ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
-                    # ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
+                    ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
+                    ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
                     ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
                     ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
                     ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
@@ -270,7 +300,7 @@ class ImportBot(BaseSample):
                 ],
             }
         )
-        set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim")
+        set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
         return
 
     def setup_robot_action_graph(self, robot_prim_path):
@@ -291,7 +321,8 @@ class ImportBot(BaseSample):
                     ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                     ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                     ("articulation_controller.inputs:usePath", False),
-                    ("Context.inputs:useDomainIDEnvVar", USE_DOMAIN_ENV_VAR),
+                    ("SubscribeJointState.inputs:nodeNamespace", NAMESPACE),
+                    ("PublishJointState.inputs:nodeNamespace", NAMESPACE),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
