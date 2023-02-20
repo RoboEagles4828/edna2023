@@ -9,7 +9,7 @@ import yaml
 
 import xacro
 
-NAMESPACE = os.environ.get('ROS_NAMESPACE')
+NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def generate_launch_description():
     use_sim_time = True

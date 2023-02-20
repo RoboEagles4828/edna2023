@@ -16,7 +16,7 @@ import numpy as np
 import math
 import carb
 
-NAMESPACE = f"/{os.environ.get('ROS_NAMESPACE')}"
+NAMESPACE = f"/{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else '/default'
 
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
