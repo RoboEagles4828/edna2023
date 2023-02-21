@@ -352,13 +352,15 @@ double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
   if(!odom_msg){
     return 0.0;
   }
-  double theta = acos(odom_msg-> pose.pose.orientation.w);
-  double direction = (odom_msg-> pose.pose.orientation.z);
-  if(std::abs(direction)==0.0){
-    direction =1.0;
-  }
-  
-  return (((direction)/(std::abs(direction)))*theta)*2;
+  double x = odom_msg-> pose.pose.orientation.x;
+  double y = odom_msg-> pose.pose.orientation.y;
+  double z = odom_msg-> pose.pose.orientation.z;
+  double w = odom_msg-> pose.pose.orientation.w;
+  double siny_cosp = 2 * (w * z + x * y);
+  double cosy_cosp = 1 - 2 * (y * y + z * z);
+  double angle = std::atan2(siny_cosp, cosy_cosp);
+ 
+  return angle;
 }
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
