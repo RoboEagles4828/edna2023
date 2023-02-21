@@ -265,25 +265,32 @@ class ImportBot(BaseSample):
         return
     
     def setup_imu_action_graph(self, robot_prim_path):
-        imu_graph = "{}/imu_sensor_graph".format(robot_prim_path)
+        sensor_graph = "{}/imu_sensor_graph".format(robot_prim_path)
         swerve_link = "{}/swerve_chassis_link".format(robot_prim_path)
 
         og.Controller.edit(
-            {"graph_path": imu_graph, "evaluator_name": "execution"},
+            {"graph_path": sensor_graph, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
+                    # General Nodes
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    # Odometry Nodes
                     ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
                     ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
-                    ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree")
+                    ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
+                    # LiDAR Nodes
+                    ("ReadLidar", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
+                    ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan")
+
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishOdometry.inputs:nodeNamespace", NAMESPACE),
                     ("RawOdomTransform.inputs:nodeNamespace", NAMESPACE),
                 ],
                 og.Controller.Keys.CONNECT: [
+                    # Odometry Connections
                     ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
                     ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
                     ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
@@ -297,10 +304,30 @@ class ImportBot(BaseSample):
                     ("Context.outputs:context", "RawOdomTransform.inputs:context"),
                     ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
                     ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
+
+                    # LiDAR Connections
+                    ("OnPlaybackTick.outputs:tick", "ReadLidar.inputs:execIn"),
+                    ("ReadLidar.outputs:execOut", "PublishLidar.inputs:execIn"),
+                    ("Context.outputs:context", "PublishLidar.inputs:context"),
+                    ("SimTime.outputs:simulationTime", "PublishLidar.inputs:timeStamp"),
+                    
+                    ("ReadLidar.outputs:azimuthRange", "PublishLidar.inputs:azimuthRange"),
+                    ("ReadLidar.outputs:depthRange", "PublishLidar.inputs:depthRange"),
+                    ("ReadLidar.outputs:horizontalFov", "PublishLidar.inputs:horizontalFov"),
+                    ("ReadLidar.outputs:horizontalResolution", "PublishLidar.inputs:horizontalResolution"),
+                    ("ReadLidar.outputs:intensitiesData", "PublishLidar.inputs:intensitiesData"),
+                    ("ReadLidar.outputs:linearDepthData", "PublishLidar.inputs:linearDepthData"),
+                    ("ReadLidar.ouputs:numCols", "PublishLidar.inputs:numCols"),
+                    ("ReadLidar.outputs:numRows", "PublishLidar.inputs:numRows"),
+                    ("ReadLidar.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
+                    
+                    
                 ],
             }
         )
-        set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
+        # Setup target prims for the Odometry and the Lidar
+        set_target_prims(primPath=f"{sensor_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
+        set_target_prims(primPath=f"{sensor_graph}/ReadLidar", targetPrimPaths=[You Need to put actual things in here or else it won't work], inputName="inputs:lidarPrim")
         return
 
     def setup_robot_action_graph(self, robot_prim_path):
