@@ -24,7 +24,7 @@ launch_isaac() {
     docker run -d -t \
     --name $CONTAINTER_NAME \
     --entrypoint "" \
-    --gpus all \
+    --gpus 0 \
     --network=host -P \
     --privileged \
     -e "ACCEPT_EULA=Y" \
@@ -34,7 +34,7 @@ launch_isaac() {
     -e "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES" \
     -e "NVIDIA_DRIVER_CAPABILITIES=$NVIDIA_DRIVER_CAPABILITIES" \
     -e "XAUTHORITY=$XAUTHORITY" \
-    -e "DISPLAY=$DISPLAY" \
+    -e "DISPLAY=:0" \
     -e "ROS_NAMESPACE=$ROS_NAMESPACE" \
     -e "FASTRTPS_DEFAULT_PROFILES_FILE=/isaac-sim/ros2_workspace/fastdds.xml" \
     -v /var/run/docker.sock:/var/run/docker.sock:rw \
