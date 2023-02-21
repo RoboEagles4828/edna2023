@@ -221,6 +221,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
     // Loop to assign changed parameters to the member variables
     for (const auto & parameter : parameters)
     {
+
       if (parameter.get_name() == "require_enable_button")
       {
         this->pimpl_->require_enable_button = parameter.get_value<rclcpp::PARAMETER_BOOL>();
@@ -346,28 +347,18 @@ double get_scale_val(const std::map<std::string, int64_t>& axis_map,
 
   return scale_map.at(fieldname);
 }
-bool get_if_field_orientated(sensor_msgs::msg::Joy::SharedPtr joy_msg)
-{
-  if(!joy_msg){
-    return false;
-  }
-  int input = joy_msg->buttons[1];
-  if(input==1){
-    return true;
-  }
-  else{
-    return false;
-  }
-}
 double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
 {
   if(!odom_msg){
     return 0.0;
   }
   double theta = acos(odom_msg-> pose.pose.orientation.w);
-  double direction = asin(odom_msg-> pose.pose.orientation.z);
-
-  return ((direction/std::abs(direction))*theta)*2;
+  double direction = (odom_msg-> pose.pose.orientation.z);
+  if(std::abs(direction)==0.0){
+    direction =1.0;
+  }
+  
+  return (((direction)/(std::abs(direction)))*theta)*2;
 }
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
@@ -379,12 +370,18 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
   double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
   double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "%f",lin_x_vel);
+  // for( uint i =0u; i<joy_msg->buttons.size(); i++){
+  //     RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "%d:%d:%ld",joy_msg->buttons[i],i,enable_field_oriented_button);
+  // }
+
+
 // Math for field oriented drive
-  if(enable_field_oriented_button){
-    double robot_odom_orientation = ((get_orientation_val(last_msg)));
-    double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
-    lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
-    lin_x_vel = temp;
+  if(joy_msg->buttons[enable_field_oriented_button]==1){
+  double robot_odom_orientation = ((get_orientation_val(last_msg)));
+  double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
+  lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
+  lin_x_vel = temp;
   }
   
 
