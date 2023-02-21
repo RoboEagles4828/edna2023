@@ -377,7 +377,7 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
 
 
 // Math for field oriented drive
-  if(joy_msg->buttons[enable_field_oriented_button]==1){
+  if(joy_msg->buttons[enable_field_oriented_button]==0){
   double robot_odom_orientation = ((get_orientation_val(last_msg)));
   double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
   lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);

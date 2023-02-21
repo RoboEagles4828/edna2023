@@ -20,5 +20,5 @@
         yaw: -20.0
       
       enable_turbo_button: 5
-      enable_field_oriented_button: 0
+      enable_field_oriented_button: 7
       
