@@ -226,6 +226,7 @@ class ImportBot(BaseSample):
                 "clippingPlanes": np.array([1.0, 0.0, 1.0, 1.0]),
             },
         )
+
         self.right_camera = prims.create_prim(
             prim_path=self.depth_right_camera_path,
             prim_type="Camera",
@@ -308,18 +309,18 @@ class ImportBot(BaseSample):
                     ("InfoType.inputs:value", "camera_info"),
                     ("LeftCamCreateViewport.inputs:name", "LeftCam"),
                     ("LeftCamHelperRgb.inputs:topicName", "left/rgb"),
-                    ("LeftCamHelperRgb.inputs:frameId", "zed_left_camera_optical_frame"),
+                    ("LeftCamHelperRgb.inputs:frameId", "zed_left_camera_frame"),
                     ("LeftCamHelperRgb.inputs:nodeNamespace", NAMESPACE),
                     ("LeftCamHelperInfo.inputs:topicName", "left/camera_info"),
-                    ("LeftCamHelperInfo.inputs:frameId", "zed_left_camera_optical_frame"),
+                    ("LeftCamHelperInfo.inputs:frameId", "zed_left_camera_frame"),
                     ("LeftCamHelperInfo.inputs:nodeNamespace", NAMESPACE),
 
                     ("RightCamCreateViewport.inputs:name", "RightCam"),
                     ("RightCamHelperRgb.inputs:topicName", "right/rgb"),
-                    ("RightCamHelperRgb.inputs:frameId", "zed_right_camera_optical_frame"),
+                    ("RightCamHelperRgb.inputs:frameId", "zed_right_camera_frame"),
                     ("RightCamHelperRgb.inputs:nodeNamespace", NAMESPACE),
                     ("RightCamHelperInfo.inputs:topicName", "right/camera_info"),
-                    ("RightCamHelperInfo.inputs:frameId", "zed_right_camera_optical_frame"),
+                    ("RightCamHelperInfo.inputs:frameId", "zed_right_camera_frame"),
                     ("RightCamHelperInfo.inputs:nodeNamespace", NAMESPACE),
                 ],
             }
