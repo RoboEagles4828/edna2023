@@ -262,6 +262,8 @@ class ImportBot(BaseSample):
     
     def setup_camera_action_graph(self, robot_prim_path):
         camera_graph = "{}/camera_sensor_graph".format(robot_prim_path)
+        enable_left_cam = False
+        enable_right_cam = False
 
         og.Controller.edit(
             {"graph_path": camera_graph, "evaluator_name": "execution"},
@@ -270,12 +272,14 @@ class ImportBot(BaseSample):
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("InfoType", "omni.graph.nodes.ConstantToken"),
                     
+                    ("LeftCamBranch", "omni.graph.action.Branch"),
                     ("LeftCamCreateViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
                     ("LeftCamViewProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
                     ("LeftCamSet", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
                     ("LeftCamHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     ("LeftCamHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     
+                    ("RightCamBranch", "omni.graph.action.Branch"),
                     ("RightCamCreateViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
                     ("RightCamViewProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
                     ("RightCamSet", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
@@ -283,7 +287,8 @@ class ImportBot(BaseSample):
                     ("RightCamHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                 ],
                 og.Controller.Keys.CONNECT: [
-                    ("OnPlaybackTick.outputs:tick", "LeftCamCreateViewport.inputs:execIn"),
+                    ("OnPlaybackTick.outputs:tick", "LeftCamBranch.inputs:execIn"),
+                    ("LeftCamBranch.outputs:execTrue", "LeftCamCreateViewport.inputs:execIn"),
                     ("LeftCamCreateViewport.outputs:execOut", "LeftCamViewProduct.inputs:execIn"),
                     ("LeftCamCreateViewport.outputs:viewport", "LeftCamViewProduct.inputs:viewport"),
                     ("LeftCamViewProduct.outputs:execOut", "LeftCamSet.inputs:execIn"),
@@ -294,7 +299,8 @@ class ImportBot(BaseSample):
                     ("LeftCamSet.outputs:execOut", "LeftCamHelperInfo.inputs:execIn"),
                     ("InfoType.inputs:value", "LeftCamHelperInfo.inputs:type"),
 
-                    ("OnPlaybackTick.outputs:tick", "RightCamCreateViewport.inputs:execIn"),
+                    ("OnPlaybackTick.outputs:tick", "RightCamBranch.inputs:execIn"),
+                    ("RightCamBranch.outputs:execTrue", "RightCamCreateViewport.inputs:execIn"),
                     ("RightCamCreateViewport.outputs:execOut", "RightCamViewProduct.inputs:execIn"),
                     ("RightCamCreateViewport.outputs:viewport", "RightCamViewProduct.inputs:viewport"),
                     ("RightCamViewProduct.outputs:execOut", "RightCamSet.inputs:execIn"),
@@ -307,6 +313,8 @@ class ImportBot(BaseSample):
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("InfoType.inputs:value", "camera_info"),
+
+                    ("LeftCamBranch.inputs:condition", enable_left_cam),
                     ("LeftCamCreateViewport.inputs:name", "LeftCam"),
                     ("LeftCamHelperRgb.inputs:topicName", "left/rgb"),
                     ("LeftCamHelperRgb.inputs:frameId", "zed_left_camera_frame"),
@@ -315,6 +323,7 @@ class ImportBot(BaseSample):
                     ("LeftCamHelperInfo.inputs:frameId", "zed_left_camera_frame"),
                     ("LeftCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
 
+                    ("RightCamBranch.inputs:condition", enable_right_cam),
                     ("RightCamCreateViewport.inputs:name", "RightCam"),
                     ("RightCamHelperRgb.inputs:topicName", "right/rgb"),
                     ("RightCamHelperRgb.inputs:frameId", "zed_right_camera_frame"),
