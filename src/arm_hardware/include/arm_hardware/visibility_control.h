@@ -19,38 +19,38 @@
  * library cannot have, but the consuming code must have inorder to link.
  */
 
-#ifndef JOINT_TRAJECTORY_CONTROLLER__VISIBILITY_CONTROL_H_
-#define JOINT_TRAJECTORY_CONTROLLER__VISIBILITY_CONTROL_H_
+#ifndef ARM_HARDWARE__VISIBILITY_CONTROL_H_
+#define ARM_HARDWARE__VISIBILITY_CONTROL_H_
 
 // This logic was borrowed (then namespaced) from the examples on the gcc wiki:
 //     https://gcc.gnu.org/wiki/Visibility
 
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef __GNUC__
-#define JOINT_TRAJECTORY_CONTROLLER_EXPORT __attribute__((dllexport))
-#define JOINT_TRAJECTORY_CONTROLLER_IMPORT __attribute__((dllimport))
+#define ARM_HARDWARE_EXPORT __attribute__((dllexport))
+#define ARM_HARDWARE_IMPORT __attribute__((dllimport))
 #else
-#define JOINT_TRAJECTORY_CONTROLLER_EXPORT __declspec(dllexport)
-#define JOINT_TRAJECTORY_CONTROLLER_IMPORT __declspec(dllimport)
+#define ARM_HARDWARE_EXPORT __declspec(dllexport)
+#define ARM_HARDWARE_IMPORT __declspec(dllimport)
 #endif
-#ifdef JOINT_TRAJECTORY_CONTROLLER_BUILDING_DLL
-#define JOINT_TRAJECTORY_CONTROLLER_PUBLIC JOINT_TRAJECTORY_CONTROLLER_EXPORT
+#ifdef ARM_HARDWARE_BUILDING_DLL
+#define ARM_HARDWARE_PUBLIC ARM_HARDWARE_EXPORT
 #else
-#define JOINT_TRAJECTORY_CONTROLLER_PUBLIC JOINT_TRAJECTORY_CONTROLLER_IMPORT
+#define ARM_HARDWARE_PUBLIC ARM_HARDWARE_IMPORT
 #endif
-#define JOINT_TRAJECTORY_CONTROLLER_PUBLIC_TYPE JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-#define JOINT_TRAJECTORY_CONTROLLER_LOCAL
+#define ARM_HARDWARE_PUBLIC_TYPE ARM_HARDWARE_PUBLIC
+#define ARM_HARDWARE_LOCAL
 #else
-#define JOINT_TRAJECTORY_CONTROLLER_EXPORT __attribute__((visibility("default")))
-#define JOINT_TRAJECTORY_CONTROLLER_IMPORT
+#define ARM_HARDWARE_EXPORT __attribute__((visibility("default")))
+#define ARM_HARDWARE_IMPORT
 #if __GNUC__ >= 4
-#define JOINT_TRAJECTORY_CONTROLLER_PUBLIC __attribute__((visibility("default")))
-#define JOINT_TRAJECTORY_CONTROLLER_LOCAL __attribute__((visibility("hidden")))
+#define ARM_HARDWARE_PUBLIC __attribute__((visibility("default")))
+#define ARM_HARDWARE_LOCAL __attribute__((visibility("hidden")))
 #else
-#define JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-#define JOINT_TRAJECTORY_CONTROLLER_LOCAL
+#define ARM_HARDWARE_PUBLIC
+#define ARM_HARDWARE_LOCAL
 #endif
-#define JOINT_TRAJECTORY_CONTROLLER_PUBLIC_TYPE
+#define ARM_HARDWARE_PUBLIC_TYPE
 #endif
 
-#endif  // JOINT_TRAJECTORY_CONTROLLER__VISIBILITY_CONTROL_H_
+#endif  // ARM_HARDWARE__VISIBILITY_CONTROL_H_
