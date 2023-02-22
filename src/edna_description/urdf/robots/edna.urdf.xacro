@@ -3,6 +3,8 @@
 
   <!-- Args -->
   <xacro:arg name="hw_interface_plugin" default="swerve_hardware/IsaacDriveHardware"/>
+  <xacro:arg name="namespace" default="default"/>
+  <xacro:property name="ns" value="$(arg namespace)" />
 
   <!-- Include Files -->
   <xacro:include filename="$(find edna_description)/urdf/control/drive.xacro" />
@@ -25,26 +27,26 @@
 
   <!-- Chassis -->
   <link name="base_link"></link>
-  <xacro:square_chassis prefix="swerve" parent="base_link">
+  <xacro:square_chassis prefix="${ns}_swerve" parent="base_link">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:square_chassis>
 
   <!-- Drive Train -->
-  <xacro:swerve_axle prefix="front_left" parent="swerve_chassis_link">
+  <xacro:swerve_axle prefix="${ns}_front_left" parent="${ns}_swerve_chassis_link">
     <origin xyz="${axle_pos} ${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="front_right" parent="swerve_chassis_link">
+  <xacro:swerve_axle prefix="${ns}_front_right" parent="${ns}_swerve_chassis_link">
     <origin xyz="${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="rear_left" parent="swerve_chassis_link">
+  <xacro:swerve_axle prefix="${ns}_rear_left" parent="${ns}_swerve_chassis_link">
     <origin xyz="-${axle_pos} ${axle_pos} ${axle_pos_z} " rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="rear_right" parent="swerve_chassis_link">
+  <xacro:swerve_axle prefix="${ns}_rear_right" parent="${ns}_swerve_chassis_link">
     <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
   <!-- Sensors -->
-  <xacro:zed_camera prefix="zed" model="zed2i" parent="swerve_chassis_link">
+  <xacro:zed_camera prefix="${ns}_zed" model="zed2i" parent="${ns}_swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 
