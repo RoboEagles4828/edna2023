@@ -3,6 +3,8 @@ ORANGE='\033[0;33m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+SCRIPT_PATH=$(dirname "$0")
+devenv_path="$SCRIPT_PATH/../.devcontainer/.env"
 
 # Graphics Driver Check
 hasDriver=$(nvidia-smi | grep "Version: 525")
@@ -26,12 +28,10 @@ gsettings set org.gnome.mutter check-alive-timeout 60000
 
 # Setup a unique domain 
 # Avoids conflicts with others on the same network
-requre_reload=false
-if [ -z "$(cat ~/.bashrc | grep ROS_NAMESPACE)" ]; then
+if [ -z "$(cat $devenv_path | grep ROS_NAMESPACE)" ]; then
   echo -e "${ORANGE}SETTING ROS_NAMESPACE${NC}"
   read -p "Enter a name for your ROS_NAMESPACE: " ros_namespace
-  echo "export ROS_NAMESPACE=${ros_namespace}" >> ~/.bashrc
-  requre_reload=true
+  echo "ROS_NAMESPACE=${ros_namespace}" >> $devenv_path
 else
   echo -e "${GREEN}ROS_NAMESPACE ALREADY SET${NC}"
 fi
@@ -60,8 +60,4 @@ if ! dpkg -s nvidia-docker2 > /dev/null; then
   sudo systemctl restart docker
 else
   echo -e "${GREEN}NVIDIA DOCKER ALREADY INSTALLED${NC}"
-fi
-
-if [ requre_reload ]; then
-  echo "Reload VS Code to apply changes"
 fi
