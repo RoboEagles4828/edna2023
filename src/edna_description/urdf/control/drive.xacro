@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
-  <xacro:macro name="swerve_drive_control" params="plugin">
+  <xacro:macro name="swerve_drive_control" params="plugin ns">
     <ros2_control name="swerve_drive" type="system">
       <hardware>
         <plugin>${plugin}</plugin>
         <param name="example_param_hw_start_duration_sec">3.0</param>
         <param name="example_param_hw_stop_duration_sec">3.0</param>
       </hardware>
-      <joint name="front_right_wheel_joint">
+      <joint name="${ns}_front_right_wheel_joint">
         <command_interface name="velocity">
           <param name="min">-1</param>
           <param name="max">1</param>
@@ -16,7 +16,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="rear_left_wheel_joint">
+      <joint name="${ns}_rear_left_wheel_joint">
         <command_interface name="velocity">
           <param name="min">-1</param>
           <param name="max">1</param>
@@ -24,7 +24,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="front_left_wheel_joint">
+      <joint name="${ns}_front_left_wheel_joint">
         <command_interface name="velocity">
           <param name="min">-1</param>
           <param name="max">1</param>
@@ -32,7 +32,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="rear_right_wheel_joint">
+      <joint name="${ns}_rear_right_wheel_joint">
         <command_interface name="velocity">
           <param name="min">-1</param>
           <param name="max">1</param>
@@ -40,7 +40,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="front_right_axle_joint">
+      <joint name="${ns}_front_right_axle_joint">
         <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>
@@ -48,7 +48,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="rear_left_axle_joint">
+      <joint name="${ns}_rear_left_axle_joint">
         <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>
@@ -56,7 +56,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="front_left_axle_joint">
+      <joint name="${ns}_front_left_axle_joint">
         <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>
@@ -64,7 +64,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="rear_right_axle_joint">
+      <joint name="${ns}_rear_right_axle_joint">
         <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>

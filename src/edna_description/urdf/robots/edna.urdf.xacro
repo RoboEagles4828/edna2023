@@ -50,5 +50,5 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 
-  <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" />
+  <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" ns="${ns}"/>
 </robot>
