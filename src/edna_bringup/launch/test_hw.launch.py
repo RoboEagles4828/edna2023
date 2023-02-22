@@ -54,8 +54,8 @@ def generate_launch_description():
         namespace=NAMESPACE,
         executable="ros2_control_node",
         parameters=[{
-            'robot_description': edna_description_xml,
-            'use_sim_time': use_sim_time,
+            "robot_description": edna_description_xml,
+            "use_sim_time": use_sim_time,
             "front_left_wheel_joint": f"{NAMESPACE}_front_left_wheel_joint",
             "front_right_wheel_joint": f"{NAMESPACE}_front_right_wheel_joint",
             "rear_left_wheel_joint": f"{NAMESPACE}_rear_left_wheel_joint",

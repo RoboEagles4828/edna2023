@@ -50,7 +50,18 @@ def generate_launch_description():
         package="controller_manager",
         namespace=NAMESPACE,
         executable="ros2_control_node",
-        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': use_sim_time }, controllers_file],
+        parameters=[{
+            "robot_description": edna_description_xml,
+            "use_sim_time": use_sim_time,
+            "front_left_wheel_joint": f"{NAMESPACE}_front_left_wheel_joint",
+            "front_right_wheel_joint": f"{NAMESPACE}_front_right_wheel_joint",
+            "rear_left_wheel_joint": f"{NAMESPACE}_rear_left_wheel_joint",
+            "rear_right_wheel_joint": f"{NAMESPACE}_rear_right_wheel_joint",
+            "front_left_axle_joint": f"{NAMESPACE}_front_left_axle_joint",
+            "front_right_axle_joint": f"{NAMESPACE}_front_right_axle_joint",
+            "rear_left_axle_joint": f"{NAMESPACE}_rear_left_axle_joint",
+            "rear_right_axle_joint": f"{NAMESPACE}_rear_right_axle_joint"
+            }, controllers_file],
         output="both",
     )
 
