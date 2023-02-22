@@ -28,9 +28,13 @@ gsettings set org.gnome.mutter check-alive-timeout 60000
 
 # Setup a unique domain 
 # Avoids conflicts with others on the same network
-echo -e "${ORANGE}SETTING ROS_NAMESPACE${NC}"
-read -p "Enter a name for your ROS_NAMESPACE: " ros_namespace
-echo "ROS_NAMESPACE=${ros_namespace}" >> $devenv_path
+if [ -z "$(cat $devenv_path | grep ROS_NAMESPACE)" ]; then
+  echo -e "${ORANGE}SETTING ROS_NAMESPACE${NC}"
+  read -p "Enter a name for your ROS_NAMESPACE: " ros_namespace
+  echo "ROS_NAMESPACE=${ros_namespace}" >> $devenv_path
+else
+  echo -e "${GREEN}ROS_NAMESPACE ALREADY SET${NC}"
+fi
 
 # Docker
 if [[ -z "$(which docker)" ]]; then

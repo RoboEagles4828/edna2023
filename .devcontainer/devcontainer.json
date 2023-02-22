@@ -17,8 +17,7 @@
         "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
         "XAUTHORITY": "/tmp/.docker.xauth",
         "DISPLAY": "${localEnv:DISPLAY}",
-        "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}",
-        "ROS_NAMESPACE": "${localEnv:ROS_NAMESPACE}",
+        "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}"
     },
     "features": {
         // Find a better way to assign uid and gid so we can rebuild offline
