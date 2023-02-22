@@ -5,4 +5,4 @@ c_cpp_properties.json
 __pycache__
 nvidia_driver_config
 docker/developer/src
-view_tmp.rviz
+view_tmp.rviz.devcontainer/.env
