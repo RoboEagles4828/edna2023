@@ -2,22 +2,23 @@
     "name": "edna",
     "image": "ghcr.io/roboeagles4828/developer-environment:3",
     "containerEnv": {
-        "DISPLAY": "${localEnv:DISPLAY}",
-        "XAUTHORITY": "/tmp/.docker.xauth",
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
         "SHELL": "/usr/bin/zsh",
         "ACCEPT_EULA": "Y",
-        "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
-        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
         "ROS_DOMAIN_ID": "0",
         "OMNI_USER": "admin",
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0",
-        "FASTRTPS_DEFAULT_PROFILES_FILE": "/usr/local/share/middleware_profiles/rtps_udp_profile.xml"
+        "FASTRTPS_DEFAULT_PROFILES_FILE": "/usr/local/share/middleware_profiles/rtps_udp_profile.xml",
     },
     "remoteEnv": {
-        "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}" 
+        "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
+        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
+        "XAUTHORITY": "/tmp/.docker.xauth",
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}",
+        "ROS_NAMESPACE": "${localEnv:ROS_NAMESPACE}",
     },
     "features": {
         // Find a better way to assign uid and gid so we can rebuild offline
@@ -56,7 +57,8 @@
 				"ms-azuretools.vscode-docker",
 				"ms-iot.vscode-ros",
 				"GitHub.copilot",
-				"eamodio.gitlens"
+				"eamodio.gitlens",
+				"appulate.filewatcher"
 			]
         }
     }
