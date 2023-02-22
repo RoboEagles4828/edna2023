@@ -33,4 +33,5 @@ _10_nvidia=${_10_nvidia}" > "${nvidia_driver_config_path}"
 XSOCK=/tmp/.X11-unix
 XAUTH=/tmp/.docker.xauth
 touch $XAUTH
+echo "Display to use: $DISPLAY"
 xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
