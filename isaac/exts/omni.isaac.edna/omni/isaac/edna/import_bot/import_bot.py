@@ -186,7 +186,7 @@ class ImportBot(BaseSample):
         set_drive_params(rear_left_wheel, 1, 1000, 98.0)
         set_drive_params(rear_right_wheel, 1, 1000, 98.0)
         # set_drive_params(base,1,1000,98.0)
-        #self.create_lidar(robot_prim_path)
+        self.create_lidar(robot_prim_path)
         #self.create_depth_camera()
         self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)
@@ -267,6 +267,7 @@ class ImportBot(BaseSample):
     def setup_imu_action_graph(self, robot_prim_path):
         sensor_graph = "{}/imu_sensor_graph".format(robot_prim_path)
         swerve_link = "{}/swerve_chassis_link".format(robot_prim_path)
+        lidar_link = "{}/lidar_link/lidar".format(robot_prim_path)
 
         og.Controller.edit(
             {"graph_path": sensor_graph, "evaluator_name": "execution"},
@@ -288,6 +289,7 @@ class ImportBot(BaseSample):
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishOdometry.inputs:nodeNamespace", NAMESPACE),
                     ("RawOdomTransform.inputs:nodeNamespace", NAMESPACE),
+                    ("PublishLidar.inputs:nodeNamespace", NAMESPACE),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
@@ -317,7 +319,7 @@ class ImportBot(BaseSample):
                     ("ReadLidar.outputs:horizontalResolution", "PublishLidar.inputs:horizontalResolution"),
                     ("ReadLidar.outputs:intensitiesData", "PublishLidar.inputs:intensitiesData"),
                     ("ReadLidar.outputs:linearDepthData", "PublishLidar.inputs:linearDepthData"),
-                    ("ReadLidar.ouputs:numCols", "PublishLidar.inputs:numCols"),
+                    ("ReadLidar.outputs:numCols", "PublishLidar.inputs:numCols"),
                     ("ReadLidar.outputs:numRows", "PublishLidar.inputs:numRows"),
                     ("ReadLidar.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
                     
@@ -327,7 +329,7 @@ class ImportBot(BaseSample):
         )
         # Setup target prims for the Odometry and the Lidar
         set_target_prims(primPath=f"{sensor_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
-        set_target_prims(primPath=f"{sensor_graph}/ReadLidar", targetPrimPaths=[You Need to put actual things in here or else it won't work], inputName="inputs:lidarPrim")
+        set_target_prims(primPath=f"{sensor_graph}/ReadLidar", targetPrimPaths=[lidar_link], inputName="inputs:lidarPrim")
         return
 
     def setup_robot_action_graph(self, robot_prim_path):
