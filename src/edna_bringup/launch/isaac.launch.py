@@ -1,13 +1,13 @@
 import os
-
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
-import yaml
-
 import xacro
+import sys
+sys.path.append(f"{get_package_share_directory('edna_bringup')}/launch")
+import namespaceutil
 
 NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
@@ -17,7 +17,7 @@ def generate_launch_description():
     # Process the URDF file
     description_pkg_path = os.path.join(get_package_share_directory('edna_description'))
     xacro_file = os.path.join(description_pkg_path,'urdf', 'robots','edna.urdf.xacro')
-    edna_description_config = xacro.process_file(xacro_file)
+    edna_description_config = xacro.process_file(xacro_file, mappings={ 'namespace': NAMESPACE })
     edna_description_xml = edna_description_config.toxml()
 
     # Get paths to other config files
@@ -26,6 +26,7 @@ def generate_launch_description():
     joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-sim.config.yaml')
     rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
     tmp_rviz_file = os.path.join(bringup_pkg_path, 'config', 'tmp_view.rviz')
+    namespaceutil.processRvizFileForNamespace(rviz_file, tmp_rviz_file, NAMESPACE)
     
     # Save Built URDF file to Description Directory
     description_source_code_path = os.path.abspath(os.path.join(description_pkg_path, "../../../../src/edna_description/urdf"))
@@ -33,21 +34,6 @@ def generate_launch_description():
     with open(urdf_save_path, 'w') as f:
         f.write(edna_description_xml)
 
-    # Modify the Rviz file for the correct namespace
-    rviz_data = None
-    with open(rviz_file, 'r') as stream:
-        rviz_data = yaml.safe_load(stream)
-
-    for display in rviz_data['Visualization Manager']['Displays']:
-        for k, v in display.items():
-            if 'Topic' in k and 'Value' in v:
-                print(f"mapping {v['Value']} -> /{NAMESPACE}{v['Value']}")
-                v['Value'] = f"/{NAMESPACE}{v['Value']}"
-
-    print("Writing tmp rviz file")
-    with open(tmp_rviz_file, 'w') as stream:
-        yaml.dump(rviz_data, stream)
-    
 
     # Create a robot_state_publisher node
     params = {'robot_description': edna_description_xml, 'use_sim_time': use_sim_time, 'publish_frequency': 50.0}
@@ -64,7 +50,18 @@ def generate_launch_description():
         package="controller_manager",
         namespace=NAMESPACE,
         executable="ros2_control_node",
-        parameters=[{'robot_description': edna_description_xml, 'use_sim_time': use_sim_time }, controllers_file],
+        parameters=[{
+            "robot_description": edna_description_xml,
+            "use_sim_time": use_sim_time,
+            "front_left_wheel_joint": f"{NAMESPACE}_front_left_wheel_joint",
+            "front_right_wheel_joint": f"{NAMESPACE}_front_right_wheel_joint",
+            "rear_left_wheel_joint": f"{NAMESPACE}_rear_left_wheel_joint",
+            "rear_right_wheel_joint": f"{NAMESPACE}_rear_right_wheel_joint",
+            "front_left_axle_joint": f"{NAMESPACE}_front_left_axle_joint",
+            "front_right_axle_joint": f"{NAMESPACE}_front_right_axle_joint",
+            "rear_left_axle_joint": f"{NAMESPACE}_rear_left_axle_joint",
+            "rear_right_axle_joint": f"{NAMESPACE}_rear_right_axle_joint"
+            }, controllers_file],
         output="both",
     )
 

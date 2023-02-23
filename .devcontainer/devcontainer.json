@@ -11,10 +11,10 @@
         "OMNI_PASS": "admin",
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0",
         "FASTRTPS_DEFAULT_PROFILES_FILE": "/usr/local/share/middleware_profiles/rtps_udp_profile.xml",
+        "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
+        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim"
     },
     "remoteEnv": {
-        "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
-        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
         "XAUTHORITY": "/tmp/.docker.xauth",
         "DISPLAY": "${localEnv:DISPLAY}",
         "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}"
