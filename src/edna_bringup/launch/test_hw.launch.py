@@ -131,7 +131,7 @@ def generate_launch_description():
         node_robot_state_publisher,
         joint_state_broadcaster_spawner,
         swerve_drive_controller_delay,
-        # rviz2_delay,
+        rviz2_delay,
         joy,
         joy_teleop
     ])
