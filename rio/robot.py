@@ -58,6 +58,25 @@ def threadLoop(name, dds, action):
     
     logging.info(f"Closing {name} thread")
     dds.close()
+
+## Generic Loop that is used for all threads
+def threadLoopDouble(name, dds, dds2, action):
+    logging.info(f"Starting {name} thread")
+    global STOP_THREADS
+    global FRC_STAGE
+    try:
+        while STOP_THREADS == False:
+            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON" or name == "encoder":
+                action(dds, dds2)
+            time.sleep(20/1000)
+    except Exception as e:
+        logging.error(f"An issue occured with the {name} thread")
+        logging.error(e)
+        logging.error(traceback.format_exc())
+    
+    logging.info(f"Closing {name} thread")
+    dds.close()
+
 # Generic Start Thread Function
 def startThread(name):
     thread = None
@@ -98,14 +117,19 @@ def encoderAction(publisher):
 COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::joint_commands"
 COMMAND_WRITER_NAME = "isaac_joint_commands_subscriber::joint_commands_reader"
 
+ARM_COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::arm_joint_commands"
+ARM_COMMAND_WRITER_NAME = "isaac_joint_commands_subscriber::arm_joint_commands_reader"
+
 def commandThread():
     command_subscriber = None
     with rti_init_lock:
         command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
-    threadLoop('command', command_subscriber, commandAction)
+        arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+    threadLoopDouble('command', command_subscriber, arm_command_subscriber, commandAction)
 
-def commandAction(subscriber):
+def commandAction(subscriber, arm_subscriber):
     data = subscriber.read()
+    arm_data = arm_subscriber.read()
     global drive_train
     with drive_train_lock:
         drive_train.sendCommands(data)

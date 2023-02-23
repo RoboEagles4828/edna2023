@@ -14,3 +14,8 @@ sudo apt-get update
 rosdep update --rosdistro=humble
 rosdep install --from-paths src --ignore-src -r -y
 isaac rm
+
+# Install wpilib dependencies
+sudo apt-get install -y python3-pip
+pip install robotpy
+pip install robotpy[ctre]
