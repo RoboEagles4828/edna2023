@@ -5,8 +5,8 @@
     <xacro:property name="arm_link1_width" value="1" />
     <xacro:property name="arm_link1_height" value="1" />
 
-    <xacro:macro name = "arm" params = "prefix">
-        <link name = "${prefix}_box">
+    <xacro:macro name = "arm" params = "prefix parent *origin">
+        <link name = "${prefix}_link">
             <xacro:inertial_box mass = "1" x = "${arm_link1_length}" y = "${arm_link1_width}" z = "${arm_link1_height}">
                 <origin xyz="0 0 0" rpy="0 0 0" />
             </xacro:inertial_box>
@@ -25,9 +25,9 @@
             </collision>
         </link>
         <joint name = "${prefix}_box_joint" type = "fixed">
-            <parent link = "${prefix}_chassis_link"/>
-            <child link = "${prefix}_box"/>
-            <origin xyz = "0 0 0" rpy = "0 0 0"/>
+            <parent link = "${parent}"/>
+            <child link = "${prefix}_link"/>
+            <xacro:insert_block name = "origin"/>
         </joint>
     </xacro:macro>
 </robot>
