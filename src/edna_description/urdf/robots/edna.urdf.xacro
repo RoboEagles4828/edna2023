@@ -51,7 +51,7 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 
-  <xacro:lidar parent="swerve_chassis_link" radius="0.035" length="0.025">
+  <xacro:lidar prefix="${ns}_lidar" parent="${ns}_swerve_chassis_link" radius="0.035" length="0.025">
     <origin xyz="0 0 .035" rpy="0 0 0" />
   </xacro:lidar>
 

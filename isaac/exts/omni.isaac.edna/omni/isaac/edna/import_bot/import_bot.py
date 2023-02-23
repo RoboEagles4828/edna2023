@@ -190,7 +190,7 @@ class ImportBot(BaseSample):
         return
 
     def create_lidar(self, robot_prim_path):
-        lidar_parent = "{}/{}_lidar_link".format(robot_prim_path, NAMESPACE)
+        lidar_parent = f"{robot_prim_path}/{NAMESPACE}_lidar_link"
         lidar_path = "/lidar"
         self.lidar_prim_path = lidar_parent + lidar_path
         result, prim = omni.kit.commands.execute(
@@ -328,10 +328,10 @@ class ImportBot(BaseSample):
                     ("RightCamBranch.inputs:condition", enable_right_cam),
                     ("RightCamCreateViewport.inputs:name", "RightCam"),
                     ("RightCamHelperRgb.inputs:topicName", "right/rgb"),
-                    ("RightCamHelperRgb.inputs:frameId", "zed_right_camera_frame"),
+                    ("RightCamHelperRgb.inputs:frameId", f"{NAMESPACE}_zed_right_camera_frame"),
                     ("RightCamHelperRgb.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("RightCamHelperInfo.inputs:topicName", "right/camera_info"),
-                    ("RightCamHelperInfo.inputs:frameId", "zed_right_camera_frame"),
+                    ("RightCamHelperInfo.inputs:frameId", f"{NAMESPACE}_zed_right_camera_frame"),
                     ("RightCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
                 ],
             }
@@ -344,7 +344,7 @@ class ImportBot(BaseSample):
     def setup_imu_action_graph(self, robot_prim_path):
         sensor_graph = "{}/imu_sensor_graph".format(robot_prim_path)
         swerve_link = "{}/{}_swerve_chassis_link".format(robot_prim_path, NAMESPACE)
-        lidar_link = "{}/lidar_link/lidar".format(robot_prim_path)
+        lidar_link = "{}/{}_lidar_link/lidar".format(robot_prim_path, NAMESPACE)
 
         og.Controller.edit(
             {"graph_path": sensor_graph, "evaluator_name": "execution"},
@@ -365,7 +365,8 @@ class ImportBot(BaseSample):
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
-                    ("PublishLidar.inputs:nodeNamespace", NAMESPACE),
+                    ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishLidar.inputs:frameId", f"{NAMESPACE}_lidar_link"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
