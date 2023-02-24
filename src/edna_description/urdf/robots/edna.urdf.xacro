@@ -54,16 +54,13 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 
-  <xacro:roller_bar prefix="roller_bar" parent="swerve_chassis_link">
-    <origin xyz="0 0 0" rpy="0 0 0" />
-  </xacro:roller_bar>
-
-  <xacro:elevator_leg prefix="elevator_leg" parent="swerve_chassis_link">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+  <xacro:elevator_leg prefix="${ns}_arm" parent="${ns}_swerve_chassis_link">
+    <origin xyz = "-0.1905 0 ${0.527/2 + 0.03}" rpy = "0 0 0"/>
+    <origin xyz = "0 0 ${0.527/5}" rpy = "${pi/2} 0 0"/>
   </xacro:elevator_leg>
 
-  <xacro:back_leg prefix="back_leg" parent="swerve_chassis_link">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+  <xacro:back_leg prefix="${ns}_arm" parent="${ns}_swerve_chassis_link">
+    <origin xyz = "${0.7366/2 - 0.0508/2} 0 ${back_leg_height/2 + 0.05588}" rpy = "0 0 0" />
   </xacro:back_leg>
 
   <xacro:lidar prefix="${ns}_lidar" parent="${ns}_swerve_chassis_link" radius="0.035" length="0.025">

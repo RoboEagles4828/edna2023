@@ -12,6 +12,10 @@
     <color rgba="0.0 0.8 0.0 1.0" />
   </material>
 
+  <material name="ghost">
+    <color rgba="0.0 0.8 0.0 0.5" />
+  </material>
+
   <material name="grey">
     <color rgba="0.2 0.2 0.2 1.0" />
   </material>
