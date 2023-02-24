@@ -1,0 +1,33 @@
+<?xml version = "1.0"?>
+<robot xmlns:xacro = "http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="elevator_leg_length" value="0.052" />
+    <xacro:property name="elevator_leg_width" value="0.330" />
+    <xacro:property name="elevator_leg_height" value="0.527" />
+
+    <xacro:macro name = "elevator_leg" params = "prefix parent *origin">
+        <link name = "${prefix}_link">
+            <xacro:inertial_box mass = "1" x = "${elevator_leg_length}" y = "${elevator_leg_width}" z = "${elevator_leg_height}">
+                <origin xyz = "0 0 ${elevator_leg_height/2}" rpy = "0 0 0"/>
+            </xacro:inertial_box>
+            <visual>
+                <origin xyz = "0 0 ${elevator_leg_height/2 + 0.082}" rpy = "0 0 0"/>
+                <geometry>
+                    <mesh filename="package://edna_description/meshes/elevator_legs.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name = "blue"/>
+            </visual>
+            <collision>
+                <origin xyz = "0 0 ${elevator_leg_height/2}" rpy = "0 0 0"/>
+                <geometry>
+                    <box size = "${elevator_leg_length} ${elevator_leg_width} ${elevator_leg_height}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name = "${prefix}_box_joint" type = "fixed">
+            <parent link = "${parent}"/>
+            <child link = "${prefix}_link"/>
+            <xacro:insert_block name = "origin"/>
+        </joint>
+    </xacro:macro>
+</robot>
