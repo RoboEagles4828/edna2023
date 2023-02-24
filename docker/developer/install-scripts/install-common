@@ -6,6 +6,7 @@
 set -e
 
 INSTALL_ZSH="true"
+INSTALL_OH_MY_ZSH="true"
 CONFIGURE_ZSH_AS_DEFAULT_SHELL="true"
 
 # Debian / Ubuntu packages
@@ -120,6 +121,17 @@ else
         chown ${USERNAME}:${group_name} "${user_rc_path}"
     fi
 fi
+
+# Restore user .bashrc / .profile / .zshrc defaults from skeleton file if it doesn't exist or is empty
+possible_rc_files=( ".bashrc" ".profile" ".zshrc" )
+for rc_file in "${possible_rc_files[@]}"; do
+    if [ -f "/etc/skel/${rc_file}" ]; then
+        if [ ! -e "${user_rc_path}/${rc_file}" ] || [ ! -s "${user_rc_path}/${rc_file}" ]; then
+            cp "/etc/skel/${rc_file}" "${user_rc_path}/${rc_file}"
+            chown ${USERNAME}:${group_name} "${user_rc_path}/${rc_file}"
+        fi
+    fi
+done
 
 # Optionally configure zsh and Oh My Zsh!
 if [ "${INSTALL_ZSH}" = "true" ]; then
