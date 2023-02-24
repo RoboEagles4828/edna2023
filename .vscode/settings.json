@@ -3,7 +3,7 @@
         {
             "match": "\\.xacro*$",
             "isAsync": true,
-            "cmd": "/bin/bash -c 'source /opt/ros/humble/setup.sh && source ${workspaceRoot}/install/setup.bash && xacro ${workspaceRoot}/src/edna_description/urdf/robots/edna.urdf.xacro > ${workspaceRoot}/src/edna_description/urdf/edna.urdf'",
+            "cmd": "/bin/bash -c 'source /opt/ros/humble/setup.sh && source ${workspaceRoot}/install/setup.bash && xacro ${workspaceRoot}/src/edna_description/urdf/robots/edna.urdf.xacro > ${workspaceRoot}/src/edna_description/urdf/edna.urdf namespace:=$ROS_NAMESPACE'",
             "event": "onFileChange"
         }		
     ],

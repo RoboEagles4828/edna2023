@@ -8,3 +8,4 @@ docker/developer/src
 view_tmp.rviz.devcontainer/.env
 view_tmp.rviz
 .devcontainer/.env
+src/edna_description/urdf/edna.urdf
