@@ -5,42 +5,44 @@ import math
 import time
 import logging
 
+NAMESPACE = 'real'
+
 # Small Gear Should Face the back of the robot
 # All wheel drive motors should not be inverted
 # All axle turn motors should be inverted + sensor phase
 # All Cancoders should be direction false
 MODULE_CONFIG = {
     "front_left": {
-        "wheel_joint_name": "front_left_wheel_joint",
-        "wheel_motor_port": 9,
-        "axle_joint_name": "front_left_axle_joint",
-        "axle_motor_port": 7,
-        "axle_encoder_port": 8,
-        "encoder_offset": 248.203,
+        "wheel_joint_name": f"{NAMESPACE}_front_left_wheel_joint",
+        "wheel_motor_port": 3, #9
+        "axle_joint_name": f"{NAMESPACE}_front_left_axle_joint",
+        "axle_motor_port": 1, #7
+        "axle_encoder_port": 2, #8
+        "encoder_offset": 18.984 # 248.203,
     },
     "front_right": {
-        "wheel_joint_name": "front_right_wheel_joint",
-        "wheel_motor_port": 12,
-        "axle_joint_name": "front_right_axle_joint",
-        "axle_motor_port": 10,
-        "axle_encoder_port": 11,
-        "encoder_offset": 15.908,
+        "wheel_joint_name": f"{NAMESPACE}_front_right_wheel_joint",
+        "wheel_motor_port": 6, #12
+        "axle_joint_name": f"{NAMESPACE}_front_right_axle_joint",
+        "axle_motor_port": 4, #10
+        "axle_encoder_port": 5, #11
+        "encoder_offset": 145.723 #15.908,
     },
     "rear_left": {
-        "wheel_joint_name": "rear_left_wheel_joint",
-        "wheel_motor_port": 6,
-        "axle_joint_name": "rear_left_axle_joint",
-        "axle_motor_port": 4,
-        "axle_encoder_port": 5,
-        "encoder_offset": 327.393,
+        "wheel_joint_name": f"{NAMESPACE}_rear_left_wheel_joint",
+        "wheel_motor_port": 12, #6
+        "axle_joint_name": f"{NAMESPACE}_rear_left_axle_joint",
+        "axle_motor_port": 10, #4
+        "axle_encoder_port": 11, #5
+        "encoder_offset": 194.678 #327.393,
     },
     "rear_right": {
-        "wheel_joint_name": "rear_right_wheel_joint",
-        "wheel_motor_port": 3,
-        "axle_joint_name": "rear_right_axle_joint",
-        "axle_motor_port": 1,
-        "axle_encoder_port": 2,
-        "encoder_offset": 201.094,
+        "wheel_joint_name": f"{NAMESPACE}_rear_right_wheel_joint",
+        "wheel_motor_port": 9, #3
+        "axle_joint_name": f"{NAMESPACE}_rear_right_axle_joint",
+        "axle_motor_port": 7, #1
+        "axle_encoder_port": 8, #2
+        "encoder_offset": 69.785 #201.094,
     }
 }
 AXLE_DIRECTION = False
@@ -296,10 +298,10 @@ class DriveTrain():
         self.back_right = SwerveModule(MODULE_CONFIG["rear_right"])
         self.module_lookup = \
         {
-            'front_left_axle_joint': self.front_left,
-            'front_right_axle_joint': self.front_right,
-            'rear_left_axle_joint': self.back_left,
-            'rear_right_axle_joint': self.back_right,
+            f'{NAMESPACE}_front_left_axle_joint': self.front_left,
+            f'{NAMESPACE}_front_right_axle_joint': self.front_right,
+            f'{NAMESPACE}_rear_left_axle_joint': self.back_left,
+            f'{NAMESPACE}_rear_right_axle_joint': self.back_right,
 
         }
 
