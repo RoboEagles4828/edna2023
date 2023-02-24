@@ -1,4 +1,12 @@
 {
+    "filewatcher.commands": [
+        {
+            "match": "\\.xacro*$",
+            "isAsync": true,
+            "cmd": "/bin/bash -c 'source /opt/ros/humble/setup.sh && source ${workspaceRoot}/install/setup.bash && xacro ${workspaceRoot}/src/edna_description/urdf/robots/edna.urdf.xacro > ${workspaceRoot}/src/edna_description/urdf/edna.urdf'",
+            "event": "onFileChange"
+        }		
+    ],
     "ros.distro": "humble",
     "files.associations": {
         "string": "cpp",

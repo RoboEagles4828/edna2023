@@ -16,7 +16,7 @@ import numpy as np
 import math
 import carb
 
-NAMESPACE = f"/{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else '/default'
+NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def set_drive_params(drive, stiffness, damping, max_force):
     drive.GetStiffnessAttr().Set(stiffness)
@@ -53,10 +53,10 @@ class ImportBot(BaseSample):
         friction_material.CreateDynamicFrictionAttr(1.0)
         friction_material.CreateStaticFrictionAttr(1.0)
 
-        front_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_left_wheel_link/collisions")
-        front_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_right_wheel_link/collisions")
-        rear_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_wheel_link/collisions")
-        rear_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_wheel_link/collisions")
+        front_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_left_wheel_link/collisions")
+        front_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_right_wheel_link/collisions")
+        rear_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_left_wheel_link/collisions")
+        rear_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_right_wheel_link/collisions")
 
         add_physics_material_to_prim(front_left_wheel_prim, mtl_prim)
         add_physics_material_to_prim(front_right_wheel_prim, mtl_prim)
@@ -161,22 +161,17 @@ class ImportBot(BaseSample):
         w_sides = ['left', 'right']
         l_sides = ['front', 'back']
         stage = self._world.stage
-        chassis_name = "swerve_chassis_link"
+        chassis_name = f"{NAMESPACE}_swerve_chassis_link"
 
        
-        front_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/front_left_axle_joint"), "angular")
-        front_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/front_right_axle_joint"), "angular")
-        rear_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/rear_left_axle_joint"), "angular")
-        rear_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/rear_right_axle_joint"), "angular")
-        front_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/front_left_axle_link/front_left_wheel_joint"), "angular")
-        front_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint"), "angular")
-        rear_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint"), "angular")
-        rear_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint"), "angular")
-        # base = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/base_link/swerve_chassis_joint"), "angular")
-        # set_drive_params(front_left_axle, 10000000.0, 100000.0, 98.0)
-        # set_drive_params(front_right_axle, 10000000.0, 100000.0, 98.0)
-        # set_drive_params(rear_left_axle, 10000000.0, 100000.0, 98.0)
-        # set_drive_params(rear_right_axle, 10000000.0, 100000.0, 98.0)
+        front_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_front_left_axle_joint"), "angular")
+        front_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_front_right_axle_joint"), "angular")
+        rear_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_rear_left_axle_joint"), "angular")
+        rear_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_rear_right_axle_joint"), "angular")
+        front_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_left_axle_link/{NAMESPACE}_front_left_wheel_joint"), "angular")
+        front_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_right_axle_link/{NAMESPACE}_front_right_wheel_joint"), "angular")
+        rear_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_left_axle_link/{NAMESPACE}_rear_left_wheel_joint"), "angular")
+        rear_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_right_axle_link/{NAMESPACE}_rear_right_wheel_joint"), "angular")
         set_drive_params(front_left_axle, 1, 1000, 98.0)
         set_drive_params(front_right_axle, 1, 1000, 98.0)
         set_drive_params(rear_left_axle, 1, 1000, 98.0)
@@ -186,15 +181,16 @@ class ImportBot(BaseSample):
         set_drive_params(rear_left_wheel, 1, 1000, 98.0)
         set_drive_params(rear_right_wheel, 1, 1000, 98.0)
         # set_drive_params(base,1,1000,98.0)
-        #self.create_lidar(robot_prim_path)
-        #self.create_depth_camera()
+        self.create_lidar(robot_prim_path)
+        self.create_depth_camera(robot_prim_path)
+        self.setup_camera_action_graph(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)
         self.set_friction(robot_prim_path)
         return
 
     def create_lidar(self, robot_prim_path):
-        lidar_parent = "{}/lidar_link".format(robot_prim_path)
+        lidar_parent = f"{robot_prim_path}/{NAMESPACE}_lidar_link"
         lidar_path = "/lidar"
         self.lidar_prim_path = lidar_parent + lidar_path
         result, prim = omni.kit.commands.execute(
@@ -216,9 +212,9 @@ class ImportBot(BaseSample):
         )
         return        
     
-    def create_depth_camera(self):
-        self.depth_left_camera_path = f"{self._robot_prim_path}/zed_left_camera_frame/left_cam"
-        self.depth_right_camera_path = f"{self._robot_prim_path}/zed_right_camera_frame/right_cam"
+    def create_depth_camera(self, robot_prim_path):
+        self.depth_left_camera_path = f"{robot_prim_path}/{NAMESPACE}_zed_left_camera_optical_frame/left_cam"
+        self.depth_right_camera_path = f"{robot_prim_path}/{NAMESPACE}_zed_right_camera_optical_frame/right_cam"
         self.left_camera = prims.create_prim(
             prim_path=self.depth_left_camera_path,
             prim_type="Camera",
@@ -231,6 +227,8 @@ class ImportBot(BaseSample):
                 "clippingPlanes": np.array([1.0, 0.0, 1.0, 1.0]),
             },
         )
+
+
         self.right_camera = prims.create_prim(
             prim_path=self.depth_right_camera_path,
             prim_type="Camera",
@@ -264,26 +262,114 @@ class ImportBot(BaseSample):
         )
         return
     
-    def setup_imu_action_graph(self, robot_prim_path):
-        imu_graph = "{}/imu_sensor_graph".format(robot_prim_path)
-        swerve_link = "{}/swerve_chassis_link".format(robot_prim_path)
+    def setup_camera_action_graph(self, robot_prim_path):
+        camera_graph = "{}/camera_sensor_graph".format(robot_prim_path)
+        enable_left_cam = False
+        enable_right_cam = False
 
         og.Controller.edit(
-            {"graph_path": imu_graph, "evaluator_name": "execution"},
+            {"graph_path": camera_graph, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
-                    ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
-                    ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
-                    ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree")
-                ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("PublishOdometry.inputs:nodeNamespace", NAMESPACE),
-                    ("RawOdomTransform.inputs:nodeNamespace", NAMESPACE),
+                    ("InfoType", "omni.graph.nodes.ConstantToken"),
+                    
+                    ("LeftCamBranch", "omni.graph.action.Branch"),
+                    ("LeftCamCreateViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                    ("LeftCamViewProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                    ("LeftCamSet", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                    ("LeftCamHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                    ("LeftCamHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                    
+                    ("RightCamBranch", "omni.graph.action.Branch"),
+                    ("RightCamCreateViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                    ("RightCamViewProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                    ("RightCamSet", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                    ("RightCamHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                    ("RightCamHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                 ],
                 og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "LeftCamBranch.inputs:execIn"),
+                    ("LeftCamBranch.outputs:execTrue", "LeftCamCreateViewport.inputs:execIn"),
+                    ("LeftCamCreateViewport.outputs:execOut", "LeftCamViewProduct.inputs:execIn"),
+                    ("LeftCamCreateViewport.outputs:viewport", "LeftCamViewProduct.inputs:viewport"),
+                    ("LeftCamViewProduct.outputs:execOut", "LeftCamSet.inputs:execIn"),
+                    ("LeftCamViewProduct.outputs:renderProductPath", "LeftCamSet.inputs:renderProductPath"),
+                    ("LeftCamViewProduct.outputs:renderProductPath", "LeftCamHelperRgb.inputs:renderProductPath"),
+                    ("LeftCamViewProduct.outputs:renderProductPath", "LeftCamHelperInfo.inputs:renderProductPath"),
+                    ("LeftCamSet.outputs:execOut", "LeftCamHelperRgb.inputs:execIn"),
+                    ("LeftCamSet.outputs:execOut", "LeftCamHelperInfo.inputs:execIn"),
+                    ("InfoType.inputs:value", "LeftCamHelperInfo.inputs:type"),
+
+                    ("OnPlaybackTick.outputs:tick", "RightCamBranch.inputs:execIn"),
+                    ("RightCamBranch.outputs:execTrue", "RightCamCreateViewport.inputs:execIn"),
+                    ("RightCamCreateViewport.outputs:execOut", "RightCamViewProduct.inputs:execIn"),
+                    ("RightCamCreateViewport.outputs:viewport", "RightCamViewProduct.inputs:viewport"),
+                    ("RightCamViewProduct.outputs:execOut", "RightCamSet.inputs:execIn"),
+                    ("RightCamViewProduct.outputs:renderProductPath", "RightCamSet.inputs:renderProductPath"),
+                    ("RightCamViewProduct.outputs:renderProductPath", "RightCamHelperRgb.inputs:renderProductPath"),
+                    ("RightCamViewProduct.outputs:renderProductPath", "RightCamHelperInfo.inputs:renderProductPath"),
+                    ("RightCamSet.outputs:execOut", "RightCamHelperRgb.inputs:execIn"),
+                    ("RightCamSet.outputs:execOut", "RightCamHelperInfo.inputs:execIn"),
+                    ("InfoType.inputs:value", "RightCamHelperInfo.inputs:type"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("InfoType.inputs:value", "camera_info"),
+
+                    ("LeftCamBranch.inputs:condition", enable_left_cam),
+                    ("LeftCamCreateViewport.inputs:name", "LeftCam"),
+                    ("LeftCamHelperRgb.inputs:topicName", "left/rgb"),
+                    ("LeftCamHelperRgb.inputs:frameId", "zed_left_camera_frame"),
+                    ("LeftCamHelperRgb.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("LeftCamHelperInfo.inputs:topicName", "left/camera_info"),
+                    ("LeftCamHelperInfo.inputs:frameId", "zed_left_camera_frame"),
+                    ("LeftCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
+
+                    ("RightCamBranch.inputs:condition", enable_right_cam),
+                    ("RightCamCreateViewport.inputs:name", "RightCam"),
+                    ("RightCamHelperRgb.inputs:topicName", "right/rgb"),
+                    ("RightCamHelperRgb.inputs:frameId", f"{NAMESPACE}_zed_right_camera_frame"),
+                    ("RightCamHelperRgb.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("RightCamHelperInfo.inputs:topicName", "right/camera_info"),
+                    ("RightCamHelperInfo.inputs:frameId", f"{NAMESPACE}_zed_right_camera_frame"),
+                    ("RightCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                ],
+            }
+        )
+        set_target_prims(primPath=f"{camera_graph}/RightCamSet", targetPrimPaths=[self.depth_right_camera_path], inputName="inputs:cameraPrim")
+        set_target_prims(primPath=f"{camera_graph}/LeftCamSet", targetPrimPaths=[self.depth_left_camera_path], inputName="inputs:cameraPrim")
+        return
+
+
+    def setup_imu_action_graph(self, robot_prim_path):
+        sensor_graph = "{}/imu_sensor_graph".format(robot_prim_path)
+        swerve_link = "{}/{}_swerve_chassis_link".format(robot_prim_path, NAMESPACE)
+        lidar_link = "{}/{}_lidar_link/lidar".format(robot_prim_path, NAMESPACE)
+
+        og.Controller.edit(
+            {"graph_path": sensor_graph, "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    # General Nodes
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    # Odometry Nodes
+                    ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                    ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
+                    ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
+                    # LiDAR Nodes
+                    ("ReadLidar", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
+                    ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan")
+
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishLidar.inputs:frameId", f"{NAMESPACE}_lidar_link"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    # Odometry Connections
                     ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
                     ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
                     ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
@@ -297,10 +383,30 @@ class ImportBot(BaseSample):
                     ("Context.outputs:context", "RawOdomTransform.inputs:context"),
                     ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
                     ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
+
+                    # LiDAR Connections
+                    ("OnPlaybackTick.outputs:tick", "ReadLidar.inputs:execIn"),
+                    ("ReadLidar.outputs:execOut", "PublishLidar.inputs:execIn"),
+                    ("Context.outputs:context", "PublishLidar.inputs:context"),
+                    ("SimTime.outputs:simulationTime", "PublishLidar.inputs:timeStamp"),
+                    
+                    ("ReadLidar.outputs:azimuthRange", "PublishLidar.inputs:azimuthRange"),
+                    ("ReadLidar.outputs:depthRange", "PublishLidar.inputs:depthRange"),
+                    ("ReadLidar.outputs:horizontalFov", "PublishLidar.inputs:horizontalFov"),
+                    ("ReadLidar.outputs:horizontalResolution", "PublishLidar.inputs:horizontalResolution"),
+                    ("ReadLidar.outputs:intensitiesData", "PublishLidar.inputs:intensitiesData"),
+                    ("ReadLidar.outputs:linearDepthData", "PublishLidar.inputs:linearDepthData"),
+                    ("ReadLidar.outputs:numCols", "PublishLidar.inputs:numCols"),
+                    ("ReadLidar.outputs:numRows", "PublishLidar.inputs:numRows"),
+                    ("ReadLidar.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
+                    
+                    
                 ],
             }
         )
-        set_target_prims(primPath=f"{imu_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
+        # Setup target prims for the Odometry and the Lidar
+        set_target_prims(primPath=f"{sensor_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
+        set_target_prims(primPath=f"{sensor_graph}/ReadLidar", targetPrimPaths=[lidar_link], inputName="inputs:lidarPrim")
         return
 
     def setup_robot_action_graph(self, robot_prim_path):
@@ -321,8 +427,8 @@ class ImportBot(BaseSample):
                     ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                     ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                     ("articulation_controller.inputs:usePath", False),
-                    ("SubscribeJointState.inputs:nodeNamespace", NAMESPACE),
-                    ("PublishJointState.inputs:nodeNamespace", NAMESPACE),
+                    ("SubscribeJointState.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishJointState.inputs:nodeNamespace", f"/{NAMESPACE}"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
