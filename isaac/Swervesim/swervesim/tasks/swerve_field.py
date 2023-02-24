@@ -121,20 +121,61 @@ class Swerve_Field_Task(RLTask):
         self._sim_config.apply_articulation_settings("swerve", get_prim_at_path(
             swerve.prim_path), self._sim_config.parse_actor_config("swerve"))
 
+    # def get_target(self):
+    #     # Adds a red ball as target
+    #     radius = 0.1  # meters
+    #     color = torch.tensor([0, 0, 1])
+    #     ball = DynamicSphere(
+    #         prim_path=self.default_zero_env_path + "/ball",
+    #         translation=self._ball_position,
+    #         name="target_0",
+    #         radius=radius,
+    #         color=color,
+    #     )
+    #     self._sim_config.apply_articulation_settings("ball", get_prim_at_path(
+    #         ball.prim_path), self._sim_config.parse_actor_config("ball"))
+    #     ball.set_collision_enabled(False)
     def get_target(self):
-        # Adds a red ball as target
-        radius = 0.1  # meters
-        color = torch.tensor([0, 0, 1])
-        ball = DynamicSphere(
-            prim_path=self.default_zero_env_path + "/ball",
-            translation=self._ball_position,
-            name="target_0",
-            radius=radius,
-            color=color,
-        )
-        self._sim_config.apply_articulation_settings("ball", get_prim_at_path(
-            ball.prim_path), self._sim_config.parse_actor_config("ball"))
-        ball.set_collision_enabled(False)
+        world = self.get_world()
+        self.extension_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../../.."))
+        field = os.path.join(self.project_root_path, "isaac/assets/2023_field/FE-2023.usd")
+        add_reference_to_stage(usd_path=field,prim_path=self.default_zero_env_path+"/Field")
+        cone = os.path.join(self.project_root_path, "isaac/assets/2023_field/parts/cone_without_deformable_body.usd")
+        cube = os.path.join(self.project_root_path, "isaac/assets/2023_field/parts/cube_without_deformable_body.usd")
+        # chargestation = os.path.join(self.project_root_path, "assets/2023_field/charge_station.usd")
+        # add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation_1")
+        # add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation_2") 
+        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_1")
+        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_2")
+        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_3")
+        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_4")
+        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_5")
+        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_6")
+        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_7")
+        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_8")
+        self.cone_1 = GeometryPrim(self.default_zero_env_path+"/Cone_1","cone_1_view",position=np.array([1.20298,-0.56861,0.0]))
+        self.cone_2 = GeometryPrim(self.default_zero_env_path+"/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0]))
+        self.cone_3 = GeometryPrim(self.default_zero_env_path+"/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0]))
+        self.cone_4 = GeometryPrim(self.default_zero_env_path+"/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0]))
+        # chargestation_1 = GeometryPrim(self.default_zero_env_path+"/ChargeStation_1","cone_3_view",position=np.array([-4.20298,-0.56861,0.0]))
+        # chargestation_2 = GeometryPrim(self.default_zero_env_path+"/ChargeStation_2","cone_4_view",position=np.array([4.20298,0.56861,0.0]))
+        
+
+        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_1")
+        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_2")
+        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_3")
+        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_4")
+        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_5")
+        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_6")
+        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_7")
+        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_8")
+        self.cube_1 = GeometryPrim(self.default_zero_env_path+"/Cube_1","cube_1_view",position=np.array([1.20298,0.65059,0.121]))
+        self.cube_2 = GeometryPrim(self.default_zero_env_path+"/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121]))
+        self.cube_3 = GeometryPrim(self.default_zero_env_path+"/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121]))
+        self.cube_4 = GeometryPrim(self.default_zero_env_path+"/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121]))
+
+        return
 
     def get_observations(self) -> dict:
         # Gets various positions and velocties to observations
@@ -145,12 +186,12 @@ class Swerve_Field_Task(RLTask):
         self.root_velocities = self._swerve.get_velocities(clone=False)
         root_positions = self.root_pos - self._env_pos
         root_quats = self.root_rot
-        root_linvels = self.root_velocities[:, :3]
-        root_angvels = self.root_velocities[:, 3:]
+        # root_linvels = self.root_velocities[:, :3]
+        # root_angvels = self.root_velocities[:, 3:]
         self.obs_buf[..., 0:3] = (self.target_positions - root_positions) / 3
-        self.obs_buf[..., 3:7] = root_quats
-        self.obs_buf[..., 7:10] = root_linvels / 2
-        self.obs_buf[..., 10:13] = root_angvels / math.pi
+        self.obs_buf[..., 3:6] = (self.target_positions - root_positions) / 3
+        self.obs_buf[..., 6:9] = (self.target_positions - root_positions) / 3
+        self.obs_buf[..., 9:13] = root_quats
         self.obs_buf[..., 13:21] = self.joint_velocities
         self.obs_buf[..., 21:29] = self.joint_positions
         # Should not exceed observation ssize declared earlier
