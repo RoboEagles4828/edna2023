@@ -4,3 +4,4 @@
       device_id: 0
       deadzone: 0.08
       autorepeat_rate: 20.0
+      sticky_buttons: true

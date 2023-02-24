@@ -6,3 +6,5 @@ __pycache__
 nvidia_driver_config
 docker/developer/src
 view_tmp.rviz.devcontainer/.env
+view_tmp.rviz
+.devcontainer/.env

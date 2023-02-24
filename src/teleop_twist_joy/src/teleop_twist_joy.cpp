@@ -64,6 +64,7 @@ struct TeleopTwistJoy::Impl
   bool require_enable_button;
   int64_t enable_button;
   int64_t enable_turbo_button;
+  int64_t enable_field_oriented_button;
 
   std::map<std::string, int64_t> axis_linear_map;
   std::map<std::string, std::map<std::string, double>> scale_linear_map;
@@ -93,6 +94,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   pimpl_->enable_button = this->declare_parameter("enable_button", 5);
 
   pimpl_->enable_turbo_button = this->declare_parameter("enable_turbo_button", -1);
+  pimpl_->enable_field_oriented_button = this->declare_parameter("enable_field_oriented_button", 8);
 
   std::map<std::string, int64_t> default_linear_map{
     {"x", 5L},
@@ -172,7 +174,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   {
     static std::set<std::string> intparams = {"axis_linear.x", "axis_linear.y", "axis_linear.z",
                                               "axis_angular.yaw", "axis_angular.pitch", "axis_angular.roll",
-                                              "enable_button", "enable_turbo_button"};
+                                              "enable_button", "enable_turbo_button", "enable_field_oriented_button"};
     static std::set<std::string> doubleparams = {"scale_linear.x", "scale_linear.y", "scale_linear.z",
                                                  "scale_linear_turbo.x", "scale_linear_turbo.y", "scale_linear_turbo.z",
                                                  "scale_angular.yaw", "scale_angular.pitch", "scale_angular.roll",
@@ -219,6 +221,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
     // Loop to assign changed parameters to the member variables
     for (const auto & parameter : parameters)
     {
+
       if (parameter.get_name() == "require_enable_button")
       {
         this->pimpl_->require_enable_button = parameter.get_value<rclcpp::PARAMETER_BOOL>();
@@ -230,6 +233,10 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
       else if (parameter.get_name() == "enable_turbo_button")
       {
         this->pimpl_->enable_turbo_button = parameter.get_value<rclcpp::PARAMETER_INTEGER>();
+      }
+      else if (parameter.get_name() == "enable_field_oriented_button")
+      {
+        this->pimpl_->enable_field_oriented_button = parameter.get_value<rclcpp::PARAMETER_INTEGER>();
       }
       else if (parameter.get_name() == "axis_linear.x")
       {
@@ -345,8 +352,15 @@ double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
   if(!odom_msg){
     return 0.0;
   }
-  
-  return acos(odom_msg-> pose.pose.orientation.w);
+  double x = odom_msg-> pose.pose.orientation.x;
+  double y = odom_msg-> pose.pose.orientation.y;
+  double z = odom_msg-> pose.pose.orientation.z;
+  double w = odom_msg-> pose.pose.orientation.w;
+  double siny_cosp = 2 * (w * z + x * y);
+  double cosy_cosp = 1 - 2 * (y * y + z * z);
+  double angle = std::atan2(siny_cosp, cosy_cosp);
+ 
+  return angle;
 }
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
@@ -358,11 +372,20 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
   double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
   double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
-  double robot_odom_orientation = ((get_orientation_val(last_msg))* 2);
+  // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "%f",lin_x_vel);
+  // for( uint i =0u; i<joy_msg->buttons.size(); i++){
+  //     RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "%d:%d:%ld",joy_msg->buttons[i],i,enable_field_oriented_button);
+  // }
+
+
 // Math for field oriented drive
+  if(joy_msg->buttons[enable_field_oriented_button]==0){
+  double robot_odom_orientation = ((get_orientation_val(last_msg)));
   double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
   lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
   lin_x_vel = temp;
+  }
+  
 
   //Set Velocities in twist msg and publish
   cmd_vel_msg->linear.x = lin_x_vel;
