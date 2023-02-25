@@ -197,7 +197,7 @@ class ImportBot(BaseSample):
             "RangeSensorCreateLidar",
             path=lidar_path,
             parent=lidar_parent,
-            min_range=0.4,
+            min_range=0.1,
             max_range=25.0,
             draw_points=False,
             draw_lines=True,

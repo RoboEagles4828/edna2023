@@ -51,8 +51,18 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 
+  <link name="${ns}_footprint" />
+
+  <joint name="${ns}_footprint_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="${ns}_footprint" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+
+
   <xacro:lidar prefix="${ns}_lidar" parent="${ns}_swerve_chassis_link" radius="0.035" length="0.025">
-    <origin xyz="0 0 .035" rpy="0 0 0" />
+    <origin xyz="0 0 .065" rpy="0 0 0" />
   </xacro:lidar>
 
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" ns="${ns}"/>
