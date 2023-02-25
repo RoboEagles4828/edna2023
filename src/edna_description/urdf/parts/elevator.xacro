@@ -17,7 +17,7 @@
                 <origin xyz = "0 0 ${elevator_outer_height/2}" rpy = "0 0 0"/>
             </xacro:inertial_box>
             <visual>
-                <origin xyz = "0.254264 -0.006 -0.072" rpy = "0 0 0"/>
+                <origin xyz = "0.254264 -0.07 -0.072" rpy = "0 0 0"/>
                 <geometry>
                     <mesh filename="package://edna_description/meshes/elevator_outer_updated.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
@@ -35,7 +35,7 @@
             <child link = "${prefix}_elevator_outer_1_link"/>
             <axis xyz = "0 -1 0"/>
             <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.5"/>
-            <mimic joint = "${ns}_arm_roller_bar_joint" multiplier = "-1.8" offset = "0"/>
+            <!-- <mimic joint = "${ns}_arm_roller_bar_joint" multiplier = "-1.8" offset = "0"/> -->
             <xacro:insert_block name = "origin"/>
         </joint>
 
@@ -44,7 +44,7 @@
                 <origin xyz = "0 0 ${elevator_outer_height/2}" rpy = "0 0 0"/>
             </xacro:inertial_box>
             <visual>
-                <origin xyz = "0.365 0.066 -0.085" rpy = "0 0 0"/>
+                <origin xyz = "0.365 0.004 -0.085" rpy = "0 0 0"/>
                 <geometry>
                     <mesh filename="package://edna_description/meshes/elevator_center.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
@@ -71,7 +71,7 @@
                 <origin xyz = "0 0 ${elevator_outer_height/2}" rpy = "0 0 0"/>
             </xacro:inertial_box>
             <visual>
-                <origin xyz = "0.469 -0.006 -0.1" rpy = "0 ${pi} 0"/>
+                <origin xyz = "0.469 -0.07 -0.1" rpy = "0 ${pi} 0"/>
                 <geometry>
                     <mesh filename="package://edna_description/meshes/elevator_outer_updated.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
