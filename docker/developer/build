@@ -1,10 +1,12 @@
 #!/bin/bash
-VERSION="3" # Increment manually for now
+VERSION="4" # Increment manually for now
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
 IMAGE_NAME="developer-environment:$VERSION"
 
 rm -rf ./src
 cp -r ../../src .
+# Copy rio requirements to be installed
+cp ../../rio/requirements.txt ./src/requirements.txt
 
 docker build -t $GITHUB_REGISTRY/$IMAGE_NAME --cache-from $GITHUB_REGISTRY/$IMAGE_NAME .
 

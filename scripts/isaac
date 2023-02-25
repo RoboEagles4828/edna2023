@@ -57,6 +57,12 @@ launch_isaac() {
     $IMAGE_NAME sleep infinity
 }
 
+# Update the urdf file before launching
+if [ -d /workspaces/edna2023/install ]; then
+    source /workspaces/edna2023/install/setup.bash
+    xacro src/edna_description/urdf/robots/edna.urdf.xacro > src/edna_description/urdf/edna.urdf namespace:=$ROS_NAMESPACE
+fi
+
 # Check if an isaac container already exists
 if [ $( docker ps -a | grep $CONTAINTER_NAME | wc -l ) -gt 0 ]; then
     status=$( docker container inspect -f '{{.State.Running}}' $CONTAINTER_NAME )
