@@ -41,12 +41,6 @@ MODULE_CONFIG = {
         "axle_motor_port": 1,
         "axle_encoder_port": 2,
         "encoder_offset": 201.094,
-    },
-    "arm": {
-        "arm_motor_name": "arm_motor",
-        "arm_motor_port": 13,
-        "arm_piston_name": "arm_piston",
-        "arm_piston_port": [14, 15],
     }
 }
 AXLE_DIRECTION = False
