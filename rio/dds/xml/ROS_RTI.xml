@@ -41,17 +41,17 @@ This code contains trade secrets of Real-Time Innovations, Inc.
 
     <!-- Domain Library -->
     <domain_library name="ROS2_DOMAIN_LIB">
-        <domain name="ROS2_DOMAIN_JOYSTICK" domain_id="99">
+        <domain name="ROS2_DOMAIN_JOYSTICK" domain_id="0">
             <register_type name="sensor_msgs::msg::dds_::Joy_" type_ref="sensor_msgs::msg::dds_::Joy_" />
-            <topic name="rt/joy" register_type_ref="sensor_msgs::msg::dds_::Joy_"/>
+            <topic name="rt/real/joy" register_type_ref="sensor_msgs::msg::dds_::Joy_"/>
         </domain>
-        <domain name="ROS2_DOMAIN_JOINT_CMDS" domain_id="99">
+        <domain name="ROS2_DOMAIN_JOINT_CMDS" domain_id="0">
           <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
-          <topic name="rt/real_joint_commands" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
+          <topic name="rt/real/real_joint_commands" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
         </domain>
-        <domain name="ROS2_DOMAIN_ENCODER_INFO" domain_id="99">
+        <domain name="ROS2_DOMAIN_ENCODER_INFO" domain_id="0">
           <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
-          <topic name="rt/real_joint_states" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
+          <topic name="rt/real/real_joint_states" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
         </domain>
         <domain name="ROS2_DOMAIN_ARM_ENCODER_INFO" domain_id="99">
           <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
@@ -67,7 +67,7 @@ This code contains trade secrets of Real-Time Innovations, Inc.
     <domain_participant_library name="ROS2_PARTICIPANT_LIB">
       <domain_participant name="joystick" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_JOYSTICK">
         <publisher name="joystick_data_publisher">
-          <data_writer name="joystick_data_writer" topic_ref="rt/joy">
+          <data_writer name="joystick_data_writer" topic_ref="rt/real/joy">
             <datawriter_qos>
               <reliability>
                 <kind>RELIABLE_RELIABILITY_QOS</kind>
@@ -82,13 +82,13 @@ This code contains trade secrets of Real-Time Innovations, Inc.
 
       <domain_participant name="joint_commands" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_JOINT_CMDS">
         <subscriber name="isaac_joint_commands_subscriber">
-            <data_reader name="joint_commands_reader" topic_ref="rt/real_joint_commands" />
+            <data_reader name="joint_commands_reader" topic_ref="rt/real/real_joint_commands" />
         </subscriber>
       </domain_participant>
 
       <domain_participant name="encoder_info" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_ENCODER_INFO">
           <publisher name="encoder_info_publisher">
-            <data_writer name="encoder_info_writer" topic_ref="rt/real_joint_states" />
+            <data_writer name="encoder_info_writer" topic_ref="rt/real/real_joint_states" />
           </publisher>
       </domain_participant>
 

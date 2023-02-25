@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/developer-environment:3",
+    "image": "ghcr.io/roboeagles4828/developer-environment:4",
     "containerEnv": {
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
@@ -19,18 +19,13 @@
         "DISPLAY": "${localEnv:DISPLAY}",
         "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}"
     },
-    "features": {
-        // Find a better way to assign uid and gid so we can rebuild offline
-        "ghcr.io/devcontainers/features/common-utils:2": {
-            "configureZshAsDefaultShell": true,
-            "upgradePackages": false,
-            "username": "admin"
-        }
-    },
     "remoteUser": "admin",
+    "updateRemoteUserUID": true,
     "postCreateCommand": "./.devcontainer/postCreate.sh",
     "postStartCommand": "./.devcontainer/postStart.sh",
     "initializeCommand": "./.devcontainer/init.sh",
+    "securityOpt": [ "seccomp=unconfined" ],
+    "capAdd": ["SYS_PTRACE"],
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" // docker
     ],
