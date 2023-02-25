@@ -35,9 +35,9 @@
             <child link = "${prefix}_elevator_outer_1_link"/>
             <axis xyz = "0 -1 0"/>
             <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.5"/>
-            <!-- <mimic joint = "${ns}_arm_roller_bar_joint" multiplier = "-1.8" offset = "0"/> -->
+            <mimic joint = "${ns}_arm_roller_bar_joint" multiplier = "-1.8" offset = "0"/>
             <xacro:insert_block name = "origin"/>
-        </joint>
+        </joint> 
 
         <link name = "${prefix}_elevator_center_link">
             <xacro:inertial_box mass = "1" x = "${elevator_outer_length}" y = "${elevator_outer_width}" z = "${elevator_outer_height}">

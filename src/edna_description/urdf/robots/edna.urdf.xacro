@@ -68,10 +68,6 @@
     <origin xyz = "0.00253 0.28 0.3738731" rpy = "${pi} ${(0.0174533*15.3)} ${pi}" />
   </xacro:elevator>
 
-  <!-- <xacro:elevator prefix="${ns}_elevator_right" parent="base_link" ns="${ns}">
-    <origin xyz = "0.00253 0.28 0.3738731" rpy = "${pi} ${(0.0174533*15.3)} ${pi}" />
-  </xacro:elevator> -->
-
   <!--Left Elevator-->
   <xacro:elevator prefix="${ns}_elevator_left" parent="${ns}_arm_back_leg_link" ns="${ns}">
     <origin xyz = "0.00253 -0.28 0.3738731" rpy = "${pi} ${(0.0174533*15.3)} ${pi}" />
@@ -79,7 +75,7 @@
 
   <xacro:lidar prefix="${ns}_lidar" parent="${ns}_swerve_chassis_link" radius="0.035" length="0.025">
     <origin xyz="0 0 .035" rpy="0 0 0" />
-  </xacro:lidar> -->
+  </xacro:lidar>
 
-  <!-- <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" ns="${ns}"/>
+  <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" ns="${ns}"/>
 </robot>
