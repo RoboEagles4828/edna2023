@@ -1,0 +1,95 @@
+<?xml version = "1.0"?>
+<robot xmlns:xacro = "http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="elevator_outer_length" value="0.685" />
+    <xacro:property name="elevator_outer_width" value="0.457" />
+    <xacro:property name="elevator_outer_height" value="0.812" />
+
+    <xacro:property name="elevator_center_length" value="0.0508"/>
+    <xacro:property name="elevator_center_width" value="0.457"/>
+    <xacro:property name="elevator_center_height" value="0.812"/>
+
+    <xacro:include filename="$(find edna_description)/urdf/parts/elevator_leg.xacro" />
+
+    <xacro:macro name = "elevator" params = "ns prefix parent *origin">
+        <link name = "${prefix}_elevator_outer_1_link">
+            <xacro:inertial_box mass = "1" x = "${elevator_outer_length}" y = "${elevator_outer_width}" z = "${elevator_outer_height}">
+                <origin xyz = "0 0 ${elevator_outer_height/2}" rpy = "0 0 0"/>
+            </xacro:inertial_box>
+            <visual>
+                <origin xyz = "0.254264 -0.006 -0.072" rpy = "0 0 0"/>
+                <geometry>
+                    <mesh filename="package://edna_description/meshes/elevator_outer_updated.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name = "blue"/>}
+            </visual>
+            <collision>
+                <xacro:insert_block name = "origin"/>
+                <geometry>
+                    <box size = "0.1 0.1 0.1"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name = "${prefix}_elevator_outer_1_joint" type = "revolute">
+            <parent link = "${parent}"/>
+            <child link = "${prefix}_elevator_outer_1_link"/>
+            <axis xyz = "0 -1 0"/>
+            <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.5"/>
+            <mimic joint = "${ns}_arm_roller_bar_joint" multiplier = "-1.8" offset = "0"/>
+            <xacro:insert_block name = "origin"/>
+        </joint>
+
+        <link name = "${prefix}_elevator_center_link">
+            <xacro:inertial_box mass = "1" x = "${elevator_outer_length}" y = "${elevator_outer_width}" z = "${elevator_outer_height}">
+                <origin xyz = "0 0 ${elevator_outer_height/2}" rpy = "0 0 0"/>
+            </xacro:inertial_box>
+            <visual>
+                <origin xyz = "0.365 0.066 -0.085" rpy = "0 0 0"/>
+                <geometry>
+                    <mesh filename="package://edna_description/meshes/elevator_center.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name = "blue"/>
+            </visual>
+            <collision>
+                <origin xyz = "0 0 0" rpy = "0 0 0"/>
+                <geometry>
+                    <box size = "${elevator_outer_length} ${elevator_outer_width} ${elevator_outer_height}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name = "${prefix}_elevator_center_joint" type = "prismatic">
+            <parent link = "${prefix}_elevator_outer_1_link" joint = "${prefix}_elevator_outer_1_joint"/>
+            <child link = "${prefix}_elevator_center_link"/>
+            <axis xyz = "1 0 0"/>
+            <!-- 0.56 -->
+            <limit effort="1000.0" lower="0.0" upper="0.56" velocity="0.5"/>
+            <origin xyz = "0 0 0" rpy = "0 0 0"/>
+        </joint>
+
+        <link name = "${prefix}_elevator_outer_2_link">
+            <xacro:inertial_box mass = "1" x = "${elevator_outer_length}" y = "${elevator_outer_width}" z = "${elevator_outer_height}">
+                <origin xyz = "0 0 ${elevator_outer_height/2}" rpy = "0 0 0"/>
+            </xacro:inertial_box>
+            <visual>
+                <origin xyz = "0.469 -0.006 -0.1" rpy = "0 ${pi} 0"/>
+                <geometry>
+                    <mesh filename="package://edna_description/meshes/elevator_outer_updated.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name = "blue"/> 
+            </visual>
+            <collision>
+                <origin xyz = "0 0 0" rpy = "0 0 0"/>
+                <geometry>
+                    <box size = "${elevator_outer_length} ${elevator_outer_width} ${elevator_outer_height}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name = "${prefix}_elevator_outer_2_joint" type = "prismatic">
+            <axis xyz = "1 0 0"/>
+            <!-- 0.568 -->
+            <limit effort="1000.0" lower="0.0" upper="0.568" velocity="0.5"/>
+            <parent link = "${prefix}_elevator_center_link"/>
+            <child link = "${prefix}_elevator_outer_2_link"/>
+        </joint>
+    </xacro:macro>
+</robot>

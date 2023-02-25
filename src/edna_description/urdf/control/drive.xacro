@@ -80,6 +80,55 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
+      <joint name = "${ns}_elevator_left_elevator_outer_1_joint" type = "revolute">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
+      <joint name = "${ns}_elevator_left_elevator_center_joint" type = "prismatic">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
+      <joint name = "${ns}_elevator_left_elevator_outer_2_joint" type = "prismatic">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
+
+      <joint name = "${ns}_elevator_right_elevator_outer_1_joint" type = "revolute">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
+      <joint name = "${ns}_elevator_right_elevator_center_joint" type = "prismatic">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
+      <joint name = "${ns}_elevator_right_elevator_outer_2_joint" type = "prismatic">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
     </ros2_control>
   </xacro:macro>
 

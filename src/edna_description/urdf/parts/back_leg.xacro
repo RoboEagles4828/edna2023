@@ -15,14 +15,13 @@
                 <geometry>
                     <mesh filename="package://edna_description/meshes/back_legs.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
-                <material name = "blue"/>
+                <material name = "red"/>
             </visual>
             <collision>
                 <origin xyz = "0 0 0" rpy = "0 0 0"/>
                 <geometry>
                     <box size = "${back_leg_length} ${back_leg_width} ${back_leg_height}"/>
                 </geometry>
-                <material name = "ghost"/>
             </collision>
         </link>
         <joint name = "${prefix}_back_leg_joint" type = "fixed">
