@@ -264,7 +264,7 @@ hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const
   // Calculate Axle Velocities using motion magic
   double dt = 0.1;
   for (auto i = 0u; i < joint_names_.size(); i++) {
-    if (joint_types_[i] == hardware_interface::HW_IF_POSITION) {\
+    if (joint_types_[i] == hardware_interface::HW_IF_POSITION) {
       auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
       // RCLCPP_INFO(rclcpp::get_logger("TestDriveHardware"), "Current: %f, Target: %f Vel: %f", hw_positions_[i], hw_command_position_[i], vel);
       hw_command_velocity_[i] = vel;

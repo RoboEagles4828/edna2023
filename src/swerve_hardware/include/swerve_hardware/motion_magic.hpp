@@ -30,7 +30,7 @@ public:
 private:
     double MAX_ACCELERATION;
     double MAX_VELOCITY;
-    double MAX_JERK = 4 * M_PI;
+    double MAX_JERK = 15 * M_PI;
     double prevVel = 0.0;
     double prevAcceleration = 0.0;
     double prevError = 0.0;
