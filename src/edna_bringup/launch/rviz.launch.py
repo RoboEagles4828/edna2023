@@ -14,12 +14,12 @@ def generate_launch_description():
     
     control_launch_args = {
         'use_sim_time': use_sim_time,
-        'use_ros2_control': 'false',
-        'namespace': NAMESPACE
+        'namespace': NAMESPACE,
+        'use_ros2_control': 'false'
     }
-    control_launch = IncludeLaunchDescription(
+    control_layer = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
-                    bringup_path,'launch','control.launch.py'
+                    bringup_path,'launch','controlLayer.launch.py'
                 )]), launch_arguments=control_launch_args.items())
     
 
@@ -31,13 +31,13 @@ def generate_launch_description():
         'enable_foxglove': 'false',
         'rviz_file': rviz_file
     }
-    debug_launch = IncludeLaunchDescription(
+    debug_layer = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
-                    bringup_path,'launch','debugtools.launch.py'
+                    bringup_path,'launch','debugLayer.launch.py'
                 )]), launch_arguments=debug_launch_args.items())
 
     # Launch!
     return LaunchDescription([
-        control_launch,
-        debug_launch
+        control_layer,
+        debug_layer
     ])
