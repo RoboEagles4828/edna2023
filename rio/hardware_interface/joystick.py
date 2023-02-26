@@ -4,6 +4,13 @@ import logging
 CONTROLLER_PORT = 0
 SCALING_FACTOR_FIX = 10000
 
+DPAD_REF = {
+    "DPAD_UP": 0,
+    "DPAD_RIGHT": 90,
+    "DPAD_DOWN": 180,
+    "DPAD_LEFT": 270
+}
+
 class Joystick:
     def __init__(self):
         self.joystick = wpilib.XboxController(CONTROLLER_PORT)
@@ -27,7 +34,10 @@ class Joystick:
             self.joystick.getRightBumper(),
             self.joystick.getBackButton(),
             self.joystick.getStartButton(),
-            0,
+            getDpad("DPAD_UP"),
+            getDpad("DPAD_DOWN"),
+            getDpad("DPAD_LEFT"),
+            getDpad("DPAD_RIGHT"),
             self.joystick.getLeftStickButton(),
             self.joystick.getRightStickButton()
         ]
@@ -36,7 +46,15 @@ class Joystick:
             return int(a * SCALING_FACTOR_FIX * -1)
         def toInt(b):
             return int(b)
-
+        
+        def getDpad(direction: str):
+            dpadValue = self.joystick.getPOV()
+            value = DPAD_REF[direction]
+            if dpadValue == value or dpadValue == ((value + 45) % 360) or dpadValue == ((value + 315) % 360):
+                return 1
+            else:
+                return 0
+    
         axes = map(scale, axes)
         buttons = map(toInt, buttons)
 
