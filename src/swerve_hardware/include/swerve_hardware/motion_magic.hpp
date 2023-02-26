@@ -30,7 +30,7 @@ public:
 private:
     double MAX_ACCELERATION;
     double MAX_VELOCITY;
-    double MAX_JERK = 30 * M_PI;
+    double MAX_JERK = 4 * M_PI;
     double prevVel = 0.0;
     double prevAcceleration = 0.0;
     double prevError = 0.0;
@@ -38,7 +38,7 @@ private:
     double totalDistance = 0.0;
     double zeroTime = 0.0;
 
-    double tolerance = 0.2;
+    double tolerance = 0.15;
     double rampWindow1 = 0.3;
     double rampWindow2 = 0.8;
     double velocityInRampWindow1 = 0.1;

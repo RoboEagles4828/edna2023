@@ -60,7 +60,7 @@ namespace swerve_hardware
         // }
 
         //method 1
-        double displacement = std::abs(targetPosition - sensorPosition);
+        double displacement = std::abs(getPositionDifference(targetPosition, sensorPosition));
         double dir = targetPosition - sensorPosition;
         double slow_down_dist = (MAX_JERK/6) * pow(2*sensorVelocity/MAX_JERK, 1.5);
 
