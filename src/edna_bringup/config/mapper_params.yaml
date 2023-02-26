@@ -11,8 +11,6 @@
       ceres_loss_function: None
       
       # ROS Parameters
-      odom_frame: odom
-      map_frame: map
       mode: mapping #localization
 
       # if you'd like to immediately start continuing a map at a given pose

@@ -27,8 +27,8 @@
   <!-- Z IS UP -->
 
   <!-- Chassis -->
-  <link name="base_link"></link>
-  <xacro:square_chassis prefix="${ns}_swerve" parent="base_link">
+  <link name="${ns}_base_link"></link>
+  <xacro:square_chassis prefix="${ns}_swerve" parent="${ns}_base_link">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:square_chassis>
 
@@ -51,12 +51,12 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 
-  <link name="${ns}_footprint" />
 
+  <link name="${ns}_footprint" />
   <joint name="${ns}_footprint_joint" type="fixed">
-    <parent link="base_link" />
+    <parent link="${ns}_base_link" />
     <child link="${ns}_footprint" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 -0.0508" rpy="0 0 0" />
   </joint>
 
 

@@ -365,8 +365,10 @@ class ImportBot(BaseSample):
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}_odom"),
                     ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("PublishLidar.inputs:frameId", f"{NAMESPACE}_lidar_link"),
+                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}_odom")
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections

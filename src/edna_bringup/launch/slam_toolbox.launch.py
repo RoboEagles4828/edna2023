@@ -19,8 +19,13 @@ def generate_launch_description():
         package='slam_toolbox',
         namespace=NAMESPACE,
         executable='async_slam_toolbox_node',
-        parameters=[{ 'use_sim_time': use_sim_time, 'base_frame': f"{NAMESPACE}_footprint"}, params_file],
-        remappings={(f'/scan', f'/{NAMESPACE}/scan')},
+        parameters=[{ 
+            'use_sim_time': use_sim_time, 
+            'scan_topic': f'/{NAMESPACE}/scan',
+            'base_frame': f'{NAMESPACE}_footprint',
+            'map_frame': f'{NAMESPACE}_map',
+            'odom_frame': f'{NAMESPACE}_odom'
+        }, params_file],
     )
 
     return LaunchDescription([
