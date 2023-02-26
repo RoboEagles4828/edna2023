@@ -18,7 +18,7 @@ def generate_launch_description():
 
     # Process the URDF file
     pkg_path = os.path.join(get_package_share_directory('edna_description'))
-    xacro_file = os.path.join(pkg_path,'urdf', 'robots','edna.urdf.xacro')
+    xacro_file = os.path.join(pkg_path,'urdf', 'robots','test.urdf.xacro')
     robot_description_config = xacro.process_file(xacro_file, mappings={ 'namespace': NAMESPACE })
 
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))

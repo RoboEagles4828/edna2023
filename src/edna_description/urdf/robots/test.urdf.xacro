@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot name="edna" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Args -->
+  <xacro:arg name="hw_interface_plugin" default="swerve_hardware/IsaacDriveHardware"/>
+  <xacro:arg name="namespace" default="default"/>
+  <xacro:property name="ns" value="$(arg namespace)" />
+
+  <!-- Include Files -->
+  <!-- <xacro:include filename="$(find edna_description)/urdf/control/drive.xacro" /> -->
+  <xacro:include filename="$(find edna_description)/urdf/util/macros.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/util/materials.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/square_chassis.xacro" />
+  <!-- <xacro:include filename="$(find edna_description)/urdf/parts/swerve_axle.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/zed_macro.urdf.xacro" /> -->
+  <!-- <xacro:include filename="$(find edna_description)/urdf/parts/elevator_leg.xacro" /> -->
+  <xacro:include filename="$(find edna_description)/urdf/parts/back_leg.xacro" />
+  <!-- <xacro:include filename="$(find edna_description)/urdf/parts/lidar.xacro" /> -->
+  <xacro:include filename="$(find edna_description)/urdf/parts/elevator.xacro" />
+
+  <link name="base_link"></link>
+  <xacro:elevator prefix="${ns}_elevator_right" parent="base_link" ns="${ns}">
+    <origin xyz = "0 0 0" rpy = "0 0 0" />
+  </xacro:elevator>
+  
+  
+
+  <!-- <xacro:back_leg prefix="${ns}_arm" parent="base_link">
+    <origin xyz = "-${chassis_length/2 - back_leg_length/2} 0 ${back_leg_height/2 + chassis_height}" rpy = "0 0 0" />
+  </xacro:back_leg> -->
+
+</robot>
