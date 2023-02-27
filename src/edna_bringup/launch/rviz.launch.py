@@ -10,9 +10,9 @@ NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ els
 
 def generate_launch_description():
     bringup_path = get_package_share_directory("edna_bringup")
-
     use_sim_time = 'false'
     
+    # Control
     control_launch_args = {
         'use_sim_time': use_sim_time,
         'namespace': NAMESPACE,
@@ -24,6 +24,7 @@ def generate_launch_description():
                 )]), launch_arguments=control_launch_args.items())
     
 
+    # Debug
     rviz_file = os.path.join(bringup_path, 'config', 'description.rviz')
     debug_launch_args = {
         'use_sim_time': use_sim_time,

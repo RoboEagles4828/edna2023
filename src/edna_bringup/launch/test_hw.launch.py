@@ -59,5 +59,3 @@ def generate_launch_description():
         teleop_layer,
         delay_debug_layer,
     ])
-
-
