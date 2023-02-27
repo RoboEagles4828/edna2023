@@ -3,9 +3,10 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import RegisterEventHandler, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration, Command, PythonExpression
-from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
-from launch.conditions import IfCondition
+
+# Easy use of namespace since args are not strings
+NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -17,7 +18,7 @@ def generate_launch_description():
             namespace=namespace,
             executable='joy_node', 
             name='joy_node',
-            parameters=[{'use_sim_time': use_sim_time }, joystick_file])
+            parameters=[])
 
     controller_prefix = 'swerve_controller'
     joy_teleop_twist = Node(
@@ -25,8 +26,8 @@ def generate_launch_description():
         namespace=namespace,
         executable='teleop_node',
         name='teleop_twist_joy_node',
-        parameters=[{'use_sim_time': use_sim_time }, joystick_file],
-        remappings={(f'/{namespace}/cmd_vel', f'/{namespace}/{controller_prefix}/cmd_vel_unstamped')},
+        parameters=[joystick_file],
+        remappings={(f'/{NAMESPACE}/cmd_vel', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
         )
     
     # Launch!

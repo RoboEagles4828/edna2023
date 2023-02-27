@@ -1,26 +1,14 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument
+from launch.event_handlers import OnProcessExit
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler
 from launch.conditions import IfCondition
-import yaml
-
-def processRvizFileForNamespace(rviz_file, NAMESPACE):
-    rviz_data = None
-    with open(rviz_file, 'r') as stream:
-        rviz_data = yaml.safe_load(stream)
-
-    for display in rviz_data['Visualization Manager']['Displays']:
-        for k, v in display.items():
-            if 'Topic' in k and 'Value' in v:
-                print(f"mapping {v['Value']} -> /{NAMESPACE}{v['Value']}")
-                v['Value'] = f"/{NAMESPACE}{v['Value']}"
-
-    print("Writing tmp rviz file")
-    with open(rviz_file, 'w') as stream:
-        yaml.dump(rviz_data, stream)
+import os
 
 def generate_launch_description():
+    bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     use_sim_time = LaunchConfiguration('use_sim_time')
     namespace = LaunchConfiguration('namespace')
     enable_rviz = LaunchConfiguration('enable_rviz')
@@ -39,14 +27,24 @@ def generate_launch_description():
         condition=IfCondition(enable_foxglove)
     )
 
+    parse_script = os.path.join(bringup_pkg_path, 'scripts', 'parseRviz.py')
+    parseRvizFile = ExecuteProcess(cmd=["python3", parse_script, rviz_file])
+
     rviz2 = Node(
         package='rviz2',
+        name='rviz2',
         namespace=namespace,
         executable='rviz2',
         parameters=[{ 'use_sim_time': use_sim_time }],
         output='screen',
         arguments=[["-d"], [rviz_file]],
         condition=IfCondition(enable_rviz)
+    )
+    rviz2_delay = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=parseRvizFile,
+            on_exit=[rviz2],
+        )
     )
     
     return LaunchDescription([
@@ -71,5 +69,6 @@ def generate_launch_description():
             default_value='true',
             description='enables foxglove bridge'),
             foxglove,
-            rviz2
+            parseRvizFile,
+            rviz2_delay,
     ])

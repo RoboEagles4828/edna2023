@@ -1,11 +1,14 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler, DeclareLaunchArgument
+from launch.actions import RegisterEventHandler, DeclareLaunchArgument, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration, Command, PythonExpression
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
 from launch.conditions import IfCondition
+
+# Easy use of namespace since args are not strings
+NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -35,24 +38,23 @@ def generate_launch_description():
         }],
     )
 
-    
     # Starts ROS2 Control
     control_node = Node(
         package="controller_manager",
         namespace=namespace,
         executable="ros2_control_node",
-        condition=IfCondition(use_ros2_control),
+        condition=IfCondition(PythonExpression([ "'", use_ros2_control, "' == 'true'" ])),
         parameters=[{
             "robot_description": edna_description_xml,
             "use_sim_time": use_sim_time,
-            "front_left_wheel_joint": f"{namespace}_front_left_wheel_joint",
-            "front_right_wheel_joint": f"{namespace}_front_right_wheel_joint",
-            "rear_left_wheel_joint": f"{namespace}_rear_left_wheel_joint",
-            "rear_right_wheel_joint": f"{namespace}_rear_right_wheel_joint",
-            "front_left_axle_joint": f"{namespace}_front_left_axle_joint",
-            "front_right_axle_joint": f"{namespace}_front_right_axle_joint",
-            "rear_left_axle_joint": f"{namespace}_rear_left_axle_joint",
-            "rear_right_axle_joint": f"{namespace}_rear_right_axle_joint"
+            "front_left_wheel_joint": f"{NAMESPACE}_front_left_wheel_joint",
+            "front_right_wheel_joint": f"{NAMESPACE}_front_right_wheel_joint",
+            "rear_left_wheel_joint": f"{NAMESPACE}_rear_left_wheel_joint",
+            "rear_right_wheel_joint": f"{NAMESPACE}_rear_right_wheel_joint",
+            "front_left_axle_joint": f"{NAMESPACE}_front_left_axle_joint",
+            "front_right_axle_joint": f"{NAMESPACE}_front_right_axle_joint",
+            "rear_left_axle_joint": f"{NAMESPACE}_rear_left_axle_joint",
+            "rear_right_axle_joint": f"{NAMESPACE}_rear_right_axle_joint"
             }, controllers_file],
         output="both",
     )
@@ -62,8 +64,8 @@ def generate_launch_description():
         package="controller_manager",
         namespace=namespace,
         executable="spawner",
-        arguments=["joint_state_broadcaster", "-c", f"/{namespace}/controller_manager"],
-        condition=IfCondition(use_ros2_control),
+        arguments=["joint_state_broadcaster", "-c", f"/{NAMESPACE}/controller_manager"],
+        condition=IfCondition(PythonExpression([ "'", use_ros2_control, "' == 'true'" ])),
     )
 
     #Starts ROS2 Control Swerve Drive Controller
@@ -71,8 +73,8 @@ def generate_launch_description():
         package="controller_manager",
         namespace=namespace,
         executable="spawner",
-        arguments=["swerve_controller", "-c", f"/{namespace}/controller_manager"],
-        condition=IfCondition(use_ros2_control),
+        arguments=["swerve_controller", "-c", f"/{NAMESPACE}/controller_manager"],
+        condition=IfCondition(PythonExpression([ "'", use_ros2_control, "' == 'true'" ])),
     )
     swerve_drive_controller_delay = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -92,6 +94,7 @@ def generate_launch_description():
 
     # Launch!
     return LaunchDescription([
+        SetEnvironmentVariable('RCUTILS_COLORIZED_OUTPUT', '1'),
         DeclareLaunchArgument(
             'use_sim_time',
             default_value='false',
