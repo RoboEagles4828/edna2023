@@ -1,7 +1,7 @@
 joint_trajectory_controller:
   joints: {
     type: string_array,
-    default_value: ["elevator_right_elevator_outer_1_joint","elevator_right_elevator_center_joint","elevator_right_elevator_outer_2_joint","elevator_left_elevator_outer_1_joint","elevator_left_elevator_center_joint","elevator_left_elevator_outer_2_joint","arm_roller_bar_joint",],
+    default_value: ["elevator_right_elevator_outer_1_joint","elevator_right_elevator_center_joint","elevator_right_elevator_outer_2_joint","elevator_left_elevator_outer_1_joint","elevator_left_elevator_center_joint","elevator_left_elevator_outer_2_joint","arm_roller_bar_joint"],
     description: "Names of joints used by the controller",
     validation: {
       unique<>: null,
@@ -9,7 +9,7 @@ joint_trajectory_controller:
   }
   command_joints: {
     type: string_array,
-    default_value: [],
+    default_value: ["elevator_right_elevator_outer_1_joint","elevator_right_elevator_center_joint","elevator_right_elevator_outer_2_joint","elevator_left_elevator_outer_1_joint","elevator_left_elevator_center_joint","elevator_left_elevator_outer_2_joint","arm_roller_bar_joint",""],
     description: "Names of the commanding joints used by the controller",
     validation: {
       unique<>: null,
@@ -17,7 +17,7 @@ joint_trajectory_controller:
   }
   command_interfaces: {
     type: string_array,
-    default_value: [],
+    default_value: ["elevator_right_elevator_outer_1_joint","elevator_right_elevator_center_joint","elevator_right_elevator_outer_2_joint","elevator_left_elevator_outer_1_joint","elevator_left_elevator_center_joint","elevator_left_elevator_outer_2_joint","arm_roller_bar_joint"],
     description: "Names of command interfaces to claim",
     validation: {
       unique<>: null,
@@ -27,7 +27,7 @@ joint_trajectory_controller:
   }
   state_interfaces: {
     type: string_array,
-    default_value: [],
+    default_value: [["elevator_right_elevator_outer_1_joint","elevator_right_elevator_center_joint","elevator_right_elevator_outer_2_joint","elevator_left_elevator_outer_1_joint","elevator_left_elevator_center_joint","elevator_left_elevator_outer_2_joint","arm_roller_bar_joint"]],
     description: "Names of state interfaces to claim",
     validation: {
       unique<>: null,
@@ -37,7 +37,7 @@ joint_trajectory_controller:
   }
   allow_partial_joints_goal: {
     type: bool,
-    default_value: false,
+    default_value: true,
     description: "Goals with partial set of joints are allowed",
   }
   open_loop_control: {
@@ -52,7 +52,7 @@ joint_trajectory_controller:
   }
   state_publish_rate: {
     type: double,
-    default_value: 50.0,
+    default_value: 10.0,
     description: "Rate controller state is published",
     validation: {
       lower_bounds: [0.1]
