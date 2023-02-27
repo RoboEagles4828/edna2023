@@ -80,7 +80,7 @@ class ImportBot(BaseSample):
         add_reference_to_stage(usd_path=field,prim_path="/World/Field")
         cone = os.path.join(self.project_root_path, "assets/2023_field/parts/cone_without_deformable_body.usd")
         cube = os.path.join(self.project_root_path, "assets/2023_field/parts/cube_without_deformable_body.usd")
-        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation/Assembly-1.usd")
+        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation-Copy/Assembly-1.usd")
         add_reference_to_stage(chargestation, "/World/ChargeStation_1")
         add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
         add_reference_to_stage(cone, "/World/Cone_1")

@@ -5,11 +5,11 @@ from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.prims import RigidPrimView
 
 
-class FieldView(ArticulationView):
+class ChargeStationView(ArticulationView):
     def __init__(
         self,
         prim_paths_expr: str,
-        name: Optional[str] = "FieldView",
+        name: Optional[str] = "ChargeStationView",
     ) -> None:
         """[summary]
         """

@@ -29,13 +29,16 @@
 from swervesim.tasks.base.rl_task import RLTask
 from swervesim.robots.articulations.swerve import Swerve
 from swervesim.robots.articulations.views.swerve_view import SwerveView
+from swervesim.robots.articulations.views.charge_station_view import ChargeStationView
+
 from swervesim.tasks.utils.usd_utils import set_drive
 from omni.isaac.core.objects import DynamicSphere
+from omni.isaac.core import Articulation
 
 
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.rotations import *
-from omni.isaac.core.prims import RigidPrimView, GeometryPrim
+from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
 
@@ -45,7 +48,7 @@ import torch
 import math
 
 
-class Swerve_Field_Task(RLTask):
+class Swerve_Charge_Station_Task(RLTask):
     def __init__(
         self,
         name,
@@ -59,12 +62,12 @@ class Swerve_Field_Task(RLTask):
         self._task_cfg = sim_config.task_config
 
         # limits max velocity of wheels and axles
-        self.velocity_limit = 10
+        self.velocity_limit = 10*math.pi
 
-        self.dt = 1 / 60
+        self.dt = 1 / 10
         self.max_episode_length_s = self._task_cfg["env"]["episodeLength_s"]
         self._max_episode_length = int(
-            self.max_episode_length_s / self.dt + 0.5)
+            self.max_episode_length_s / self.dt)
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
 
@@ -81,7 +84,9 @@ class Swerve_Field_Task(RLTask):
         # starting position of the swerve module
         self.swerve_position = torch.tensor([0, 0, 0])
         # starting position of the target
-        self._ball_position = torch.tensor([1, 1, 0])
+        self._chargestation_part_1_position = torch.tensor([1, 1, 0])
+
+
         self.swerve_initia_pos = []
         RLTask.__init__(self, name, env)
 
@@ -96,14 +101,13 @@ class Swerve_Field_Task(RLTask):
         # Adds USD of swerve to stage
         self.get_swerve()
         # Adds ball to stage
-        self.get_target()
+        self.get_charge_station()
         super().set_up_scene(scene)
         # Sets up articluation controller for swerve
         self._swerve = SwerveView(
             prim_paths_expr="/World/envs/.*/swerve", name="swerveview")
+        self._charge_station= ChargeStationView(prim_paths_expr="/World/envs/.*/ChargeStation_1", name="ChargeStation_1_view")
         # Allows for position tracking of targets
-        # self._balls = RigidPrimView(
-        #     prim_paths_expr="/World/envs/.*/ball", name="targets_view", reset_xform_properties=False)
         # Adds everything to the scene
         scene.add(self._swerve)
         for axle in self._swerve._axle:
@@ -111,7 +115,7 @@ class Swerve_Field_Task(RLTask):
         for wheel in self._swerve._wheel:
             scene.add(wheel)
         scene.add(self._swerve._base)
-        # scene.add(self._balls)
+        scene.add(self._charge_station)
         # print("scene set up")
 
         return
@@ -123,61 +127,14 @@ class Swerve_Field_Task(RLTask):
         self._sim_config.apply_articulation_settings("swerve", get_prim_at_path(
             swerve.prim_path), self._sim_config.parse_actor_config("swerve"))
 
-    # def get_target(self):
-    #     # Adds a red ball as target
-    #     radius = 0.1  # meters
-    #     color = torch.tensor([0, 0, 1])
-    #     ball = DynamicSphere(
-    #         prim_path=self.default_zero_env_path + "/ball",
-    #         translation=self._ball_position,
-    #         name="target_0",
-    #         radius=radius,
-    #         color=color,
-    #     )
-    #     self._sim_config.apply_articulation_settings("ball", get_prim_at_path(
-    #         ball.prim_path), self._sim_config.parse_actor_config("ball"))
-    #     ball.set_collision_enabled(False)
-    def get_target(self):
-        # world = self.get_world()
+    def get_charge_station(self):
         self.task_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.task_path, "../../../../../../../.."))
-        field = os.path.join(self.project_root_path, "isaac/assets/2023_field/FE-2023.usd")
-        add_reference_to_stage(usd_path=field,prim_path=self.default_zero_env_path+"/Field")
-        cone = os.path.join(self.project_root_path, "isaac/assets/2023_field/parts/cone_without_deformable_body.usd")
-        cube = os.path.join(self.project_root_path, "isaac/assets/2023_field/parts/cube_without_deformable_body.usd")
-        chargestation = os.path.join(self.project_root_path, "isaac/assets/Charge Station/Assembly-1.usd")
+        chargestation = os.path.join(self.project_root_path, "isaac/assets/ChargeStation/Assembly-1.usd")
         add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation_1")
-        add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation_2") 
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_1")
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_2")
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_3")
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_4")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_5")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_6")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_7")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_8")
-        self.cone_1 = GeometryPrim(self.default_zero_env_path+"/Cone_1","cone_1_view",position=np.array([1.20298,-0.56861,0.0]))
-        self.cone_2 = GeometryPrim(self.default_zero_env_path+"/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0]))
-        self.cone_3 = GeometryPrim(self.default_zero_env_path+"/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0]))
-        self.cone_4 = GeometryPrim(self.default_zero_env_path+"/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0]))
-        chargestation_1 = GeometryPrim(self.default_zero_env_path+"/ChargeStation_1","cone_3_view",position=np.array([-4.20298,-0.56861,0.0]))
-        chargestation_2 = GeometryPrim(self.default_zero_env_path+"/ChargeStation_2","cone_4_view",position=np.array([4.20298,0.56861,0.0]))
-        
-
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_1")
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_2")
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_3")
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_4")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_5")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_6")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_7")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_8")
-        self.cube_1 = GeometryPrim(self.default_zero_env_path+"/Cube_1","cube_1_view",position=np.array([1.20298,0.65059,0.121]))
-        self.cube_2 = GeometryPrim(self.default_zero_env_path+"/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121]))
-        self.cube_3 = GeometryPrim(self.default_zero_env_path+"/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121]))
-        self.cube_4 = GeometryPrim(self.default_zero_env_path+"/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121]))
-
-        return
+        charge_station_1 = Articulation(prim_path=self.default_zero_env_path+"/ChargeStation_1",name="ChargeStation",position=[0,0,0],translation=[0,0,0], orientation=[0,0,0])
+        self._sim_config.apply_articulation_settings("ChargeStation_1", get_prim_at_path(
+            charge_station_1.prim_path), self._sim_config.parse_actor_config("ChargeStation_1"))
 
     def get_observations(self) -> dict:
         # Gets various positions and velocties to observations
@@ -185,17 +142,36 @@ class Swerve_Field_Task(RLTask):
             clone=False)
         self.joint_velocities = self._swerve.get_joint_velocities()
         self.joint_positions = self._swerve.get_joint_positions()
+        self.charge_station_pos, self.charge_station_rot = self._charge_station.get_world_poses(clone=False)
+        chargestation_vertices = [self._num_envs][4]
+
+        for i in range(len(self.charge_station_pos)):
+            self.root_position_reward[i] = sum(root_positions[i][0:3])
+            x=self.charge_station_rot[i][0]
+            y=self.charge_station_rot[i][1]
+            z=self.charge_station_rot[i][2]
+            w=self.charge_station_rot[i][3]
+            siny_cosp = 2 * (w * z + x * y)
+            cosy_cosp = 1 - 2 * (y * y + z * z)
+            angle = math.atan2(siny_cosp, cosy_cosp)
+            chargestation_vertices[i][0]=0
+            chargestation_vertices[i][1]=0
+            chargestation_vertices[i][2]=0
+            chargestation_vertices[i][3]=0
+
         self.root_velocities = self._swerve.get_velocities(clone=False)
         root_positions = self.root_pos - self._env_pos
         root_quats = self.root_rot
-        # root_linvels = self.root_velocities[:, :3]
-        # root_angvels = self.root_velocities[:, 3:]
-        self.obs_buf[..., 0:3] = (self.target_positions - root_positions) / 3
-        self.obs_buf[..., 3:6] = (self.target_positions - root_positions) / 3
-        self.obs_buf[..., 6:9] = (self.target_positions - root_positions) / 3
-        self.obs_buf[..., 9:13] = root_quats
+        root_linvels = self.root_velocities[:, :3]
+        root_angvels = self.root_velocities[:, 3:]
+        self.obs_buf[..., 0:3] = (root_positions) / 3
+        self.obs_buf[..., 3:7] = root_quats
+        self.obs_buf[..., 7:10] = root_linvels / 2
+        self.obs_buf[..., 10:13] = root_angvels / math.pi
         self.obs_buf[..., 13:21] = self.joint_velocities
         self.obs_buf[..., 21:29] = self.joint_positions
+        self.
+
         # Should not exceed observation ssize declared earlier
         # An observation is created for each swerve in each environment
         observations = {
@@ -348,8 +324,8 @@ class Swerve_Field_Task(RLTask):
         self.dof_pos = self._swerve.get_joint_positions()
         self.dof_vel = self._swerve.get_joint_velocities()
 
-        # self.initial_ball_pos, self.initial_ball_rot = self._balls.get_world_poses()
-        # self.initial_root_pos, self.initial_root_rot = self.root_pos.clone(), self.root_rot.clone()
+        self.initial_ball_pos, self.initial_ball_rot = self._balls.get_world_poses()
+        self.initial_root_pos, self.initial_root_rot = self.root_pos.clone(), self.root_rot.clone()
 
         # initialize some data used later on
         self.extras = {}
