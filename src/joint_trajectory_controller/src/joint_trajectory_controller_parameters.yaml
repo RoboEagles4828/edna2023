@@ -1,7 +1,7 @@
 joint_trajectory_controller:
   joints: {
     type: string_array,
-    default_value: [],
+    default_value: ["elevator_right_elevator_outer_1_joint","elevator_right_elevator_center_joint","elevator_right_elevator_outer_2_joint","elevator_left_elevator_outer_1_joint","elevator_left_elevator_center_joint","elevator_left_elevator_outer_2_joint","arm_roller_bar_joint",],
     description: "Names of joints used by the controller",
     validation: {
       unique<>: null,
