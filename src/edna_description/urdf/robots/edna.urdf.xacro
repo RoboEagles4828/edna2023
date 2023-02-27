@@ -54,23 +54,23 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera> 
 
+  <xacro:property name="elevator_leg_z" value="0.527"/>
   <xacro:elevator_leg prefix="${ns}_arm" parent="${ns}_swerve_chassis_link">
-    <origin xyz = "0.1905 0 ${0.527/2 + 0.03}" rpy = "0 0 ${pi}"/>
-    <origin xyz = "0 0 ${0.37}" rpy = "${pi/2} 0 0"/>
+    <origin xyz = "0.1905 0 ${elevator_leg_z/2 + 0.03}" rpy = "0 0 0"/>
   </xacro:elevator_leg>
 
   <xacro:back_leg prefix="${ns}_arm" parent="${ns}_swerve_chassis_link">
-    <origin xyz = "-${0.7366/2 - 0.0508/2} 0 ${back_leg_height/2 + 0.05588}" rpy = "0 0 ${pi}" />
+    <origin xyz = "-${chassis_length/2 - back_leg_length/2} 0 ${back_leg_height/2 + chassis_height}" rpy = "0 0 0" />
   </xacro:back_leg>
 
   <!--Right Elevator-->
-  <xacro:elevator prefix="${ns}_elevator_right" parent="${ns}_arm_back_leg_link" ns="${ns}">
-    <origin xyz = "0.00253 0.28 0.3738731" rpy = "${pi} ${(0.0174533*15.3)} ${pi}" />
+  <xacro:elevator prefix="${ns}_elevator_right" parent="${ns}_arm_back_leg_link" ns="${ns}" suffix="right">
+    <origin xyz = "0 ${-back_leg_width/2 - 0.04} ${back_leg_height/2 - 0.02}" rpy = "0 0 0" />
   </xacro:elevator>
 
   <!--Left Elevator-->
-  <xacro:elevator prefix="${ns}_elevator_left" parent="${ns}_arm_back_leg_link" ns="${ns}">
-    <origin xyz = "0.00253 -0.28 0.3738731" rpy = "${pi} ${(0.0174533*15.3)} ${pi}" />
+  <xacro:elevator prefix="${ns}_elevator_left" parent="${ns}_arm_back_leg_link" ns="${ns}" suffix="left">
+    <origin xyz = "0 ${back_leg_width/2 + 0.04} ${back_leg_height/2 - 0.02}" rpy = "0 0 0" />
   </xacro:elevator>
 
   <xacro:lidar prefix="${ns}_lidar" parent="${ns}_swerve_chassis_link" radius="0.035" length="0.025">
