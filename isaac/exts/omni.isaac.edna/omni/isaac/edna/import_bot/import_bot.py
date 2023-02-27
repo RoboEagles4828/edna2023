@@ -80,9 +80,9 @@ class ImportBot(BaseSample):
         add_reference_to_stage(usd_path=field,prim_path="/World/Field")
         cone = os.path.join(self.project_root_path, "assets/2023_field/parts/cone_without_deformable_body.usd")
         cube = os.path.join(self.project_root_path, "assets/2023_field/parts/cube_without_deformable_body.usd")
-        # chargestation = os.path.join(self.project_root_path, "assets/2023_field/charge_station.usd")
-        # add_reference_to_stage(chargestation, "/World/ChargeStation_1")
-        # add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
+        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation/Assembly-1.usd")
+        add_reference_to_stage(chargestation, "/World/ChargeStation_1")
+        add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
         add_reference_to_stage(cone, "/World/Cone_1")
         add_reference_to_stage(cone, "/World/Cone_2")
         add_reference_to_stage(cone, "/World/Cone_3")
@@ -95,8 +95,8 @@ class ImportBot(BaseSample):
         cone_2 = GeometryPrim("/World/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0]))
         cone_3 = GeometryPrim("/World/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0]))
         cone_4 = GeometryPrim("/World/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0]))
-        # chargestation_1 = GeometryPrim("/World/ChargeStation_1","cone_3_view",position=np.array([-4.20298,-0.56861,0.0]))
-        # chargestation_2 = GeometryPrim("/World/ChargeStation_2","cone_4_view",position=np.array([4.20298,0.56861,0.0]))
+        chargestation_1 = GeometryPrim("/World/ChargeStation_1","cone_3_view",position=np.array([-4.20298,-0.56861,0.0]))
+        chargestation_2 = GeometryPrim("/World/ChargeStation_2","cone_4_view",position=np.array([4.20298,0.56861,0.0]))
         
 
         add_reference_to_stage(cube, "/World/Cube_1")
