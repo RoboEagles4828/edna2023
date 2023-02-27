@@ -7,14 +7,13 @@
 				"build",
 				"--symlink-install",
 				"--event-handlers",
-				"--packages-ignore",
-				"zed_components",
-				"zed_wrapper",
-				"zed_display_rviz2",
 				"--base-paths",
 				"${workspaceFolder}",
 			],
-			"group": "build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 			"label": "Colcon: build"
 		}
 	]

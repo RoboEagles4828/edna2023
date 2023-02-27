@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+
+default="isaac"
+input=$1
+bringup=${input:-$default}
+
+echo "Quick Launching... ${bringup}"
+ros2 launch edna_bringup $bringup.launch.py

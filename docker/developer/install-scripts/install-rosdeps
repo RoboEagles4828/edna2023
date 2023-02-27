@@ -1,0 +1,11 @@
+#!/bin/bash
+# Get pip
+sudo apt-get install -y python3-pip
+
+# Preload workspace dependencies
+cd /tmp && 
+    sudo apt-get update -y && 
+    rosdep update --rosdistro=humble &&
+    rosdep install --from-paths src --ignore-src -r -y &&
+    pip install -r src/requirements.txt &&
+    sudo rm -rf /tmp/src

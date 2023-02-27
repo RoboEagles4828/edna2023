@@ -1,0 +1,14 @@
+
+[bookmarks]
+IsaacAssets = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.2.0/Isaac"
+Scenarios = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.2.0/Isaac/Samples/ROS2/Scenario"
+edna = "/workspaces/edna2023"
+localhost = "omniverse://localhost"
+
+[cache]
+data_dir = "/root/.cache/ov/Cache"
+proxy_cache_enabled = false
+proxy_cache_server = ""
+
+[connection_library]
+proxy_dict = "*#localhost:8891,f"

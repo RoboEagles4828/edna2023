@@ -24,13 +24,14 @@
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
+#include "rclcpp/clock.hpp"
+#include "rclcpp/duration.hpp"
 #include "rclcpp/macros.hpp"
+#include "rclcpp/time.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "swerve_hardware/visibility_control.h"
-#include "rclcpp/rclcpp.hpp"
-
-using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+#include "swerve_hardware/motion_magic.hpp"
 
 namespace swerve_hardware
 {
@@ -40,7 +41,7 @@ public:
   RCLCPP_SHARED_PTR_DEFINITIONS(TestDriveHardware)
 
   SWERVE_HARDWARE_PUBLIC
-  CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+  hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
 
   SWERVE_HARDWARE_PUBLIC
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
@@ -49,25 +50,21 @@ public:
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
   SWERVE_HARDWARE_PUBLIC
-  CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+  hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_HARDWARE_PUBLIC
-  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   SWERVE_HARDWARE_PUBLIC
-  hardware_interface::return_type read() override;
+  hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
   SWERVE_HARDWARE_PUBLIC
-  hardware_interface::return_type write() override;
+  hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
-
-  // Map for easy lookup name -> joint command value
-  std::map<std::string, uint> names_to_vel_cmd_map_;
-  std::map<std::string, uint> names_to_pos_cmd_map_;
 
   // The state vectors
   std::vector<double> hw_positions_;
@@ -76,6 +73,11 @@ private:
   // Joint name array will align with state and command interface array
   // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
   std::vector<std::string> joint_names_;
+  std::vector<std::string> joint_types_;
+
+  double MAX_VELOCITY = 10.0;
+  double MAX_ACCELERATION = 20.0;
+  std::vector<MotionMagic> motion_magic_;
 };
 
 }  // namespace swerve_hardware

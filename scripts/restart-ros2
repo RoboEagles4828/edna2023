@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+ps -ef | grep "ros2cli.daemon" | grep -v grep | awk '{print $2}' | xargs kill -9 2> /dev/null
+ros2 daemon start

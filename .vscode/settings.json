@@ -1,11 +1,13 @@
 {
-    "python.autoComplete.extraPaths": [
-        "/opt/ros/galactic/lib/python3.8/site-packages"
+    "filewatcher.commands": [
+        {
+            "match": "\\.xacro*$",
+            "isAsync": true,
+            "cmd": "/bin/bash -c 'source /opt/ros/humble/setup.sh && source ${workspaceRoot}/install/setup.bash && xacro ${workspaceRoot}/src/edna_description/urdf/robots/edna.urdf.xacro > ${workspaceRoot}/src/edna_description/urdf/edna.urdf namespace:=$ROS_NAMESPACE'",
+            "event": "onFileChange"
+        }		
     ],
-    "python.analysis.extraPaths": [
-        "/opt/ros/galactic/lib/python3.8/site-packages"
-    ],
-    "ros.distro": "galactic",
+    "ros.distro": "humble",
     "files.associations": {
         "string": "cpp",
         "typeindex": "cpp",
@@ -74,6 +76,20 @@
         "thread": "cpp",
         "cfenv": "cpp",
         "cinttypes": "cpp",
-        "variant": "cpp"
-    }
+        "variant": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
+    },
+    "python.autoComplete.extraPaths": [
+        "/workspaces/edna2023/build/edna_tests",
+        "/workspaces/edna2023/install/edna_tests/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/humble/install/lib/python3.8/site-packages"
+    ]
 }

@@ -1,0 +1,29 @@
+#!/bin/bash
+VERSION="4" # Increment manually for now
+GITHUB_REGISTRY="ghcr.io/roboeagles4828"
+IMAGE_NAME="developer-environment:$VERSION"
+
+rm -rf ./src
+cp -r ../../src .
+# Copy rio requirements to be installed
+cp ../../rio/requirements.txt ./src/requirements.txt
+
+docker build -t $GITHUB_REGISTRY/$IMAGE_NAME --cache-from $GITHUB_REGISTRY/$IMAGE_NAME .
+
+echo "Build finished"
+
+echo "Would you like to run the image in interactive mode? (y/n)"
+read INTERACTIVE
+
+if [ "$INTERACTIVE" = "y" ]; then
+    docker run --rm -it -e ACCEPT_EULA=y $GITHUB_REGISTRY/$IMAGE_NAME
+fi
+
+echo "Would you like to push the image to the registry? (y/n)"
+read PUSH
+
+if [ "$PUSH" = "y" ]; then
+    docker push $GITHUB_REGISTRY/$IMAGE_NAME
+fi
+
+rm -rf src

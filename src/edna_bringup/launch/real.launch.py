@@ -23,6 +23,7 @@ def generate_launch_description():
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
     joystick_file = os.path.join(bringup_pkg_path, 'config', 'xbox-holonomic-real.config.yaml')
+    rviz_file = os.path.join(bringup_pkg_path, 'config', 'view.rviz')
 
     # Create a robot_state_publisher node
     params = {'robot_description': edna_description_xml, 'use_sim_time': use_sim_time}
@@ -46,6 +47,22 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+    )
+
+    # Start Rviz2 with basic view
+    run_rviz2_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        parameters=[{ 'use_sim_time': True }],
+        name='isaac_rviz2',
+        output='screen',
+        arguments=[["-d"], [rviz_file]],
+    )
+    rviz2_delay = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[run_rviz2_node],
+        )
     )
 
     # Starts ROS2 Control Swerve Drive Controller
@@ -76,4 +93,5 @@ def generate_launch_description():
         joint_state_broadcaster_spawner,
         swerve_drive_controller_delay,
         joy_teleop,
+        rviz2_delay
     ])
