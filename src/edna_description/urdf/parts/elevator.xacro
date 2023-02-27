@@ -17,7 +17,7 @@
 
     <xacro:include filename="$(find edna_description)/urdf/parts/elevator_leg.xacro" />
 
-    <xacro:macro name = "elevator" params = "ns prefix parent *origin suffix">
+    <xacro:macro name = "elevator" params = "prefix parent *origin suffix">
         <link name = "${prefix}_elevator_outer_1_link">
             <xacro:inertial_box mass = "1" x = "${elevator_outer_length}" y = "${elevator_outer_width}" z = "${elevator_outer_height}">
                 <origin xyz = "0 0 ${elevator_outer_height/2}" rpy = "0 0 0"/>
@@ -43,7 +43,7 @@
             <child link = "${prefix}_elevator_outer_1_link"/>
             <axis xyz = "0 -1 0"/>
             <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.5"/>
-            <mimic joint = "${ns}_arm_roller_bar_joint" multiplier = "1.8" offset = "0"/>
+            <mimic joint = "arm_roller_bar_joint" multiplier = "1.8" offset = "0"/>
             <xacro:insert_block name = "origin"/>
         </joint> 
 
@@ -74,7 +74,7 @@
             <axis xyz = "1 0 0"/>
             <limit effort="1000.0" lower="0.0" upper="0.56" velocity="0.5"/>
             <xacro:if value="${suffix == 'right'}">
-                <mimic joint = "${ns}_elevator_left_elevator_center_joint" multiplier = "1" offset = "0"/>
+                <mimic joint = "elevator_left_elevator_center_joint" multiplier = "1" offset = "0"/>
             </xacro:if>
             <origin xyz = "${0.1-elevator_center_offset_x} 0 ${elevator_center_offset_z}" rpy = "0 0 0"/>
         </joint>
