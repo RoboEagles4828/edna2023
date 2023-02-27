@@ -17,7 +17,7 @@ def generate_launch_description():
         'use_sim_time': use_sim_time,
         'namespace': NAMESPACE,
         'use_ros2_control': 'true',
-        'hardware_plugin': 'swerve_hardware/IsaacSwerveHardware',
+        'hardware_plugin': 'swerve_hardware/IsaacDriveHardware',
     }
     control_layer = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
