@@ -1,267 +1,278 @@
 Panels:
-- Class: rviz_common/Displays
-  Help Height: 78
-  Name: Displays
-  Property Tree Widget:
+  - Class: rviz_common/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+        - /RobotModel1
+        - /RobotModel1/Description Topic1
+        - /TF1
+        - /TF1/Frames1
+        - /Odometry1/Topic1
+        - /Odometry1/Shape1
+        - /Odometry1/Covariance1
+      Splitter Ratio: 0.6833333373069763
+    Tree Height: 725
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Tool Properties
     Expanded:
-    - /Global Options1
-    - /Status1
-    - /RobotModel1
-    - /RobotModel1/Description Topic1
-    - /TF1
-    - /TF1/Frames1
-    - /Odometry1/Topic1
-    - /Odometry1/Shape1
-    - /Odometry1/Covariance1
-    Splitter Ratio: 0.6833333373069763
-  Tree Height: 725
-- Class: rviz_common/Selection
-  Name: Selection
-- Class: rviz_common/Tool Properties
-  Expanded:
-  - /2D Goal Pose1
-  - /Publish Point1
-  Name: Tool Properties
-  Splitter Ratio: 0.5886790156364441
-- Class: rviz_common/Views
-  Expanded:
-  - /Current View1
-  Name: Views
-  Splitter Ratio: 0.5
-- Class: rviz_common/Time
-  Experimental: false
-  Name: Time
-  SyncMode: 0
-  SyncSource: ''
+      - /2D Goal Pose1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz_common/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
 Visualization Manager:
-  Class: ''
+  Class: ""
   Displays:
-  - Alpha: 0.5
-    Cell Size: 1
-    Class: rviz_default_plugins/Grid
-    Color: 160; 160; 164
-    Enabled: true
-    Line Style:
-      Line Width: 0.029999999329447746
-      Value: Lines
-    Name: Grid
-    Normal Cell Count: 0
-    Offset:
-      X: 0
-      Y: 0
-      Z: 0
-    Plane: XY
-    Plane Cell Count: 10
-    Reference Frame: <Fixed Frame>
-    Value: true
-  - Alpha: 1
-    Class: rviz_default_plugins/RobotModel
-    Collision Enabled: false
-    Description File: ''
-    Description Source: Topic
-    Description Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /gage/robot_description
-    Enabled: true
-    Links:
-      All Links Enabled: true
-      Expand Joint Details: false
-      Expand Link Details: false
-      Expand Tree: false
-      Link Tree Style: Links in Alphabetic Order
-      base_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-      gage_front_left_axle_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_front_left_wheel_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_front_right_axle_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_front_right_wheel_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_lidar_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_rear_left_axle_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_rear_left_wheel_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_rear_right_axle_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_rear_right_wheel_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_swerve_chassis_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_zed_base_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-      gage_zed_camera_center:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      gage_zed_left_camera_frame:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-      gage_zed_left_camera_optical_frame:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-      gage_zed_right_camera_frame:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-      gage_zed_right_camera_optical_frame:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-    Mass Properties:
-      Inertia: false
-      Mass: false
-    Name: RobotModel
-    TF Prefix: ''
-    Update Interval: 0
-    Value: true
-    Visual Enabled: true
-  - Class: rviz_default_plugins/TF
-    Enabled: true
-    Frame Timeout: 15
-    Frames:
-      All Enabled: false
-      base_link:
-        Value: true
-      gage_front_left_axle_link:
-        Value: true
-      gage_front_left_wheel_link:
-        Value: false
-      gage_front_right_axle_link:
-        Value: true
-      gage_front_right_wheel_link:
-        Value: false
-      gage_lidar_link:
-        Value: false
-      gage_rear_left_axle_link:
-        Value: true
-      gage_rear_left_wheel_link:
-        Value: false
-      gage_rear_right_axle_link:
-        Value: true
-      gage_rear_right_wheel_link:
-        Value: false
-      gage_swerve_chassis_link:
-        Value: false
-      gage_zed_base_link:
-        Value: false
-      gage_zed_camera_center:
-        Value: false
-      gage_zed_left_camera_frame:
-        Value: false
-      gage_zed_left_camera_optical_frame:
-        Value: false
-      gage_zed_right_camera_frame:
-        Value: false
-      gage_zed_right_camera_optical_frame:
-        Value: false
-    Marker Scale: 1
-    Name: TF
-    Show Arrows: true
-    Show Axes: true
-    Show Names: false
-    Tree:
-      base_link:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz_default_plugins/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /gage/robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gage_front_left_axle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_front_left_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_front_right_axle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_front_right_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_lidar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_rear_left_axle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_rear_left_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_rear_right_axle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_rear_right_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         gage_swerve_chassis_link:
-          gage_front_left_axle_link:
-            gage_front_left_wheel_link: {}
-          gage_front_right_axle_link:
-            gage_front_right_wheel_link: {}
-          gage_lidar_link: {}
-          gage_rear_left_axle_link:
-            gage_rear_left_wheel_link: {}
-          gage_rear_right_axle_link:
-            gage_rear_right_wheel_link: {}
-          gage_zed_base_link:
-            gage_zed_camera_center:
-              gage_zed_left_camera_frame:
-                gage_zed_left_camera_optical_frame: {}
-              gage_zed_right_camera_frame:
-                gage_zed_right_camera_optical_frame: {}
-    Update Interval: 0
-    Value: true
-  - Angle Tolerance: 0.20000000298023224
-    Class: rviz_default_plugins/Odometry
-    Covariance:
-      Orientation:
-        Alpha: 0.5
-        Color: 255; 255; 127
-        Color Style: Unique
-        Frame: Local
-        Offset: 1
-        Scale: 1
-        Value: true
-      Position:
-        Alpha: 0.30000001192092896
-        Color: 204; 51; 204
-        Scale: 1
-        Value: true
-      Value: false
-    Enabled: true
-    Keep: 10
-    Name: Odometry
-    Position Tolerance: 0.20000000298023224
-    Shape:
-      Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.10000000149011612
-      Color: 142; 97; 255
-      Head Length: 0.20000000298023224
-      Head Radius: 0.05000000074505806
-      Shaft Length: 0.5
-      Shaft Radius: 0.029999999329447746
-      Value: Arrow
-    Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      Filter size: 10
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /odom
-    Value: true
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_zed_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gage_zed_camera_center:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gage_zed_left_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gage_zed_left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gage_zed_right_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gage_zed_right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: RobotModel
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        base_link:
+          Value: true
+        gage_front_left_axle_link:
+          Value: true
+        gage_front_left_wheel_link:
+          Value: false
+        gage_front_right_axle_link:
+          Value: true
+        gage_front_right_wheel_link:
+          Value: false
+        gage_lidar_link:
+          Value: false
+        gage_rear_left_axle_link:
+          Value: true
+        gage_rear_left_wheel_link:
+          Value: false
+        gage_rear_right_axle_link:
+          Value: true
+        gage_rear_right_wheel_link:
+          Value: false
+        gage_swerve_chassis_link:
+          Value: false
+        gage_zed_base_link:
+          Value: false
+        gage_zed_camera_center:
+          Value: false
+        gage_zed_left_camera_frame:
+          Value: false
+        gage_zed_left_camera_optical_frame:
+          Value: false
+        gage_zed_right_camera_frame:
+          Value: false
+        gage_zed_right_camera_optical_frame:
+          Value: false
+        odom:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        base_link:
+          gage_swerve_chassis_link:
+            gage_front_left_axle_link:
+              gage_front_left_wheel_link:
+                {}
+            gage_front_right_axle_link:
+              gage_front_right_wheel_link:
+                {}
+            gage_lidar_link:
+              {}
+            gage_rear_left_axle_link:
+              gage_rear_left_wheel_link:
+                {}
+            gage_rear_right_axle_link:
+              gage_rear_right_wheel_link:
+                {}
+            gage_zed_base_link:
+              gage_zed_camera_center:
+                gage_zed_left_camera_frame:
+                  gage_zed_left_camera_optical_frame:
+                    {}
+                gage_zed_right_camera_frame:
+                  gage_zed_right_camera_optical_frame:
+                    {}
+        odom:
+          {}
+      Update Interval: 0
+      Value: true
+    - Angle Tolerance: 0.20000000298023224
+      Class: rviz_default_plugins/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: false
+      Enabled: true
+      Keep: 10
+      Name: Odometry
+      Position Tolerance: 0.20000000298023224
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 142; 97; 255
+        Head Length: 0.20000000298023224
+        Head Radius: 0.05000000074505806
+        Shaft Length: 0.5
+        Shaft Radius: 0.029999999329447746
+        Value: Arrow
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /odom
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -269,38 +280,38 @@ Visualization Manager:
     Frame Rate: 30
   Name: root
   Tools:
-  - Class: rviz_default_plugins/Interact
-    Hide Inactive Objects: true
-  - Class: rviz_default_plugins/MoveCamera
-  - Class: rviz_default_plugins/Select
-  - Class: rviz_default_plugins/FocusCamera
-  - Class: rviz_default_plugins/Measure
-    Line color: 128; 128; 0
-  - Class: rviz_default_plugins/SetInitialPose
-    Covariance x: 0.25
-    Covariance y: 0.25
-    Covariance yaw: 0.06853891909122467
-    Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /initialpose
-  - Class: rviz_default_plugins/SetGoal
-    Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /goal_pose
-  - Class: rviz_default_plugins/PublishPoint
-    Single click: true
-    Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /clicked_point
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+    - Class: rviz_default_plugins/SetInitialPose
+      Covariance x: 0.25
+      Covariance y: 0.25
+      Covariance yaw: 0.06853891909122467
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /initialpose
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /goal_pose
+    - Class: rviz_default_plugins/PublishPoint
+      Single click: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /clicked_point
   Transformation:
     Current:
       Class: rviz_default_plugins/TF
@@ -308,7 +319,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.4508087635040283
+      Distance: 1.6461070775985718
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -323,11 +334,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7853981852531433
+      Pitch: 0.5803983807563782
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 0.7853981852531433
-    Saved: null
+      Yaw: 0.7753981947898865
+    Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
