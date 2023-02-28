@@ -9,15 +9,6 @@ RUN mkdir -p /opt/install-scripts
 RUN mkdir -p /usr/local/share/middleware_profiles
 COPY config/*_profile.xml /usr/local/share/middleware_profiles/
 
-####################
-# ROS Dependencies #
-####################
-
-# Copy and isntall docker
-COPY install-scripts/install-ros-deps /opt/install-scripts/install-ros-deps
-RUN chmod +x /opt/install-scripts/install-ros-deps
-RUN /opt/install-scripts/install-ros-deps
-
 ######################
 # User configuration #
 ######################
@@ -58,3 +49,24 @@ RUN usermod -aG docker ${USERNAME}
 ENV USERNAME=${USERNAME}
 ENV USER_GID=${USER_GID}
 ENV USER_UID=${USER_UID}
+
+####################################
+# Install and Build Isaac ROS Pkgs #
+####################################
+
+USER ${USERNAME}
+
+# Copy and isntall docker
+COPY install-scripts/install-isaac-pkgs /opt/install-scripts/install-isaac-pkgs
+RUN sudo chmod +x /opt/install-scripts/install-isaac-pkgs
+RUN /opt/install-scripts/install-isaac-pkgs
+
+
+######################
+# Entry Point Config #
+######################
+
+COPY entrypoint.sh /opt/entrypoint.sh
+RUN sudo chmod +x /opt/entrypoint.sh
+WORKDIR /home/${USERNAME}/workspaces/isaac_ros-dev
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
