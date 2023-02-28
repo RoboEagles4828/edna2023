@@ -20,7 +20,8 @@ class ChargeStationView(ArticulationView):
             reset_xform_properties=False
         )
 
-        self.field = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field", name="field_view", reset_xform_properties=False)
+        self.chargestation_base = RigidPrimView(prim_paths_expr="/World/envs/.*/ChargeStation/Assembly_1/Part_1", name="base_view", reset_xform_properties=False)
+        # self.top = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field", name="field_view", reset_xform_properties=False)
         # self.red_ball_1 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_08", name="redball[1]", reset_xform_properties=False)
         # self.red_ball_2 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_09", name="redball[2]", reset_xform_properties=False)
         # self.red_ball_3 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_10", name="redball[3]", reset_xform_properties=False)
@@ -38,4 +39,12 @@ class ChargeStationView(ArticulationView):
         # self.blue_ball_7 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Blue_14", name="blueball[7]", reset_xform_properties=False)
         # self.blue_ball_8 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Blue_15", name="blueball[8]", reset_xform_properties=False)
         # self.goal =  RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/THE_HUB_GE_22300_01/GE_22434", name="goal[1]", reset_xform_properties=False)
- 
+    def if_balanced(self):
+        self.base_pose, self.base_orientation  = self.chargestation_base.get_local_pose()
+        for i in range(len(self.base_orientation)):
+            w=self.base_orientation[i][0]
+            x=self.base_orientation[i][1]
+            y=self.base_orientation[i][2]
+            z=self.base_orientation[i][3]
+        print(f"x:{x} y:{y} z:{z} w:{w}")
+        

@@ -6,7 +6,7 @@ physics_engine: ${..physics_engine}
 # if given, will override the device setting in gym. 
 env:
   numEnvs: 36
-  envSpacing: 7.0
+  envSpacing: 20
   resetDist: 3.0
   clipObservations: 1.0
   clipActions: 1.0
