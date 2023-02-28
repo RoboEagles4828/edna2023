@@ -81,8 +81,8 @@ private:
   std::vector<std::string> joint_names_;
   std::vector<std::string> joint_types_;
 
-  double MAX_VELOCITY = 20 * M_PI;
-  double MAX_ACCELERATION = 17.5 * M_PI;
+  double MAX_VELOCITY = 2 * M_PI;
+  double MAX_ACCELERATION = 4 * M_PI;
   double previous_velocity = 0.0;
   std::vector<MotionMagic> motion_magic_;
 
