@@ -67,11 +67,12 @@ namespace swerve_hardware
         if(std::abs(displacement - 0.0) <= tolerance) return 0.0;
 
         if(dir > 0) {
-            if(displacement <= slow_down_dist) return sensorVelocity - dt * dt * MAX_JERK;
-            else return sensorVelocity + dt * dt * MAX_JERK; //std::min(sensorVelocity + dt * dt * MAX_JERK, MAX_VELOCITY);
+            if(displacement <= slow_down_dist) return std::max(sensorVelocity - dt * dt * MAX_JERK, -1*MAX_VELOCITY);
+            // std::cout<<std::min(sensorVelocity + dt * dt * MAX_JERK, MAX_VELOCITY);
+            else return std::min(sensorVelocity + dt * dt * MAX_JERK, MAX_VELOCITY);
         } else {
-            if(displacement <= slow_down_dist) return sensorVelocity + dt * dt * MAX_JERK;
-            else return sensorVelocity - dt * dt * MAX_JERK; //std::max(sensorVelocity - dt * dt * MAX_JERK, -1*MAX_VELOCITY);
+            if(displacement <= slow_down_dist) return std::min(sensorVelocity + dt * dt * MAX_JERK, MAX_VELOCITY);
+            else return std::max(sensorVelocity - dt * dt * MAX_JERK, -1*MAX_VELOCITY);
         }
     }
 } // namespace swerve_hardware
