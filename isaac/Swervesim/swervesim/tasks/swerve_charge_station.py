@@ -152,7 +152,7 @@ class Swerve_Charge_Station_Task(RLTask):
             x=self.charge_station_rot[i][1]
             y=self.charge_station_rot[i][2]
             z=self.charge_station_rot[i][3]
-            print(f"x:{x} y:{y} z:{z} w:{w}")
+            # print(f"x:{x} y:{y} z:{z} w:{w}")
             siny_cosp = 2 * (w * z + x * y)
             cosy_cosp = 1 - 2 * (y * y + z * z)
             angle = math.atan2(siny_cosp, cosy_cosp)
