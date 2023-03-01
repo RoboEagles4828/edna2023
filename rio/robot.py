@@ -146,6 +146,7 @@ class edna_robot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         initDriveTrain()
         initJoystick()
+
         self.threads = []
         if self.use_threading:
             logging.info("Initializing Threads")
