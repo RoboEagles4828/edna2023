@@ -11,7 +11,7 @@
       joints:
         - arm_roller_bar_joint
         - elevator_left_elevator_center_joint
-        
+
       command_interfaces:
         - position
 

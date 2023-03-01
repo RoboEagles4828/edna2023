@@ -70,8 +70,8 @@ def generate_launch_description():
         parameters=[{
             "robot_description": edna_description_xml,
             "use_sim_time": use_sim_time,
-            }, joint_trajectory_file],
-        condition=IfCondition(use_ros2_control)
+            }, controllers_file],
+        condition=IfCondition(use_ros2_control),
     )
 
     #Starts ROS2 Control Swerve Drive Controller
