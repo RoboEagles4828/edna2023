@@ -53,8 +53,16 @@
   </xacro:zed_camera>
 
   <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
-    <origin xyz="0 0 .035" rpy="0 0 0" />
+    <origin xyz="0 0 .065" rpy="0 0 0" />
   </xacro:lidar>
+
+  <!-- Footprint (for Navigation) -->
+  <link name="base_footprint" />
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_footprint" />
+    <origin xyz="0 0 -0.0508" rpy="0 0 0" />
+  </joint>
 
   <!-- Arm -->
   <xacro:property name="elevator_leg_z" value="0.527"/>

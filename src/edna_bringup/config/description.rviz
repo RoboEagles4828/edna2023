@@ -61,7 +61,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /gage/robot_description
+      Value: /liam/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -73,78 +73,78 @@ Visualization Manager:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_front_left_axle_link:
+      liam_front_left_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_front_left_wheel_link:
+      liam_front_left_wheel_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_front_right_axle_link:
+      liam_front_right_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_front_right_wheel_link:
+      liam_front_right_wheel_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_lidar_link:
+      liam_lidar_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_left_axle_link:
+      liam_rear_left_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_left_wheel_link:
+      liam_rear_left_wheel_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_right_axle_link:
+      liam_rear_right_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_right_wheel_link:
+      liam_rear_right_wheel_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_swerve_chassis_link:
+      liam_swerve_chassis_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_zed_base_link:
+      liam_zed_base_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_zed_camera_center:
+      liam_zed_camera_center:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_zed_left_camera_frame:
+      liam_zed_left_camera_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_zed_left_camera_optical_frame:
+      liam_zed_left_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_zed_right_camera_frame:
+      liam_zed_right_camera_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_zed_right_camera_optical_frame:
+      liam_zed_right_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -152,7 +152,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: gage
+    TF Prefix: liam
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -161,39 +161,39 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      gage/base_link:
+      liam/base_link:
         Value: true
-      gage/gage_front_left_axle_link:
+      liam/liam_front_left_axle_link:
         Value: true
-      gage/gage_front_left_wheel_link:
+      liam/liam_front_left_wheel_link:
         Value: false
-      gage/gage_front_right_axle_link:
+      liam/liam_front_right_axle_link:
         Value: true
-      gage/gage_front_right_wheel_link:
+      liam/liam_front_right_wheel_link:
         Value: false
-      gage/gage_lidar_link:
+      liam/liam_lidar_link:
         Value: false
-      gage/gage_rear_left_axle_link:
+      liam/liam_rear_left_axle_link:
         Value: true
-      gage/gage_rear_left_wheel_link:
+      liam/liam_rear_left_wheel_link:
         Value: false
-      gage/gage_rear_right_axle_link:
+      liam/liam_rear_right_axle_link:
         Value: true
-      gage/gage_rear_right_wheel_link:
+      liam/liam_rear_right_wheel_link:
         Value: false
-      gage/gage_swerve_chassis_link:
+      liam/liam_swerve_chassis_link:
         Value: false
-      gage/gage_zed_base_link:
+      liam/liam_zed_base_link:
         Value: false
-      gage/gage_zed_camera_center:
+      liam/liam_zed_camera_center:
         Value: false
-      gage/gage_zed_left_camera_frame:
+      liam/liam_zed_left_camera_frame:
         Value: false
-      gage/gage_zed_left_camera_optical_frame:
+      liam/liam_zed_left_camera_optical_frame:
         Value: false
-      gage/gage_zed_right_camera_frame:
+      liam/liam_zed_right_camera_frame:
         Value: false
-      gage/gage_zed_right_camera_optical_frame:
+      liam/liam_zed_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -201,29 +201,29 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      gage/base_link:
-        gage/gage_swerve_chassis_link:
-          gage/gage_front_left_axle_link:
-            gage/gage_front_left_wheel_link: {}
-          gage/gage_front_right_axle_link:
-            gage/gage_front_right_wheel_link: {}
-          gage/gage_lidar_link: {}
-          gage/gage_rear_left_axle_link:
-            gage/gage_rear_left_wheel_link: {}
-          gage/gage_rear_right_axle_link:
-            gage/gage_rear_right_wheel_link: {}
-          gage/gage_zed_base_link:
-            gage/gage_zed_camera_center:
-              gage/gage_zed_left_camera_frame:
-                gage/gage_zed_left_camera_optical_frame: {}
-              gage/gage_zed_right_camera_frame:
-                gage/gage_zed_right_camera_optical_frame: {}
+      liam/base_link:
+        liam/liam_swerve_chassis_link:
+          liam/liam_front_left_axle_link:
+            liam/liam_front_left_wheel_link: {}
+          liam/liam_front_right_axle_link:
+            liam/liam_front_right_wheel_link: {}
+          liam/liam_lidar_link: {}
+          liam/liam_rear_left_axle_link:
+            liam/liam_rear_left_wheel_link: {}
+          liam/liam_rear_right_axle_link:
+            liam/liam_rear_right_wheel_link: {}
+          liam/liam_zed_base_link:
+            liam/liam_zed_camera_center:
+              liam/liam_zed_left_camera_frame:
+                liam/liam_zed_left_camera_optical_frame: {}
+              liam/liam_zed_right_camera_frame:
+                liam/liam_zed_right_camera_optical_frame: {}
     Update Interval: 0
     Value: true
   Enabled: true
   Global Options:
     Background Color: 116; 116; 116
-    Fixed Frame: gage/base_link
+    Fixed Frame: liam/base_link
     Frame Rate: 30
   Name: root
   Tools:

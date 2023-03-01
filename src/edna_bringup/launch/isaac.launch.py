@@ -21,6 +21,8 @@ def generate_launch_description():
     teleoplaunch_args = common | {
         'joystick_file': joystick_file,
     }
+
+    navigation_launch_args = common
     
     debug_launch_args = common | {
         'enable_rviz': 'true',
@@ -38,6 +40,11 @@ def generate_launch_description():
                     bringup_path,'launch','teleopLayer.launch.py'
                 )]), launch_arguments=teleoplaunch_args.items())
 
+    navigation_layer = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            bringup_path, 'launch', 'navigationLayer.launch.py'
+        )]), launch_arguments=navigation_launch_args.items())
+
     debug_layer = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
                     bringup_path,'launch','debugLayer.launch.py'
@@ -48,5 +55,6 @@ def generate_launch_description():
     return LaunchDescription([
         control_layer,
         teleop_layer,
+        navigation_layer,
         delay_debug_layer,
     ])
