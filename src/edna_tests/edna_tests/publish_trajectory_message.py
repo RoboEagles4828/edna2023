@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 import math
 
-from control_msgs.msg import JointTrajectory
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 class PublishTrajectoryMsg(Node):
 
@@ -33,14 +33,16 @@ class PublishTrajectoryMsg(Node):
         velocity_cmds = JointTrajectory()
         # position_cmds = JointState()
         
-        velocity_cmds.name = [
+        velocity_cmds.joint_names = [
             ''
             'arm_roller_bar_joint',
             'elevator_left_elevator_center_joint']
         # position_cmds.name = []
         rad = math.pi
         # velocity_cmds.velocity = [ 0.0 ] * 8
-        velocity_cmds.velocity = [0.0, 0.0]
+        stuff = JointTrajectoryPoint()
+        stuff.velocities = [0.0, 0.0]
+        velocity_cmds.points = [stuff]
         # position_cmds.position = []
 
         self.publisher_.publish(velocity_cmds)
@@ -61,7 +63,7 @@ class PublishTrajectoryMsg(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    node = JointTrajectory()
+    node = PublishTrajectoryMsg()
 
     rclpy.spin(node)
 

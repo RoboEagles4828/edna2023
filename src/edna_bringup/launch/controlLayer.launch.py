@@ -61,6 +61,14 @@ def generate_launch_description():
         condition=IfCondition(use_ros2_control),
     )
 
+    joint_trajectory_controller_spawner = Node(
+        package="controller_manager",
+        namespace=namespace,
+        executable="spawner",
+        arguments=["joint_trajectory_controller", "-c", f"/{NAMESPACE}/controller_manager"],
+        condition=IfCondition(use_ros2_control)
+    )
+
     #Starts ROS2 Control Swerve Drive Controller
     swerve_drive_controller_spawner = Node(
         package="controller_manager",
