@@ -1,0 +1,33 @@
+<?xml version = "1.0"?>
+<robot xmlns:xacro = "http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="back_leg_length" value="0.0508" />
+    <xacro:property name="back_leg_width" value="0.457" />
+    <xacro:property name="back_leg_height" value="0.812" />
+
+    <xacro:macro name = "back_leg" params = "prefix parent *origin">
+        <link name = "${prefix}_back_leg_link">
+            <xacro:inertial_box mass = "1" x = "${back_leg_length}" y = "${back_leg_width}" z = "${back_leg_height}">
+                <origin xyz = "0 0 ${back_leg_height/2}" rpy = "0 0 0"/>
+            </xacro:inertial_box>
+            <visual>
+                <origin xyz = "0 0 0" rpy = "0 0 ${pi}"/>
+                <geometry>
+                    <mesh filename="package://edna_description/meshes/back_legs.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name = "red"/>
+            </visual>
+            <collision>
+                <origin xyz = "0 0 0" rpy = "0 0 0"/>
+                <geometry>
+                    <box size = "${back_leg_length} ${back_leg_width} ${back_leg_height}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name = "${prefix}_back_leg_joint" type = "fixed">
+            <parent link = "${parent}"/>
+            <child link = "${prefix}_back_leg_link"/>
+            <xacro:insert_block name = "origin"/>
+        </joint>
+    </xacro:macro>
+</robot>

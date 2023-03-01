@@ -210,7 +210,7 @@ hardware_interface::return_type TestDriveHardware::read(const rclcpp::Time & /*t
     else if (joint_types_[i] == hardware_interface::HW_IF_POSITION)
     {
       auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
-      RCLCPP_INFO(rclcpp::get_logger("TestDriveHardware"), "Current: %f, Target: %f Vel: %f", hw_positions_[i], hw_command_position_[i], vel);
+      // RCLCPP_INFO(rclcpp::get_logger("TestDriveHardware"), "Current: %f, Target: %f Vel: %f", hw_positions_[i], hw_command_position_[i], vel);
       hw_velocities_[i] = vel;
       hw_positions_[i] = hw_positions_[i] + hw_velocities_[i] * dt;
 
