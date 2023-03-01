@@ -375,7 +375,8 @@ class Swerve_Charge_Station_Task(RLTask):
         # distance to target
         target_dist = torch.sqrt(torch.square(
             self.target_positions - root_positions).sum(-1))
-
+        charge_station_score = in_charge_station(self.chargestation_vertices,root_positions)
+        print(charge_station_score.tolist())
         pos_reward = 1.0 / (1.0 + 2.5 * target_dist * target_dist)
         self.target_dist = target_dist
         self.root_positions = root_positions
@@ -430,23 +431,27 @@ def findB(Cx,Cy, angle_change,angle_init=0.463647609,r=1.363107039084):
     By = Cy + r*math.sin(angle_init)
     return Bx, By
 def in_charge_station(charge_station_verticies,axle_position):
+    if_in_chargestation = torch.zeros((len(charge_station_verticies)),dtype=torch.float32) 
     for i in range(len(charge_station_verticies)):
-        range = False
-        slope_y_1 = (charge_station_verticies[i][1]-charge_station_verticies[i][3])/(charge_station_verticies[i][0]-charge_station_verticies[i][2])
-        slope_y_2 = (charge_station_verticies[i][5]-charge_station_verticies[i][7])/(charge_station_verticies[i][0]-charge_station_verticies[i][2])
-        if(charge_station_verticies[i][2]-charge_station_verticies[i][4]<0.01):
-            slope_x_1= charge_station_verticies[i][2]
-            range = True
-        else:
-            slope_x_1 = (charge_station_verticies[i][3]-charge_station_verticies[i][5])/(charge_station_verticies[i][2]-charge_station_verticies[i][4])
-        if(charge_station_verticies[i][6]-charge_station_verticies[i][0]<0.01):
-            slope_x_2= charge_station_verticies[i][6]
-            range=True
-        else:
-            slope_x_1 = (charge_station_verticies[i][7]-charge_station_verticies[i][1])/(charge_station_verticies[i][6]-charge_station_verticies[i][0])
-        if(range):
-            if(axle_position[i][0], axle_position[i][3], axle_position[i][6] ,axle_position[i][9]>slope_x_1 and axle_position[i][0], axle_position[i][3], axle_position[i][6] ,axle_position[i][9] < slope_x_2  ):
-                x=10  
-        else:
-            x=10
-    return
+        axle_in_chargestation = True
+        for j in range(len(axle_position)):
+            if(not check_point(charge_station_verticies[i],axle_position[j])):
+                axle_in_chargestation = False
+        if_in_chargestation.add(axle_in_chargestation)
+    return if_in_chargestation
+
+    return 
+def check_point(r,m):
+    def dot(a, b):
+        return a[0]*b[0] + a[1]*b[1]
+    r = r.tolist()
+    m = m.tolist()
+    AB = [r[3]-r[1],r[2]-r[0]]
+    AM = [m[0]-r[1],m[1]-r[0]]
+    BC = [r[5]-r[3],r[4]-r[2]]
+    BM = [m[0]-r[3],m[1]-r[2]]
+    dotABAM = dot(AB, AM)
+    dotABAB = dot(AB, AB)
+    dotBCBC = dot(BC, BC)
+    dotBCBM = dot(BC, BM)
+    return 0 <= dotABAM and dotABAM <= dotABAB and 0 <= dotBCBM and dotBCBM <= dotBCBC
