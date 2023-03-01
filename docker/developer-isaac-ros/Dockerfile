@@ -53,14 +53,17 @@ ENV USER_UID=${USER_UID}
 ####################################
 # Install and Build Isaac ROS Pkgs #
 ####################################
-
 USER ${USERNAME}
 
-# Copy and isntall docker
+# Download
 COPY install-scripts/install-isaac-pkgs /opt/install-scripts/install-isaac-pkgs
 RUN sudo chmod +x /opt/install-scripts/install-isaac-pkgs
 RUN /opt/install-scripts/install-isaac-pkgs
 
+# Build
+RUN sudo rm /usr/lib/x86_64-linux-gnu/libcuda.so.1
+RUN sudo ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so.1
+RUN cd /home/${USERNAME}/workspaces/isaac_ros-dev && source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install
 
 ######################
 # Entry Point Config #

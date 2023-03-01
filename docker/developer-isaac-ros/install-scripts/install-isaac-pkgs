@@ -1,8 +1,6 @@
 #!/bin/bash
 # Followed basic instructions from isaac ros github
 
-# Source ros2
-source /opt/ros/${ROS_DISTRO}/setup.bash
 # Create workspace
 mkdir -p  ~/workspaces/isaac_ros-dev/src
 
@@ -16,8 +14,3 @@ cd ~/workspaces/isaac_ros-dev/src && \
     git clone https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation && \
     git clone https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag && \
     git clone https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_compression    
-
-# Build and test
-cd ~/workspaces/isaac_ros-dev && colcon build --symlink-install
-
-source install/setup.bash && colcon test --executor sequential
