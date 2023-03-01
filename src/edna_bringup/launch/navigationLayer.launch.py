@@ -3,7 +3,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 
 # Easy use of namespace since args are not strings
 NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
@@ -14,6 +14,14 @@ def generate_launch_description():
 
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     params_file = os.path.join(bringup_pkg_path, 'config', 'mapper.yaml')
+
+    run_nav2 = Node(
+        package='nav2_bringup',
+        namespace=namespace,
+        executable='navigation_launch',
+        
+    )
+
 
     run_slam_toolbox = Node(
         package='slam_toolbox',
