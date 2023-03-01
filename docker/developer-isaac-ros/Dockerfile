@@ -65,11 +65,12 @@ RUN sudo rm /usr/lib/x86_64-linux-gnu/libcuda.so.1
 RUN sudo ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so.1
 RUN cd /home/${USERNAME}/workspaces/isaac_ros-dev && source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install
 
-######################
-# Entry Point Config #
-######################
+#####################
+# Interactive Setup #
+#####################
 
-COPY entrypoint.sh /opt/entrypoint.sh
-RUN sudo chmod +x /opt/entrypoint.sh
 WORKDIR /home/${USERNAME}/workspaces/isaac_ros-dev
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USERNAME}/.bashrc
+RUN echo "source /home/${USERNAME}/workspaces/isaac_ros-dev/install/setup.bash" >> /home/${USERNAME}/.bashrc
+COPY entrypoint.sh /home/${USERNAME}/entrypoint.sh
+RUN sudo chmod +x /home/${USERNAME}/entrypoint.sh

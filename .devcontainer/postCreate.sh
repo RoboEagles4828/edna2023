@@ -16,3 +16,4 @@ sudo apt-get update
 rosdep update --rosdistro=humble
 rosdep install --from-paths src --ignore-src -r -y
 isaac rm
+isaac-ros rm
