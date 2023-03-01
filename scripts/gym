@@ -2,3 +2,7 @@
 python_path="/isaac-sim/python.sh"
 scripts_path="/root/edna/isaac/Swervesim/swervesim/scripts/rlgames_train.py"
 isaac $python_path $scripts_path $@
+cmd="docker container ls | grep 'isaac-sim' | awk '{print $1}'"
+CONTAINER_ID=$(docker container ls | grep 'isaac-sim' | awk '{print $1}')
+printf "%s/n" "$CONTAINER_ID"
+docker cp $CONTAINER_ID:/isaac-sim/runs /workspaces/edna2023/isaac/Swervesim/swervesim/

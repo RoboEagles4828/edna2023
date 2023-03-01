@@ -429,3 +429,24 @@ def findB(Cx,Cy, angle_change,angle_init=0.463647609,r=1.363107039084):
     Bx = Cx + r*math.cos(angle_init)
     By = Cy + r*math.sin(angle_init)
     return Bx, By
+def in_charge_station(charge_station_verticies,axle_position):
+    for i in range(len(charge_station_verticies)):
+        range = False
+        slope_y_1 = (charge_station_verticies[i][1]-charge_station_verticies[i][3])/(charge_station_verticies[i][0]-charge_station_verticies[i][2])
+        slope_y_2 = (charge_station_verticies[i][5]-charge_station_verticies[i][7])/(charge_station_verticies[i][0]-charge_station_verticies[i][2])
+        if(charge_station_verticies[i][2]-charge_station_verticies[i][4]<0.01):
+            slope_x_1= charge_station_verticies[i][2]
+            range = True
+        else:
+            slope_x_1 = (charge_station_verticies[i][3]-charge_station_verticies[i][5])/(charge_station_verticies[i][2]-charge_station_verticies[i][4])
+        if(charge_station_verticies[i][6]-charge_station_verticies[i][0]<0.01):
+            slope_x_2= charge_station_verticies[i][6]
+            range=True
+        else:
+            slope_x_1 = (charge_station_verticies[i][7]-charge_station_verticies[i][1])/(charge_station_verticies[i][6]-charge_station_verticies[i][0])
+        if(range):
+            if(axle_position[i][0], axle_position[i][3], axle_position[i][6] ,axle_position[i][9]>slope_x_1 and axle_position[i][0], axle_position[i][3], axle_position[i][6] ,axle_position[i][9] < slope_x_2  ):
+                x=10  
+        else:
+            x=10
+    return
