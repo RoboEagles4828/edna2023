@@ -2,7 +2,7 @@ task:
   name: SwerveCS
   physics_engine: ${..physics_engine}
   env:
-    numEnvs: 36
+    numEnvs: 360
     envSpacing: 20
     resetDist: 3.0
     clipObservations: 1.0

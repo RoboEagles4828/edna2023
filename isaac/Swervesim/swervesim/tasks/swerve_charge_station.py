@@ -138,8 +138,7 @@ class Swerve_Charge_Station_Task(RLTask):
 
     def get_observations(self) -> dict:
         # Gets various positions and velocties to observations
-        self.root_pos, self.root_rot = self._swerve.get_world_poses(
-            clone=False)
+        self.root_pos, self.root_rot = self._swerve.get_world_poses(clone=False)
         self.joint_velocities = self._swerve.get_joint_velocities()
         self.joint_positions = self._swerve.get_joint_positions()
         self.charge_station_pos, self.charge_station_rot = self._charge_station.get_world_poses(clone=False)
