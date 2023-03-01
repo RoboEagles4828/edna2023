@@ -1,10 +1,9 @@
 #!/bin/bash
-
+VERSION="1" # Increment manually for now
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
-IMAGE_NAME="developer-isaac-ros"
-IMAGE_TAG="1"
+IMAGE_NAME="developer-isaac-ros:$VERSION"
 
-nvidia-docker build -t "$GITHUB_REGISTRY/$IMAGE_NAME:$IMAGE_TAG" \
+nvidia-docker build -t "$GITHUB_REGISTRY/$IMAGE_NAME" \
     --network host .
 
 echo "Build finished"
@@ -20,14 +19,12 @@ if [ "$INTERACTIVE" = "y" ]; then
     -e NVIDIA_VISIBLE_DEVICES=all \
     -e NVIDIA_DRIVER_CAPABILITIES=all \
     -e FASTRTPS_DEFAULT_PROFILES_FILE="/usr/local/share/middleware_profiles/rtps_udp_profile.xml" \
-    -e ACCEPT_EULA=y "$GITHUB_REGISTRY/$IMAGE_NAME:$IMAGE_TAG" '/bin/bash'
+    -e ACCEPT_EULA=y "$GITHUB_REGISTRY/$IMAGE_NAME" '/bin/bash'
 fi
 
 echo "Would you like to push the image to the registry? (y/n)"
 read PUSH
 
 if [ "$PUSH" = "y" ]; then
-    docker tag "$GITHUB_REGISTRY/$IMAGE_NAME:$IMAGE_TAG" "$GITHUB_REGISTRY/$IMAGE_NAME:latest"
-    docker push "$GITHUB_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
-    docker push "$GITHUB_REGISTRY/$IMAGE_NAME:latest"
+    docker push "$GITHUB_REGISTRY/$IMAGE_NAME"
 fi
