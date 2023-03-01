@@ -18,7 +18,15 @@ class PublishTrajectoryMsg(Node):
         #     }]
         # )
 
-        self.joints = ['arm_roller_bar_joint', 'elevator_left_elevator_center_joint']
+        self.joints = [
+            'arm_roller_bar_joint', 
+            'elevator_left_elevator_center_joint',
+            'elevator_left_elevator_outer_1_joint',
+            'elevator_left_elevator_outer_2_joint',
+            'elevator_right_elevator_center_joint',
+            'elevator_right_elevator_outer_1_joint',
+            'elevator_right_elevator_outer_2_joint'
+        ]
 
         self.NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
 
@@ -30,14 +38,10 @@ class PublishTrajectoryMsg(Node):
     def controller_callback(self, msg: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
-        x = msg.buttons[2]
-        b = msg.buttons[1]
-        if x == 1.0:
-            position_cmds.positions = [1.0, 1.0]
-        elif b == 1.0:
-            position_cmds.positions = [1.0, 1.0]
+        if not msg.buttons[2]:
+            position_cmds.positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         else:
-            position_cmds.positions = [0.0, 0.0]
+            position_cmds.positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         
         cmds.joint_names = self.joints
         cmds.points = [position_cmds]

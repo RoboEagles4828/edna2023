@@ -34,8 +34,13 @@
   joint_trajectory_controller:
     ros__parameters:
       joints:
-        - arm_roller_bar_joint
-        - elevator_left_elevator_center_joint
+        - 'arm_roller_bar_joint'
+        - 'elevator_left_elevator_center_joint'
+        - 'elevator_left_elevator_outer_1_joint'
+        - 'elevator_left_elevator_outer_2_joint'
+        - 'elevator_right_elevator_center_joint'
+        - 'elevator_right_elevator_outer_1_joint'
+        - 'elevator_right_elevator_outer_2_joint'
 
       command_interfaces:
         - position

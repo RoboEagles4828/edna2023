@@ -172,6 +172,14 @@ class ImportBot(BaseSample):
         front_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint"), "angular")
         rear_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint"), "angular")
         rear_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint"), "angular")
+        arm_roller_bar_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_elevator_leg_link/arm_roller_bar_joint"), "angular")
+        elevator_left_elevator_center_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_left_elevator_outer_1_link/elevator_left_elevator_center_joint"), "angular")
+        elevator_left_elevator_outer_1_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_left_elevator_center_link/elevator_left_elevator_outer_2_joint"), "angular")
+        elevator_left_elevator_outer_2_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_back_leg_link/elevator_left_elevator_outer_1_joint"), "angular")
+        elevator_right_elevator_center_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_right_elevator_outer_1_link/elevator_right_elevator_center_joint"), "angular")
+        elevator_right_elevator_outer_1_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_bakc_leg_link/elevator_right_elevator_outer_1_joint"), "angular")
+        elevator_right_elevator_outer_2_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_right_elevator_center_link/elevator_right_elevator_outer_2_joint"), "angular")
+        
         set_drive_params(front_left_axle, 1, 1000, 98.0)
         set_drive_params(front_right_axle, 1, 1000, 98.0)
         set_drive_params(rear_left_axle, 1, 1000, 98.0)
@@ -180,6 +188,13 @@ class ImportBot(BaseSample):
         set_drive_params(front_right_wheel, 1, 1000, 98.0)
         set_drive_params(rear_left_wheel, 1, 1000, 98.0)
         set_drive_params(rear_right_wheel, 1, 1000, 98.0)
+        set_drive_params(arm_roller_bar_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_left_elevator_center_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_left_elevator_outer_1_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_left_elevator_outer_2_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_right_elevator_center_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_right_elevator_outer_1_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_right_elevator_outer_2_joint, 10000000, 100000, 98.0)
         # set_drive_params(base,1,1000,98.0)
         self.create_lidar(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
@@ -444,7 +459,7 @@ class ImportBot(BaseSample):
                     ("Context.outputs:context", "SubscribeJointState.inputs:context"),
                     ("SubscribeJointState.outputs:jointNames", "articulation_controller.inputs:jointNames"),
                     ("SubscribeJointState.outputs:velocityCommand", "articulation_controller.inputs:velocityCommand"),
-                    # ("SubscribeJointState.outputs:positionCommand", "articulation_controller.inputs:positionCommand"),
+                    ("SubscribeJointState.outputs:positionCommand", "articulation_controller.inputs:positionCommand"),
                 ],
             }
         )
