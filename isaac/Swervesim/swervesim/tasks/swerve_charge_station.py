@@ -143,7 +143,7 @@ class Swerve_Charge_Station_Task(RLTask):
         self.joint_velocities = self._swerve.get_joint_velocities()
         self.joint_positions = self._swerve.get_joint_positions()
         self.charge_station_pos, self.charge_station_rot = self._charge_station.get_world_poses(clone=False)
-        chargestation_vertices = self.target_rotation = torch.zeros(
+        self.chargestation_vertices = torch.zeros(
             (self._num_envs, 8), device=self._device, dtype=torch.float32) #ypr
         charge_station_pos = self.charge_station_pos - self._env_pos
 
@@ -156,10 +156,10 @@ class Swerve_Charge_Station_Task(RLTask):
             siny_cosp = 2 * (w * z + x * y)
             cosy_cosp = 1 - 2 * (y * y + z * z)
             angle = math.atan2(siny_cosp, cosy_cosp)
-            chargestation_vertices[i][0] , chargestation_vertices[i][1] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle) 
-            chargestation_vertices[i][2] , chargestation_vertices[i][3] = findB(charge_station_pos[i][0],charge_station_pos[i][1],math.pi-angle) 
-            chargestation_vertices[i][4] , chargestation_vertices[i][5] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle+math.pi) 
-            chargestation_vertices[i][6] , chargestation_vertices[i][7] = findB(charge_station_pos[i][0],charge_station_pos[i][1],(2*math.pi)-angle)  
+            self.chargestation_vertices[i][0] , self.chargestation_vertices[i][1] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle) 
+            self.chargestation_vertices[i][2] , self.chargestation_vertices[i][3] = findB(charge_station_pos[i][0],charge_station_pos[i][1],math.pi-angle) 
+            self.chargestation_vertices[i][4] , self.chargestation_vertices[i][5] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle+math.pi) 
+            self.chargestation_vertices[i][6] , self.chargestation_vertices[i][7] = findB(charge_station_pos[i][0],charge_station_pos[i][1],(2*math.pi)-angle)  
 
         self.root_velocities = self._swerve.get_velocities(clone=False)
         root_positions = self.root_pos - self._env_pos
@@ -172,7 +172,7 @@ class Swerve_Charge_Station_Task(RLTask):
         self.obs_buf[..., 10:13] = root_angvels / math.pi
         self.obs_buf[..., 13:21] = self.joint_velocities
         self.obs_buf[..., 21:29] = self.joint_positions
-        self.obs_buf[..., 29:37] = chargestation_vertices
+        self.obs_buf[..., 29:37] = self.chargestation_vertices
         
 
         # Should not exceed observation ssize declared earlier
@@ -359,7 +359,7 @@ class Swerve_Charge_Station_Task(RLTask):
         self.target_rotation[envs_long, 2]= 1
         self.target_rotation[envs_long, 3] = 0#
        
-        self.target_positions[envs_long,2] = 1
+        self.target_positions[envs_long,2] = 0
         # print(self.target_positions)
 
         # shift the target up so it visually aligns better
