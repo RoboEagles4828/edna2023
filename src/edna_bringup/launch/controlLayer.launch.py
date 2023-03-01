@@ -24,6 +24,7 @@ def generate_launch_description():
     # Get paths to other config files
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
+    joint_trajectory_file = os.path.join(bringup_pkg_path, 'config', 'joint_trajectory_controller.yaml')
     
     # Create a robot_state_publisher node
     node_robot_state_publisher = Node(
@@ -66,6 +67,10 @@ def generate_launch_description():
         namespace=namespace,
         executable="spawner",
         arguments=["joint_trajectory_controller", "-c", f"/{NAMESPACE}/controller_manager"],
+        parameters=[{
+            "robot_description": edna_description_xml,
+            "use_sim_time": use_sim_time,
+            }, joint_trajectory_file],
         condition=IfCondition(use_ros2_control)
     )
 
@@ -115,6 +120,7 @@ def generate_launch_description():
         node_robot_state_publisher,
         control_node,
         joint_state_broadcaster_spawner,
+        joint_trajectory_controller_spawner,
         swerve_drive_controller_delay,
         joint_state_publisher_gui
     ])

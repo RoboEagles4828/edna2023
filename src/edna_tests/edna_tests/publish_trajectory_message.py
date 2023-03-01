@@ -3,6 +3,8 @@ from rclpy.node import Node
 import math
 
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from sensor_msgs.msg import Joy
+import os
 
 class PublishTrajectoryMsg(Node):
 
@@ -24,30 +26,29 @@ class PublishTrajectoryMsg(Node):
         #     }]
         # )
 
-        self.publisher_ = self.create_publisher(JointTrajectory, 'trajectory_joint_msgs', 10)
+        self.NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
+
+        self.publisher_ = self.create_publisher(JointTrajectory, f'/{self.NAMESPACE}/joint_trajectory_controller/joint_trajectory', 10)
+        self.subscriber = self.create_subscription(Joy, f'/{self.NAMESPACE}/joy', self.controller_callback, 10)
         timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
 
-    def timer_callback(self):
-        velocity_cmds = JointTrajectory()
-        # position_cmds = JointState()
+    def controller_callback(self, msg: Joy):
+        cmds = JointTrajectory()
+        position_cmds = JointTrajectoryPoint()
+        x = msg.buttons[2]
+        b = msg.buttons[1]
+        if x == 1.0:
+            position_cmds.positions = [1.0, 1.0]
+        elif b == 1.0:
+            position_cmds.positions = [1.0, 1.0]
+        else:
+            position_cmds.positions = [0.0, 0.0]
         
-        velocity_cmds.joint_names = [
-            ''
-            'arm_roller_bar_joint',
-            'elevator_left_elevator_center_joint']
-        # position_cmds.name = []
-        rad = math.pi
-        # velocity_cmds.velocity = [ 0.0 ] * 8
-        stuff = JointTrajectoryPoint()
-        stuff.velocities = [0.0, 0.0]
-        velocity_cmds.points = [stuff]
-        # position_cmds.position = []
-
-        self.publisher_.publish(velocity_cmds)
-        # self.publisher_.publish(position_cmds)
-        self.get_logger().info('Publishing: ...')
+        cmds.points = [position_cmds]
+        
+        self.publisher_.publish(cmds)
+        self.get_logger().info('Publishing...')
         self.i += 1
 
 
