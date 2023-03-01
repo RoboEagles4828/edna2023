@@ -12,19 +12,13 @@ class PublishTrajectoryMsg(Node):
         super().__init__('publish_trajectory_msg')
 
         # self.declare_parameters(
-        #     namespace = NAMESPACE
         #     parameters = [{
-        #         "arm_roller_bar_joint": f"{namespace}_arm_roller_bar_joint",
-        #         "elevator_left_elevator_outer_1_joint": f"{namespace}_elevator_left_elevator_outer_1_joint",
-        #         "elevator_left_elevator_outer_2_joint": f"{namespace}_elevator_left_elevator_outer_2_joint",
-        #         "elevator_left_elevator_center_joint": f"{namespace}_elevator_left_elevator_center_joint",
-        #         "elevator_right_elevator_outer_1_joint": f"{namespace}_elevator_right_elevator_outer_1_joint",
-        #         "elevator_right_elevator_outer_2_joint": f"{namespace}_elevator_right_elevator_outer_1_joint",
-        #         "elevator_right_elevator_center_joint": f"{namespace}_elevator_right_elevator_outer_1_joint",
-        #         "elevator_left_elevator_leg_joint": f"{namespace}_elevator_left_elevator_leg_joint",
-        #         "elevator_right_elevator_leg_joint": f"{namespace}_elevator_right_elevator_leg_joint",
+        #         "arm_roller_bar_joint": "arm_roller_bar_joint",
+        #         "elevator_left_elevator_center_joint": "elevator_left_elevator_center_joint"
         #     }]
         # )
+
+        self.joints = ['arm_roller_bar_joint', 'elevator_left_elevator_center_joint']
 
         self.NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
 
@@ -45,6 +39,7 @@ class PublishTrajectoryMsg(Node):
         else:
             position_cmds.positions = [0.0, 0.0]
         
+        cmds.joint_names = self.joints
         cmds.points = [position_cmds]
         
         self.publisher_.publish(cmds)
