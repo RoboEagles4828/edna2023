@@ -377,8 +377,9 @@ class Swerve_Charge_Station_Task(RLTask):
         target_dist = torch.sqrt(torch.square(
             self.target_positions - root_positions).sum(-1))
         charge_station_score = in_charge_station(self.chargestation_vertices,self._swerve.get_axle_positions(self.num_envs))
-
-        balance_reward = self._charge_station.if_balanced(self.num_envs)*charge_station_score*100
+        # print(f"shape_cs:{charge_station_score.shape}")
+        balance_reward = torch.mul(self._charge_station.if_balanced(self.num_envs)[0],charge_station_score[:])*100
+        # print(f"shape_balance:{balance_reward.shape}")
         # print(charge_station_score.tolist())
         pos_reward = 1.0 / (1.0 + 2.5 * target_dist * target_dist)
         self.target_dist = target_dist
@@ -389,6 +390,7 @@ class Swerve_Charge_Station_Task(RLTask):
             self.root_position_reward[i] = sum(root_positions[i][0:3])
 
         numerator = (self.root_position_reward*pos_reward + balance_reward)
+        # print(f"shape_numerator:{numerator.shape}")
         self.rew_buf[:] = numerator
 
     def is_done(self) -> None:
@@ -465,7 +467,7 @@ def check_point(r,m):
     def dot(a, b):
         return a[0]*b[0] + a[1]*b[1]
     
-    print(len(m))
+    # print(len(m))
     for i in range(4):
         AB = [r[3]-r[1],r[2]-r[0]]
         AM = [m[3*i]-r[1],m[3*i + 1]-r[0]]

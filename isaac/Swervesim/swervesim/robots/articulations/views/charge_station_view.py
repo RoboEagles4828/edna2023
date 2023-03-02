@@ -56,6 +56,7 @@ class ChargeStationView(ArticulationView):
             else:
                 output_roll[i] = 0.0
 
-        print(f"x:{x} y:{y} z:{z} w:{w}")
+        # print(f"x:{x} y:{y} z:{z} w:{w}")
+        # print(f"output_roll:{output_roll.shape}")
         return output_roll
         

@@ -2,7 +2,7 @@ task:
   name: SwerveCS
   physics_engine: ${..physics_engine}
   env:
-    numEnvs: 360
+    numEnvs: 36
     envSpacing: 20
     resetDist: 3.0
     clipObservations: 1.0
@@ -144,8 +144,8 @@ device_id: 0
 rl_device: cuda:0
 num_threads: 4
 solver_type: 1
-test: false
-checkpoint: ''
+test: true
+checkpoint: /isaac-sim/runs/SwerveCS/nn/SwerveCS.pth
 headless: false
 wandb_activate: false
 wandb_group: ''
