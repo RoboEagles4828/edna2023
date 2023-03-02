@@ -14,6 +14,7 @@ FRC_STAGE = "DISABLED"
 STOP_THREADS = False
 rti_init_lock = threading.Lock()
 drive_train_lock = threading.Lock()
+arm_controller_lock = threading.Lock()
 
 # Logging
 format = "%(asctime)s: %(message)s"
@@ -131,8 +132,9 @@ def armThread():
 
 def armAction(subscriber):
     data = subscriber.read()
-    if (data):
-        print(f"Recieved arm action of {data}")
+    global arm_controller
+    with arm_controller_lock:
+        arm_controller.sendCommands(data)
 
 
 ######### Joystick Thread and Action #########
@@ -202,6 +204,8 @@ class edna_robot(wpilib.TimedRobot):
         FRC_STAGE = "DISABLED"
         with drive_train_lock:
             drive_train.stop()
+        with arm_controller_lock:
+            arm_controller.stop()
 
     def manageThreads(self):
         # Check all threads and make sure they are alive
@@ -212,6 +216,8 @@ class edna_robot(wpilib.TimedRobot):
                     logging.warning(f"Stopping robot due to command thread failure")
                     with drive_train_lock:
                         drive_train.stop()
+                    with arm_controller_lock:
+                        arm_controller.stop()
                 logging.warning(f"Thread {thread['name']} is not alive, restarting...")
                 thread["thread"] = startThread(thread["name"])
     
