@@ -65,6 +65,8 @@ def startThread(name):
         thread = threading.Thread(target=encoderThread, daemon=True)
     elif name == "command":
         thread = threading.Thread(target=commandThread, daemon=True)
+    elif name == "arm-command":
+        thread = threading.Thread(target=armThread, daemon=True)
     elif name == "joystick":
         thread = threading.Thread(target=joystickThread, daemon=True)
     
@@ -111,6 +113,20 @@ def commandAction(subscriber):
         drive_train.sendCommands(data)
 
 
+######### Arm Thread and Action #########
+ARM_COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::arm_commands"
+ARM_COMMAND_WRITER_NAME = "isaac_arm_commands_subscriber::arm_commands_reader"
+
+def armThread():
+    arm_command_subscriber = None
+    with rti_init_lock:
+        arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+    threadLoop('arm', arm_command_subscriber, armAction)
+
+def armAction(subscriber):
+    data = subscriber.read()
+    if (data):
+        print(f"Recieved arm action of {data}")
 
 
 ######### Joystick Thread and Action #########
@@ -134,8 +150,6 @@ def joystickAction(publisher):
     publisher.write(data)
 
 
-
-
 ######### Robot Class #########
 class edna_robot(wpilib.TimedRobot):
 
@@ -144,8 +158,8 @@ class edna_robot(wpilib.TimedRobot):
         self.use_threading = use_threading
 
     def robotInit(self) -> None:
-        initDriveTrain()
-        initJoystick()
+        # initDriveTrain()
+        # initJoystick()
 
         self.threads = []
         if self.use_threading:
@@ -155,12 +169,14 @@ class edna_robot(wpilib.TimedRobot):
             self.threads = [
                 {"name": "encoder", "thread": startThread("encoder") },
                 {"name": "command", "thread": startThread("command") },
-                {"name": "joystick", "thread": startThread("joystick") }
+                {"name": "arm-command", "thread": startThread("arm-command")},
+                {"name": "joystick", "thread": startThread("joystick") },
             ]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
             self.joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
+            self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
 
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")
@@ -195,6 +211,7 @@ class edna_robot(wpilib.TimedRobot):
     def doActions(self):
         encoderAction(self.encoder_publisher)
         commandAction(self.command_subscriber)
+        armAction(self.arm_command_subscriber)
         joystickAction(self.joystick_publisher)
         return
 
