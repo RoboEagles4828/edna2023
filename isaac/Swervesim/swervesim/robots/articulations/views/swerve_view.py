@@ -79,8 +79,7 @@ class SwerveView(ArticulationView):
         pose = torch.zeros(
             (len(self.get_world_pose()), len(self._axle)), device=self._device, dtype=torch.float32)  # xyx of target position
         for i in range(len(self._axle)):
-            axle_pose = self._axle[i].get_world_pose()
-            pose[...,i*3:i*3+3] = axle_pose
+            pose[:].add(self._axle[i].get_world_pose())
         return pose
     # def get_knee_transforms(self):
     #     return self._knees.get_world_poses()
