@@ -1,14 +1,30 @@
 import wpilib
 
+# does not work yet
+
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         print("Initalizing")
 
-        self.compressor = wpilib.Compressor(0, wpilib.PneumaticsModuleType.CTREPCM)
-        self.solenoids = [
-            [wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 0), wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 7)],
-            [wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 3), wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 4)]
-        ]
+        # make rev hub object
+        self.hub = wpilib.PneumaticHub(0)
+
+        # make single solenoid objects (pass in channel as parameter)
+        self.solenoid1 = self.hub.makeSolenoid()
+        self.solenoid2 = self.hub.makeSolenoid()
+
+        # make double solenoid objects (pass in forward channel and reverse channel as parameters)
+        self.double_solenoid1 = self.hub.makeDoubleSolenoid()
+        self.double_solenoid2 = self.hub.makeDoubleSolenoid()
+
+        # make compressor
+        self.compressor = self.hub.makeCompressor()
+        
+        # self.compressor = wpilib.Compressor(0, wpilib.PneumaticsModuleType.CTREPCM)
+        # self.solenoids = [
+        #     [wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 0), wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 7)],
+        #     [wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 3), wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 4)]
+        # ]
 
         self.timer = wpilib.Timer
         self.input = wpilib.Joystick(0)
