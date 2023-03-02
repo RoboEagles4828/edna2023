@@ -66,6 +66,7 @@ class Swerve_Charge_Station_Task(RLTask):
         self.velocity_limit = 10*math.pi
 
         self.dt = 1 / 10
+        self.dt_total = 0.0
         self.max_episode_length_s = self._task_cfg["env"]["episodeLength_s"]
         self._max_episode_length = int(
             self.max_episode_length_s / self.dt)
@@ -370,13 +371,15 @@ class Swerve_Charge_Station_Task(RLTask):
             charge_station_pos[:, 0:3], self.target_rotation[envs_long].clone(), indices=env_ids)
 
     def calculate_metrics(self) -> None:
-
+        # self.dt_total += self.dt
         root_positions = self.root_pos - self._env_pos
         # distance to target
         target_dist = torch.sqrt(torch.square(
             self.target_positions - root_positions).sum(-1))
         charge_station_score = in_charge_station(self.chargestation_vertices,root_positions)
-        print(charge_station_score.tolist())
+
+        balance_reward = self._charge_station.if_balanced(self.num_envs)*charge_station_score*100
+        # print(charge_station_score.tolist())
         pos_reward = 1.0 / (1.0 + 2.5 * target_dist * target_dist)
         self.target_dist = target_dist
         self.root_positions = root_positions
@@ -385,7 +388,8 @@ class Swerve_Charge_Station_Task(RLTask):
         for i in range(len(self.root_position_reward)):
             self.root_position_reward[i] = sum(root_positions[i][0:3])
 
-        self.rew_buf[:] = self.root_position_reward*pos_reward
+        numerator = (self.root_position_reward*pos_reward + balance_reward)
+        self.rew_buf[:] = numerator
 
     def is_done(self) -> None:
         # print("line 312")
@@ -431,7 +435,7 @@ def findB(Cx,Cy, angle_change,angle_init=0.463647609,r=1.363107039084):
     By = Cy + r*math.sin(angle_init)
     return Bx, By
 def in_charge_station(charge_station_verticies,axle_position):
-    if_in_chargestation = torch.zeros((len(charge_station_verticies)),dtype=torch.float32) 
+    if_in_chargestation = torch.zeros_like(axle_position)
     # for i in range(len(charge_station_verticies)):
     #     axle_in_chargestation = True
     #     for j in range(len(axle_position)):
@@ -442,20 +446,25 @@ def in_charge_station(charge_station_verticies,axle_position):
     
 
     
-    charge_station_verticies_flat = torch.FloatTensor(sum(charge_station_verticies.tolist(),[]))
-    axle_position_flat = torch.FloatTensor(sum(axle_position.tolist(),[]))
-    for i, j in itertools.product(range(len(charge_station_verticies), 4), range(len(axle_position), 12)):
-        if_in_chargestation.add(check_point(charge_station_verticies_flat[i:i+4],axle_position_flat[j:j+12]))
-        print(i, j)
+    # charge_station_verticies_flat = torch.FloatTensor(sum(charge_station_verticies.tolist(),[]))
+    # axle_position_flat = torch.FloatTensor(sum(axle_position.tolist(),[]))
+    # for i, j in itertools.product(range(len(charge_station_verticies), 4), range(len(axle_position), 12)):
+    #     if_in_chargestation.add(check_point(charge_station_verticies_flat[i:i+4],axle_position_flat[j:j+12]))
+    #     print(i, j)
     # for i in range(len(charge_station_verticies)):
     #     if_in_chargestation.add(np.vectorize(check_point)(charge_station_verticies[i].tolist(), axle_position[i].tolist()))
     # if_in_chargestation = torch.from_numpy(if_in_chargestation)
-    return if_in_chargestation
 
-    return 
+    # for i in range(len(charge_station_verticies)):
+    #     if_in_chargestation.add(check_point(charge_station_verticies[i],axle_position[i]))
+
+    if_in_chargestation = [check_point(charge_station_verticies[i],axle_position[i]) for i in range(len(charge_station_verticies))]
+    return torch.FloatTensor(if_in_chargestation).cuda()
+
 def check_point(r,m):
     def dot(a, b):
         return a[0]*b[0] + a[1]*b[1]
+    
     AB = [r[3]-r[1],r[2]-r[0]]
     AM = [m[0]-r[1],m[1]-r[0]]
     BC = [r[5]-r[3],r[4]-r[2]]
@@ -464,4 +473,9 @@ def check_point(r,m):
     dotABAB = dot(AB, AB)
     dotBCBC = dot(BC, BC)
     dotBCBM = dot(BC, BM)
-    return 0 <= dotABAM and dotABAM <= dotABAB and 0 <= dotBCBM and dotBCBM <= dotBCBC
+    out = 0 <= dotABAM and dotABAM <= dotABAB and 0 <= dotBCBM and dotBCBM <= dotBCBC
+
+    if out:
+        return 1.0
+    else:
+        return 0.0
