@@ -46,6 +46,7 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 import numpy as np
 import torch
 import math
+import itertools
 
 
 class Swerve_Charge_Station_Task(RLTask):
@@ -431,20 +432,30 @@ def findB(Cx,Cy, angle_change,angle_init=0.463647609,r=1.363107039084):
     return Bx, By
 def in_charge_station(charge_station_verticies,axle_position):
     if_in_chargestation = torch.zeros((len(charge_station_verticies)),dtype=torch.float32) 
-    for i in range(len(charge_station_verticies)):
-        axle_in_chargestation = True
-        for j in range(len(axle_position)):
-            if(not check_point(charge_station_verticies[i],axle_position[j])):
-                axle_in_chargestation = False
-        if_in_chargestation.add(axle_in_chargestation)
+    # for i in range(len(charge_station_verticies)):
+    #     axle_in_chargestation = True
+    #     for j in range(len(axle_position)):
+    #         if(not check_point(charge_station_verticies[i],axle_position[j])):
+    #             axle_in_chargestation = False
+    #     if_in_chargestation.add(axle_in_chargestation)
+    # if_in_chargestation = [check_point(charge_station_verticies[i],axle_position[j], i) for i in range(len(charge_station_verticies)) for j in range(len(axle_position))]
+    
+
+    
+    charge_station_verticies_flat = torch.FloatTensor(sum(charge_station_verticies.tolist(),[]))
+    axle_position_flat = torch.FloatTensor(sum(axle_position.tolist(),[]))
+    for i, j in itertools.product(range(len(charge_station_verticies), 4), range(len(axle_position), 12)):
+        if_in_chargestation.add(check_point(charge_station_verticies_flat[i:i+4],axle_position_flat[j:j+12]))
+        print(i, j)
+    # for i in range(len(charge_station_verticies)):
+    #     if_in_chargestation.add(np.vectorize(check_point)(charge_station_verticies[i].tolist(), axle_position[i].tolist()))
+    # if_in_chargestation = torch.from_numpy(if_in_chargestation)
     return if_in_chargestation
 
     return 
 def check_point(r,m):
     def dot(a, b):
         return a[0]*b[0] + a[1]*b[1]
-    r = r.tolist()
-    m = m.tolist()
     AB = [r[3]-r[1],r[2]-r[0]]
     AM = [m[0]-r[1],m[1]-r[0]]
     BC = [r[5]-r[3],r[4]-r[2]]
