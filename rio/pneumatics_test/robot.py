@@ -10,12 +10,10 @@ class MyRobot(wpilib.TimedRobot):
         self.hub = wpilib.PneumaticHub(0)
 
         # make single solenoid objects (pass in channel as parameter)
-        self.solenoid1 = self.hub.makeSolenoid()
-        self.solenoid2 = self.hub.makeSolenoid()
+        self.solenoids = [self.hub.makeSolenoid(), self.hub.makeSolenoid()]
 
         # make double solenoid objects (pass in forward channel and reverse channel as parameters)
-        self.double_solenoid1 = self.hub.makeDoubleSolenoid()
-        self.double_solenoid2 = self.hub.makeDoubleSolenoid()
+        self.double_solenoids = [self.hub.makeDoubleSolenoid(), self.hub.makeDoubleSolenoid()]
 
         # make compressor
         self.compressor = self.hub.makeCompressor()
