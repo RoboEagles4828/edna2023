@@ -38,10 +38,8 @@ class PublishTrajectoryMsg(Node):
     def controller_callback(self, msg: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
-        if not msg.buttons[2]:
-            position_cmds.positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        else:
-            position_cmds.positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        position_cmds.positions = [float(not msg.buttons[5]), float(not msg.buttons[2]), float(not msg.buttons[5]), float(not msg.buttons[2]), float(not msg.buttons[2]), float(not msg.buttons[5]), float(not msg.buttons[2])]
+
         
         cmds.joint_names = self.joints
         cmds.points = [position_cmds]

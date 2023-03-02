@@ -195,12 +195,11 @@ class ImportBot(BaseSample):
         set_drive_params(elevator_right_elevator_center_joint, 10000000, 100000, 98.0)
         set_drive_params(elevator_right_elevator_outer_1_joint, 10000000, 100000, 98.0)
         set_drive_params(elevator_right_elevator_outer_2_joint, 10000000, 100000, 98.0)
-        set_drive_params(base,1,1000,98.0)
         self.create_lidar(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
         self.setup_camera_action_graph(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
-        self.setup_robot_action_graph(robot_prim_path)
+        self.setup_robot_action_graph(robot_prim_path)  
         self.set_friction(robot_prim_path)
         return
 
