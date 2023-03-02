@@ -320,6 +320,7 @@ class Swerve_Charge_Station_Task(RLTask):
         # bookkeeping
         self.reset_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
+        self.dt_total = 0
         # print("line 249")
 
     def post_reset(self):
@@ -373,8 +374,7 @@ class Swerve_Charge_Station_Task(RLTask):
             charge_station_pos[:, 0:3], self.target_rotation[envs_long].clone(), indices=env_ids)
 
     def calculate_metrics(self) -> None:
-        start = time.time()
-        # self.dt_total += self.dt
+        self.dt_total += self.dt
         root_positions = self.root_pos - self._env_pos
         # distance to target
         target_dist = torch.sqrt(torch.square(
@@ -387,7 +387,7 @@ class Swerve_Charge_Station_Task(RLTask):
         pos_reward = 1.0 / (1.0 + 2.5 * target_dist * target_dist)
         self.target_dist = target_dist
         self.root_positions = root_positions
-        self.root_position_reward = self.rew_buf
+        self.root_position_reward = torch.zeros_like(self.rew_buf)
         # rewards for moving away form starting point
         # for i in range(len(self.root_position_reward)):
         #     self.root_position_reward[i] = sum(root_positions[i][0:3])
@@ -395,8 +395,8 @@ class Swerve_Charge_Station_Task(RLTask):
         self.root_position_reward = torch.tensor([sum(i[0:3]) for i in root_positions], device=self._device)
 
         # print(f"shape_numerator:{numerator.shape}")
-        self.rew_buf[:] = self.root_position_reward*pos_reward + balance_reward
-        print(time.time() - start)
+        numerator = self.root_position_reward*pos_reward+balance_reward
+        self.rew_buf[:] = torch.div(numerator,self.dt_total)
 
     def is_done(self) -> None:
         # print("line 312")

@@ -145,7 +145,7 @@ rl_device: cuda:0
 num_threads: 4
 solver_type: 1
 test: false
-checkpoint: ''
+checkpoint: /isaac-sim/runs/SwerveCS/nn/SwerveCS.pth
 headless: true
 wandb_activate: false
 wandb_group: ''
