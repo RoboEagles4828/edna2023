@@ -376,7 +376,7 @@ class Swerve_Charge_Station_Task(RLTask):
         # distance to target
         target_dist = torch.sqrt(torch.square(
             self.target_positions - root_positions).sum(-1))
-        charge_station_score = in_charge_station(self.chargestation_vertices,root_positions)
+        charge_station_score = in_charge_station(self.chargestation_vertices,self._swerve.get_axle_positions(self.num_envs))
 
         balance_reward = self._charge_station.if_balanced(self.num_envs)*charge_station_score*100
         # print(charge_station_score.tolist())
@@ -465,17 +465,17 @@ def check_point(r,m):
     def dot(a, b):
         return a[0]*b[0] + a[1]*b[1]
     
-    AB = [r[3]-r[1],r[2]-r[0]]
-    AM = [m[0]-r[1],m[1]-r[0]]
-    BC = [r[5]-r[3],r[4]-r[2]]
-    BM = [m[0]-r[3],m[1]-r[2]]
-    dotABAM = dot(AB, AM)
-    dotABAB = dot(AB, AB)
-    dotBCBC = dot(BC, BC)
-    dotBCBM = dot(BC, BM)
-    out = 0 <= dotABAM and dotABAM <= dotABAB and 0 <= dotBCBM and dotBCBM <= dotBCBC
-
-    if out:
-        return 1.0
-    else:
-        return 0.0
+    print(len(m))
+    for i in range(4):
+        AB = [r[3]-r[1],r[2]-r[0]]
+        AM = [m[3*i]-r[1],m[3*i + 1]-r[0]]
+        BC = [r[5]-r[3],r[4]-r[2]]
+        BM = [m[3*i]-r[3],m[3*i + 1]-r[2]]
+        dotABAM = dot(AB, AM)
+        dotABAB = dot(AB, AB)
+        dotBCBC = dot(BC, BC)
+        dotBCBM = dot(BC, BM)
+        out = 0 <= dotABAM and dotABAM <= dotABAB and 0 <= dotBCBM and dotBCBM <= dotBCBC
+        if out == False:
+            return 0.0
+    return 1.0
