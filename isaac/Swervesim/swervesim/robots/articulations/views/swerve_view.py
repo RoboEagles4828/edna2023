@@ -75,12 +75,15 @@ class SwerveView(ArticulationView):
         #     RigidPrimView(prim_paths_expr="/World/envs/.*/swerve/rear_right_axle_link/rear_right_wheel_joint", name="wheel_view[3]", reset_xform_properties=False)
         #     ]
 
-    def get_axle_positions(self):
-        pose = torch.zeros(
-            (len(self.get_world_pose()), len(self._axle)), device=self._device, dtype=torch.float32)  # xyx of target position
-        for i in range(len(self._axle)):
-            pose[:].add(self._axle[i].get_world_pose())
-        return pose
+    def get_axle_positions(self,num_env):
+        
+        axle_pose1, __ = self._axle[0].get_local_poses()
+        axle_pose2, __ = self._axle[1].get_local_poses()
+        axle_pose3, __ = self._axle[2].get_local_poses()
+        axle_pose4, __ = self._axle[3].get_local_poses()
+                
+        tuple = (axle_pose1,axle_pose2,axle_pose3,axle_pose4)
+        return (torch.cat(tuple))
     # def get_knee_transforms(self):
     #     return self._knees.get_world_poses()
 
