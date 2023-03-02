@@ -6,6 +6,7 @@ import time
 import os, inspect
 from hardware_interface.drivetrain import DriveTrain
 from hardware_interface.joystick import Joystick
+from hardware_interface.armcontroller import ArmController
 from dds.dds import DDS_Publisher, DDS_Subscriber
 
 # Locks
@@ -40,6 +41,11 @@ def initJoystick():
         logging.error("Failed to create joystick")
         return False
 
+arm_controller = None
+def initArmController():
+    global arm_controller
+    arm_controller = ArmController()
+    logging.info("Success: ArmController created")
 
 ## Generic Loop that is used for all threads
 def threadLoop(name, dds, action):
@@ -160,6 +166,7 @@ class edna_robot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         # initDriveTrain()
         # initJoystick()
+        initArmController()
 
         self.threads = []
         if self.use_threading:
@@ -167,10 +174,10 @@ class edna_robot(wpilib.TimedRobot):
             global STOP_THREADS
             STOP_THREADS = False
             self.threads = [
-                {"name": "encoder", "thread": startThread("encoder") },
-                {"name": "command", "thread": startThread("command") },
+                # {"name": "encoder", "thread": startThread("encoder") },
+                # {"name": "command", "thread": startThread("command") },
                 {"name": "arm-command", "thread": startThread("arm-command")},
-                {"name": "joystick", "thread": startThread("joystick") },
+                # {"name": "joystick", "thread": startThread("joystick") },
             ]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)

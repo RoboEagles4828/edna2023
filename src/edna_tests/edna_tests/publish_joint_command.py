@@ -18,11 +18,25 @@ class PublishJointCmd(Node):
         velocity_cmds = JointState()
         # position_cmds = JointState()
         
-        velocity_cmds.name = ['rollerbar_joint']
+        velocity_cmds.name = [
+            'arm_roller_bar_joint', 
+            'elevator_left_elevator_center_joint',
+            'top_gripper_joint',            # Not in URDF yet
+            'top_gripper_slider_joint',     # ^
+            'bottom_gripper_joint',         # ^
+            'bottom_gripper_lift_joint'     # ^
+        ]
         # position_cmds.name = []
         rad = math.pi
         # velocity_cmds.velocity = [ 0.0 ] * 8
-        velocity_cmds.position = [ rad ]
+        velocity_cmds.position = [ 
+            0,      # Either a 0 (down) or a 1 (up) 
+            0,      # Value between 0.0 (fully back) and 1.0 (fully extended)
+            0,      # Either a 0 (open) or a 1 (closed)
+            0,      # Either a 0 (fully back) or a 1 (fully extended)
+            0,      # Either a 0 (open) or a 1 (closed)
+            0       # Value between 0.0 (fully down) and 1.0 (fully up)
+        ]
         # position_cmds.position = []
 
         self.publisher_.publish(velocity_cmds)
