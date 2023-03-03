@@ -9,6 +9,7 @@ echo "else source /workspaces/edna2023/install/setup.zsh; fi" >> ~/.zshrc
 echo "export ROS_DISTRO=humble" >> ~/.zshrc
 echo "export RCUTILS_COLORIZED_OUTPUT=1" >> ~/.zshrc
 echo 'complete -o nospace -o default -F _python_argcomplete "ros2"' >> ~/.zshrc
+echo 'alias python="python3"' >> ~/.zshrc
 
 
 # Update apt list and rosdep

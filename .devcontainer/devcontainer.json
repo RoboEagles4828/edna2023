@@ -52,7 +52,10 @@
 				"ms-iot.vscode-ros",
 				"GitHub.copilot",
 				"eamodio.gitlens",
-				"appulate.filewatcher"
+				"appulate.filewatcher",
+				"formulahendry.code-runner",
+				"ms-python.python",
+				"VisualStudioExptTeam.vscodeintellicode"
 			]
         }
     }
