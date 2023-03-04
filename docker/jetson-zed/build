@@ -1,0 +1,22 @@
+echo "ONLY USE THIS SCRIPT ON THE JETSON"
+
+GITHUB_REGISTRY="ghcr.io/roboeagles4828"
+IMAGE_NAME="jetson-zed:2023.1"
+
+docker build -t $GITHUB_REGISTRY/$IMAGE_NAME --cache-from $GITHUB_REGISTRY/$IMAGE_NAME .
+
+echo "Build finished"
+
+echo "Would you like to run the image in interactive mode? (y/n)"
+read INTERACTIVE
+
+if [ "$INTERACTIVE" = "y" ]; then
+    docker run --rm -it -e ACCEPT_EULA=y $GITHUB_REGISTRY/$IMAGE_NAME
+fi
+
+echo "Would you like to push the image to the registry? (y/n)"
+read PUSH
+
+if [ "$PUSH" = "y" ]; then
+    docker push $GITHUB_REGISTRY/$IMAGE_NAME
+fi
