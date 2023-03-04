@@ -282,7 +282,7 @@ class ImportBot(BaseSample):
                 ],
                 "setvalues": [
                     (f"{side}CamHelper{name}.inputs:topicName", f"{side}/{topic}"),
-                    (f"{side}CamHelper{name}.inputs:frameId", f"{NAMESPACE}/zed_{side}_camera_frame"),
+                    (f"{side}CamHelper{name}.inputs:frameId", f"{NAMESPACE}/zed_{side.lower()}_camera_frame"),
                     (f"{side}CamHelper{name}.inputs:nodeNamespace", f"/{NAMESPACE}"),
                 ]
             }
