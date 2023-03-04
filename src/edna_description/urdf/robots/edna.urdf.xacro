@@ -15,6 +15,7 @@
   <xacro:include filename="$(find edna_description)/urdf/parts/back_leg.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/lidar.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/elevator.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/gripper.xacro" />
 
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
@@ -77,6 +78,11 @@
   <xacro:elevator prefix="elevator_left" parent="arm_back_leg_link" suffix="left">
     <origin xyz = "-.03 ${elevator_middle_distance / 2} ${back_leg_height - .0215}" rpy = "0 0 0" />
   </xacro:elevator>
+
+  <!-- Top Gripper -->
+  <!-- <xacro:gripper prefix="top" parent="base_link">
+    <origin xyz = "0 0 0" rpy = "0 0 0" />
+  </xacro:gripper> -->
 
   <!-- Control -->
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)"/>
