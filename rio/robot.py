@@ -25,13 +25,13 @@ curr_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe
 xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
 ## Hardware
-drive_train = None
+drive_train : DriveTrain = None
 def initDriveTrain():
     global drive_train
     drive_train = DriveTrain()
     logging.info("Success: DriveTrain created")
 
-joystick = None
+joystick : Joystick = None
 def initJoystick():
     try:
         global joystick
@@ -42,7 +42,7 @@ def initJoystick():
         logging.error("Failed to create joystick")
         return False
 
-arm_controller = None
+arm_controller : ArmController = None
 def initArmController():
     global arm_controller
     arm_controller = ArmController()
@@ -95,9 +95,22 @@ def encoderThread():
 
 def encoderAction(publisher):
     data = None
+
+    drive_data = None
     global drive_train
     with drive_train_lock:
-        data = drive_train.getEncoderData()
+        drive_data = drive_train.getEncoderData()
+    
+    arm_data = None
+    global arm_controller
+    with arm_controller_lock:
+        arm_data = arm_controller.getEncoderData()
+
+    data = {
+        "name": drive_data["name"] + arm_data["name"],
+        "position": drive_data["position"] + arm_data["position"],
+        "velocity": drive_data["velocity"] + arm_data["velocity"]
+    }
     publisher.write(data)
 
 
@@ -113,7 +126,7 @@ def commandThread():
         command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
     threadLoop('command', command_subscriber, commandAction)
 
-def commandAction(subscriber):
+def commandAction(subscriber : DDS_Subscriber):
     data = subscriber.read()
     global drive_train
     with drive_train_lock:
@@ -130,7 +143,7 @@ def armThread():
         arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
     threadLoop('arm', arm_command_subscriber, armAction)
 
-def armAction(subscriber):
+def armAction(subscriber : DDS_Subscriber):
     data = subscriber.read()
     global arm_controller
     with arm_controller_lock:
@@ -147,7 +160,7 @@ def joystickThread():
         joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
     threadLoop('joystick', joystick_publisher, joystickAction)
 
-def joystickAction(publisher):
+def joystickAction(publisher : DDS_Publisher):
     global joystick
     data = None
     try:
@@ -166,7 +179,7 @@ class edna_robot(wpilib.TimedRobot):
         self.use_threading = use_threading
 
     def robotInit(self) -> None:
-        # initDriveTrain()
+        initDriveTrain()
         # initJoystick()
         initArmController()
 
@@ -176,8 +189,8 @@ class edna_robot(wpilib.TimedRobot):
             global STOP_THREADS
             STOP_THREADS = False
             self.threads = [
-                # {"name": "encoder", "thread": startThread("encoder") },
-                # {"name": "command", "thread": startThread("command") },
+                {"name": "encoder", "thread": startThread("encoder") },
+                {"name": "command", "thread": startThread("command") },
                 {"name": "arm-command", "thread": startThread("arm-command")},
                 # {"name": "joystick", "thread": startThread("joystick") },
             ]
