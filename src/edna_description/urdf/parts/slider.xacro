@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="slider_block_height" value="0.079" />
+    <xacro:property name="slider_block_length" value="${gripper_bar_length}" />
+    <xacro:property name="slider_block_width" value="${elevator_middle_distance}" />
+
+  <xacro:macro name="slider" params="prefix parent *origin">
+
+    <link name = "${prefix}_slider_link">
+        <xacro:inertial_box mass = "1" x = "${slider_block_length}" y = "${slider_block_width}" z = "${slider_block_height}">
+            <origin xyz = "0 0 0" rpy = "0 0 0"/>
+        </xacro:inertial_box>
+        <visual>
+            <origin xyz = "0 0 0" rpy = "0 0 0"/>
+            <geometry>
+                <box size="${slider_block_length} ${slider_block_width} ${slider_block_height}"/>
+            </geometry>
+            <material name = "blue"/>
+        </visual>
+        <collision>
+            <origin xyz = "0 0 0" rpy = "0 0 0"/>
+            <geometry>
+                <box size="${slider_block_length} ${slider_block_width} ${slider_block_height}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="${prefix}_slider_joint" type="prismatic">
+        <xacro:insert_block name="origin" />
+        <parent link="${parent}"/>
+        <child link="${prefix}_slider_link"/>
+        <axis xyz = "1 0 0"/>
+        <limit effort = "100.0" lower = "0" upper = "0.2" velocity = "1"/>
+    </joint>
+
+    <xacro:gripper prefix="${prefix}" parent="${prefix}_slider_link">
+        <origin xyz = "0 0 ${slider_block_height/2}" rpy = "0 0 0" />
+    </xacro:gripper>
+
+
+  </xacro:macro>
+</robot>
