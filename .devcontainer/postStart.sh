@@ -16,6 +16,9 @@ echo "isaac-setup     : Setup Isaac Sim Shaders"
 echo "isaac           : Start Isaac Sim"
 echo "isaac rm        : Stop and delete isaac sim container"
 
+echo -e "\n----ISAAC ROS COMMANDS----"
+echo "isaac-ros vslam : Start Isaac ROS vSlam"
+
 echo -e "\n----COMMANDS----"
 echo "launch          : Launch sim teleop code"
 echo "launch isaac    : Launch sim teleop code"

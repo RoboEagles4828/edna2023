@@ -19,6 +19,8 @@
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
   <xacro:property name="axle_pos_z" value="${69.056 / 1000}" />
+  <xacro:property name="elevator_middle_distance" value = ".457" />
+  <xacro:property name= "chassis_side_width" value = ".0254" />
 
   <!-- Camera Position Variables -->
   <xacro:property name="cam_pos" value="0 0 0.3"/> <!-- Made up values, replace with real ones later. -->
@@ -63,17 +65,17 @@
   </xacro:elevator_leg>
 
   <xacro:back_leg prefix="arm" parent="swerve_chassis_link">
-    <origin xyz = "-${chassis_length/2 - back_leg_length/2} 0 ${back_leg_height/2 + chassis_height}" rpy = "0 0 0" />
+    <origin xyz = "-${chassis_length/2 - each_leg_width * 2} 0 ${chassis_height}" rpy = "0 0 0" />
   </xacro:back_leg>
 
   <!--Right Elevator-->
   <xacro:elevator prefix="elevator_right" parent="arm_back_leg_link" suffix="right">
-    <origin xyz = "0 ${-back_leg_width/2 - 0.04} ${back_leg_height/2 - 0.02}" rpy = "0 0 0" />
+    <origin xyz = "-.03 -${elevator_middle_distance / 2} ${back_leg_height - .0215}" rpy = "0 0 0" />
   </xacro:elevator>
 
   <!--Left Elevator-->
   <xacro:elevator prefix="elevator_left" parent="arm_back_leg_link" suffix="left">
-    <origin xyz = "0 ${back_leg_width/2 + 0.04} ${back_leg_height/2 - 0.02}" rpy = "0 0 0" />
+    <origin xyz = "-.03 ${elevator_middle_distance / 2} ${back_leg_height - .0215}" rpy = "0 0 0" />
   </xacro:elevator>
 
   <!-- Control -->
