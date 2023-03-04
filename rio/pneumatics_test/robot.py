@@ -7,49 +7,41 @@ class MyRobot(wpilib.TimedRobot):
         print("Initalizing")
 
         # make rev hub object
-        self.hub = wpilib.PneumaticHub(0)
+        self.hub = wpilib.PneumaticHub(1)
 
         # make single solenoid objects (pass in channel as parameter)
-        self.solenoids = [self.hub.makeSolenoid(), self.hub.makeSolenoid()]
+        self.solenoids = [self.hub.makeSolenoid(0), self.hub.makeSolenoid(1)]
 
         # make double solenoid objects (pass in forward channel and reverse channel as parameters)
-        self.double_solenoids = [self.hub.makeDoubleSolenoid(), self.hub.makeDoubleSolenoid()]
+        self.double_solenoids = [self.hub.makeDoubleSolenoid(2, 3), self.hub.makeDoubleSolenoid(4, 5)]
 
         # make compressor
-        self.compressor = self.hub.makeCompressor()
-        
-        # self.compressor = wpilib.Compressor(0, wpilib.PneumaticsModuleType.CTREPCM)
-        # self.solenoids = [
-        #     [wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 0), wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 7)],
-        #     [wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 3), wpilib.Solenoid(0, wpilib.PneumaticsModuleType.CTREPCM, 4)]
-        # ]
+        self.compressor = self.hub.makeCompressor(1)
 
         self.timer = wpilib.Timer
         self.input = wpilib.Joystick(0)
 
     def teleopInit(self):
         print("Starting Compressor")
-        self.compressor.start()
         self.compressor.enableDigital()
-        for solenoidarr in self.solenoids:
-            solenoidarr[0].set(False)
-            solenoidarr[1].set(True)
+        for solenoid in self.double_solenoids:
+            solenoid.set(wpilib.DoubleSolenoid.Value.kOff)
+
 
     def teleopPeriodic(self):
         if self.input.getRawButtonPressed(5): # LB (Xbox)
             print("Toggling First...")
-            for solenoid in self.solenoids[0]:
+            for solenoid in self.double_solenoids:
                 solenoid.toggle()
 
         if self.input.getRawButtonPressed(6): # RB (Xbox)
             print("Toggling Second...")
-            for solenoid in self.solenoids[1]:
+            for solenoid in self.double_solenoids:
                 solenoid.toggle()
 
     def teleopExit(self):
         print("Turning off compressor...")
         self.compressor.disable()
-        self.compressor.stop()
 
 
 if __name__ == "__main__":

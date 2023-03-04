@@ -31,7 +31,7 @@ class PublishJointCmd(Node):
         # velocity_cmds.velocity = [ 0.0 ] * 8
         velocity_cmds.position = [ 
             0,      # Either a 0 (down) or a 1 (up) 
-            0,      # Value between 0.0 (fully back) and 1.0 (fully extended)
+            0,      # Value between 0.0 (fully back) and 2.0 (fully extended) (will be converted on their end, so just take the motor value and multiply it by two)
             0,      # Either a 0 (open) or a 1 (closed)
             0,      # Either a 0 (fully back) or a 1 (fully extended)
             0,      # Either a 0 (open) or a 1 (closed)
