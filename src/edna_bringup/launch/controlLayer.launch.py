@@ -82,6 +82,7 @@ def generate_launch_description():
         namespace=namespace,
         executable='joint_state_publisher_gui',
         output='screen',
+        # parameters=[]
         condition=IfCondition( PythonExpression([ "'", use_ros2_control, "' == 'false'" ]) ),
     )
 
