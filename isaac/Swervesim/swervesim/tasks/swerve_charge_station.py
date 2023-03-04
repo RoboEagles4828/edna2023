@@ -159,10 +159,13 @@ class Swerve_Charge_Station_Task(RLTask):
             siny_cosp = 2 * (w * z + x * y)
             cosy_cosp = 1 - 2 * (y * y + z * z)
             angle = math.atan2(siny_cosp, cosy_cosp)
-            self.chargestation_vertices[i][0] , self.chargestation_vertices[i][1] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle) 
-            self.chargestation_vertices[i][2] , self.chargestation_vertices[i][3] = findB(charge_station_pos[i][0],charge_station_pos[i][1],math.pi-angle) 
-            self.chargestation_vertices[i][4] , self.chargestation_vertices[i][5] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle+math.pi) 
-            self.chargestation_vertices[i][6] , self.chargestation_vertices[i][7] = findB(charge_station_pos[i][0],charge_station_pos[i][1],(2*math.pi)-angle)  
+            self.chargestation_vertices[i][0] , self.chargestation_vertices[i][1] = findB(charge_station_pos[i][0],charge_station_pos[i][1],math.pi-angle) 
+            self.chargestation_vertices[i][2] , self.chargestation_vertices[i][3] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle) 
+            self.chargestation_vertices[i][4] , self.chargestation_vertices[i][5] = findB(charge_station_pos[i][0],charge_station_pos[i][1],(2*math.pi)-angle)  
+            self.chargestation_vertices[i][6] , self.chargestation_vertices[i][7] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle+math.pi) 
+            if(i==0):
+                print(angle)
+                print(self.chargestation_vertices[0]) 
 
         self.root_velocities = self._swerve.get_velocities(clone=False)
         root_positions = self.root_pos - self._env_pos
@@ -380,7 +383,7 @@ class Swerve_Charge_Station_Task(RLTask):
         target_dist = torch.sqrt(torch.square(
             self.target_positions - root_positions).sum(-1))
         charge_station_score = in_charge_station(self.chargestation_vertices,self._swerve.get_axle_positions(), self._device)
-        # print(f"shape_cs:{charge_station_score.shape}")
+        print(f"shape_cs:{charge_station_score}")
         balance_reward = torch.mul(self._charge_station.if_balanced(self._device)[0],charge_station_score[:])*100
         # print(f"shape_balance:{balance_reward.shape}")
         # print(charge_station_score.tolist())
@@ -396,7 +399,7 @@ class Swerve_Charge_Station_Task(RLTask):
 
         # print(f"shape_numerator:{numerator.shape}")
         numerator = self.root_position_reward*pos_reward+balance_reward
-        self.rew_buf[:] = torch.div(numerator,self.dt_total)
+        self.rew_buf[:] = torch.div(numerator,1+self.dt_total)
 
     def is_done(self) -> None:
         # print("line 312")
