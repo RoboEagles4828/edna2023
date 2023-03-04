@@ -66,7 +66,7 @@ def threadLoop(name, dds, action):
     logging.info(f"Closing {name} thread")
     dds.close()
 # Generic Start Thread Function
-def startThread(name):
+def startThread(name) -> threading.Thread | None:
     thread = None
     if name == "encoder":
         thread = threading.Thread(target=encoderThread, daemon=True)
@@ -179,6 +179,8 @@ class edna_robot(wpilib.TimedRobot):
         self.use_threading = use_threading
 
     def robotInit(self) -> None:
+        if wpilib.RobotBase.isSimulation(): print("\033[1;33;48mRunning in wpilib simulation!\033[1;37;0m")
+
         initDriveTrain()
         # initJoystick()
         initArmController()
@@ -255,4 +257,3 @@ class edna_robot(wpilib.TimedRobot):
 
 if __name__ == '__main__':
     wpilib.run(edna_robot)
-
