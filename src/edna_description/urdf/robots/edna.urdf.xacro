@@ -23,7 +23,8 @@
   <xacro:property name= "chassis_side_width" value = ".0254" />
 
   <!-- Camera Position Variables -->
-  <xacro:property name="cam_pos" value="0 0 0.3"/> <!-- Made up values, replace with real ones later. -->
+  <xacro:property name="cam_pos" value="0.2 0 0.3"/> <!-- Made up values, replace with real ones later. -->
+  <xacro:property name="lidar_pos" value="0 0 0.035"/>
 
   <!-- X IS FORWARD -->
   <!-- Y IS LEFT -->
@@ -34,6 +35,7 @@
   <xacro:square_chassis prefix="swerve" parent="base_link">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:square_chassis>
+
 
   <!-- Drive Train -->
   <xacro:swerve_axle prefix="front_left" parent="swerve_chassis_link">
@@ -49,14 +51,16 @@
     <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
+
   <!-- Sensors -->
   <xacro:zed_camera prefix="zed" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera>
 
   <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
-    <origin xyz="0 0 .035" rpy="0 0 0" />
+    <origin xyz="${lidar_pos}" rpy="0 0 0" />
   </xacro:lidar>
+
 
   <!-- Arm -->
   <xacro:property name="elevator_leg_z" value="0.527"/>
