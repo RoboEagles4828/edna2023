@@ -5,6 +5,8 @@ import logging
 
 NAMESPACE = 'real'
 CMD_TIMEOUT_SECONDS = 1
+TICKS_PER_REVOLUTION = 2048.0
+TOTAL_ELEVATOR_REVOLUTIONS = 10
 
 # Port Numbers for all of the Solenoids and other connected things
 # The numbers below will **need** to be changed to fit the robot wiring
@@ -18,6 +20,9 @@ PORTS = {
     'TOP_GRIPPER_SLIDER': [4, 5, 6, 7],
     'TOP_GRIPPER': [8, 9],
     'BOTTOM_GRIPPER': [10, 11],
+    # Wheels
+    'ELEVATOR': 12,
+    # 'BOTTOM_GRIPPER_LIFT': 13
 }
 
 
@@ -34,13 +39,18 @@ class ArmController():
         self.top_gripper_slider =   DoublePiston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
         self.top_gripper =          Piston(self.hub, PORTS['TOP_GRIPPER'])
         self.bottom_gripper =       Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
+        self.elevator =             ElevatorWheel(PORTS['ELEVATOR'])
+        # self.bottom_gripper_lift =  TalonWheel(PORTS['BOTTOM_GRIPPER_LIFT'])
         
         self.JOINT_MAP : dict[str, DoublePiston | Piston] = {
             # Pneumatics
             'arm_roller_bar_joint':     self.arm_roller_bar,
             'top_gripper_slider_joint': self.top_gripper_slider,
             'top_gripper_joint':        self.top_gripper,
-            'bottom_gripper_joint':     self.bottom_gripper
+            'bottom_gripper_joint':     self.bottom_gripper,
+            # Wheels
+            'elevator_left_elevator_center_joint': self.elevator,
+            # 'bottom_gripper_lift_joint': self.bottom_gripper_lift
         }
         
 
@@ -100,4 +110,33 @@ class DoublePiston():
     def setPosition(self, position : int):
         self.pistonA.setPosition(position)
         self.pistonB.setPosition(position)
+
+class TalonWheel(ctre.TalonFX):
+
+    def __init__(self, port : int):
+        super().__init__(port)
     
+    def getPosition(self) -> float:
+        return self.getSelectedSensorPosition()
+    
+    def getVelocity(self) -> float:
+        return self.getSelectedSensorVelocity()
+    
+    def setPosition(self, position : float): # Position should be between 0.0 and 1.0
+        self.set(ctre.TalonFXControlMode.Position, position)
+
+
+class ElevatorWheel(ctre.TalonFX):
+    def __init__(self, port : int):
+        super().__init__(port)
+    
+    def getPosition(self) -> float:
+        return (self.getSelectedSensorPosition() / (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)) * 2
+    
+    def getVelocity(self) -> float:
+        return (self.getSelectedSensorVelocity() * 10) / (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS) * 2
+    
+    def setPosition(self, position : float): # Position should be between 0.0 and 2.0
+        self.set(ctre.TalonFXControlMode.MotionMagic, (position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
+
+# 1024 
