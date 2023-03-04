@@ -3,7 +3,11 @@
 
     <xacro:property name="back_leg_length" value="0.0508" />
     <xacro:property name="back_leg_width" value="0.457" />
-    <xacro:property name="back_leg_height" value="0.812" />
+    <xacro:property name="back_leg_height" value="0.677" />
+    <xacro:property name="lower_bearing_distance" value = ".076" />
+    <xacro:property name="upper_bearing_distance" value = ".030" />
+    <xacro:property name="inside_legs_distance" value = ".279" />
+    <xacro:property name="each_leg_width" value = ".0254" />
 
     <xacro:macro name = "back_leg" params = "prefix parent *origin">
         <link name = "${prefix}_back_leg_link">
@@ -11,14 +15,14 @@
                 <origin xyz = "0 0 ${back_leg_height/2}" rpy = "0 0 0"/>
             </xacro:inertial_box>
             <visual>
-                <origin xyz = "0 0 0" rpy = "0 0 ${pi}"/>
+                <origin xyz = "0 -${(inside_legs_distance + (each_leg_width * 2)) / 2} 0" rpy = "${pi /2} 0 0"/>
                 <geometry>
-                    <mesh filename="package://edna_description/meshes/back_legs.stl" scale="0.001 0.001 0.001"/>
+                    <mesh filename="package://edna_description/meshes/Back_Legs_V6.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
                 <material name = "red"/>
             </visual>
             <collision>
-                <origin xyz = "0 0 0" rpy = "0 0 0"/>
+                <origin xyz = "0 0 ${back_leg_height / 2}" rpy = "0 0 0"/>
                 <geometry>
                     <box size = "${back_leg_length} ${back_leg_width} ${back_leg_height}"/>
                 </geometry>
