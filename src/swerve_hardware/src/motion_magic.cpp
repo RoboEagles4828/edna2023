@@ -87,7 +87,7 @@ namespace swerve_hardware
         double slow_down_dist = (MAX_JERK/6) * pow(2*sensorVelocity/MAX_JERK, 1.5);
 
         //if there is no difference between current position and target position, then we dont move
-        if(std::abs(displacement - 0.0) <= tolerance) return 0.0;
+        if(std::abs(displacement) <= tolerance) return 0.0;
 
         if(dir == 1) { //if you are going in the positive direction
             //velocity shouldnt be negative if going positive direction, so increment
