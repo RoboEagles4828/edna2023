@@ -1,0 +1,110 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="gripper_bar_length" value="0.040" />
+  <xacro:property name="gripper_bar_width" value="0.3175" /> 
+  <xacro:property name="gripper_bar_height" value="0.014" />
+
+  <xacro:property name="gripper_arm_length" value="0.27" />
+  <xacro:property name="gripper_arm_width" value="0.040" />
+  <xacro:property name="gripper_arm_height" value="0.014" />
+
+  <xacro:property name="gripper_foam_length" value="0.05" />
+  <xacro:property name="gripper_foam_radius" value="0.0201" />
+
+  <xacro:property name="center_to_arm_axle_left" value="0.14" />
+  <xacro:property name="center_to_arm_axle_right" value="-0.135" />
+  <xacro:property name="arm_axle_lower" value="-0.02" />
+
+  <xacro:macro name="gripper" params="prefix parent *origin">
+
+    <!-- BAR -->
+    <link name="${prefix}_gripper_bar_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://edna_description/meshes/center_gripper_bar.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="yellow"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${gripper_bar_length} ${gripper_bar_width} ${gripper_bar_height}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${prefix}_gripper_bar_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent}"/>
+      <child link="${prefix}_gripper_bar_link"/>
+    </joint>
+
+
+    <!-- Left -->
+    <link name="${prefix}_gripper_left_arm_link">
+      <visual>
+        <!-- Alignment Values -->
+        <origin xyz="0.0826 -0.0064 .015" rpy="0 0 ${pi/2}"/>
+        <geometry>
+          <mesh filename="package://edna_description/meshes/left_gripper_arm.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="orange"/>
+      </visual>
+      <collision>
+        <origin xyz="0.065 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${gripper_arm_length} ${gripper_arm_width} ${gripper_arm_height}"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin xyz="0.14 -0.0125 0" rpy="0 ${pi/2} 0"/>
+        <geometry>
+          <cylinder length="${gripper_foam_length}" radius="${gripper_foam_radius}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${prefix}_gripper_left_arm_joint" type="revolute">
+      <origin xyz = "0 ${center_to_arm_axle_left} ${arm_axle_lower}" rpy = "0 0 0" />
+      <parent link="${prefix}_gripper_bar_link"/>
+      <child link="${prefix}_gripper_left_arm_link"/>
+      <axis xyz = "0 0 -1"/>
+      <limit effort="1000.0" lower="-0.3" upper="0.6" velocity="0.5"/>
+    </joint>
+
+
+    <!-- Right -->
+    <link name="${prefix}_gripper_right_arm_link">
+      <visual>
+        <!-- Alignment Values -->
+        <origin xyz="0.0826 0.0064 .015" rpy="0 0 ${pi/2}"/>
+        <geometry>
+          <mesh filename="package://edna_description/meshes/right_gripper_arm.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="orange"/>
+      </visual>
+      <collision>
+        <origin xyz="0.065 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${gripper_arm_length} ${gripper_arm_width} ${gripper_arm_height}"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin xyz="0.14 0.0125 0" rpy="0 ${pi/2} 0"/>
+        <geometry>
+          <cylinder length="${gripper_foam_length}" radius="${gripper_foam_radius}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${prefix}_gripper_right_arm_joint" type="revolute">
+      <origin xyz = "0 ${center_to_arm_axle_right} ${arm_axle_lower}" rpy = "0 0 0" />
+      <parent link="${prefix}_gripper_bar_link"/>
+      <child link="${prefix}_gripper_right_arm_link"/>
+      <axis xyz = "0 0 1"/>
+      <mimic joint = "${prefix}_gripper_left_arm_joint" multiplier = "1" offset = "0"/>
+      <limit effort="1000.0" lower="-0.3" upper="0.6" velocity="0.5"/>
+    </joint>
+  </xacro:macro>
+</robot>
