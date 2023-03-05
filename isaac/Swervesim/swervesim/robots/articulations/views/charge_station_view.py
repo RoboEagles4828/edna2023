@@ -4,6 +4,8 @@ from typing import Optional
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.prims import RigidPrimView
 
+import math
+import torch
 
 class ChargeStationView(ArticulationView):
     def __init__(
@@ -20,7 +22,8 @@ class ChargeStationView(ArticulationView):
             reset_xform_properties=False
         )
 
-        self.field = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field", name="field_view", reset_xform_properties=False)
+        self.chargestation_base = RigidPrimView(prim_paths_expr="/World/envs/.*/ChargeStation/Assembly_1/Part_1", name="base_view", reset_xform_properties=False)
+        # self.top = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field", name="field_view", reset_xform_properties=False)
         # self.red_ball_1 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_08", name="redball[1]", reset_xform_properties=False)
         # self.red_ball_2 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_09", name="redball[2]", reset_xform_properties=False)
         # self.red_ball_3 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_10", name="redball[3]", reset_xform_properties=False)
@@ -38,4 +41,9 @@ class ChargeStationView(ArticulationView):
         # self.blue_ball_7 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Blue_14", name="blueball[7]", reset_xform_properties=False)
         # self.blue_ball_8 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Blue_15", name="blueball[8]", reset_xform_properties=False)
         # self.goal =  RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/THE_HUB_GE_22300_01/GE_22434", name="goal[1]", reset_xform_properties=False)
- 
+    def if_balanced(self, device):
+        self.base_pose, self.base_orientation = self.chargestation_base.get_world_poses()
+        tolerance = 0.03
+        output_roll = torch.tensor([1.0 if math.atan2(2*i[2]*i[0] - 2*i[1]*i[3], 1 - 2*i[2]*i[2] - 2*i[3]*i[3]) <= tolerance else 0.0 for i in self.base_orientation], device=device)
+        return output_roll
+        

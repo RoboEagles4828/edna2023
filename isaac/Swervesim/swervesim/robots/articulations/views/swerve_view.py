@@ -29,6 +29,7 @@
 from typing import Optional
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.prims import RigidPrimView
+import torch
 
 class SwerveView(ArticulationView):
     def __init__(
@@ -74,6 +75,20 @@ class SwerveView(ArticulationView):
         #     RigidPrimView(prim_paths_expr="/World/envs/.*/swerve/rear_right_axle_link/rear_right_wheel_joint", name="wheel_view[3]", reset_xform_properties=False)
         #     ]
 
+    def get_axle_positions(self):
+        
+        axle_pose1, __ = self._axle[0].get_local_poses()
+        axle_pose2, __ = self._axle[1].get_local_poses()
+        axle_pose3, __ = self._axle[2].get_local_poses()
+        axle_pose4, __ = self._axle[3].get_local_poses()
+                
+        tuple = (torch.transpose(axle_pose1, 0, 1), 
+                 torch.transpose(axle_pose2, 0, 1), 
+                 torch.transpose(axle_pose3, 0, 1), 
+                 torch.transpose(axle_pose4, 0, 1)
+                )        
+        tuple_tensor = torch.cat(tuple)
+        return torch.transpose(tuple_tensor, 0, 1)
     # def get_knee_transforms(self):
     #     return self._knees.get_world_poses()
 
