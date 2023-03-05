@@ -41,14 +41,11 @@ from omni.isaac.core.utils.torch.rotations import *
 from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
-
-
 import numpy as np
 import torch
 import math
-import itertools
-import time
-import copy
+
+from shapely.geometry import Polygon
 
 
 class Swerve_Charge_Station_Task(RLTask):
@@ -163,9 +160,6 @@ class Swerve_Charge_Station_Task(RLTask):
             self.chargestation_vertices[i][2] , self.chargestation_vertices[i][3] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle) 
             self.chargestation_vertices[i][4] , self.chargestation_vertices[i][5] = findB(charge_station_pos[i][0],charge_station_pos[i][1],(2*math.pi)-angle)  
             self.chargestation_vertices[i][6] , self.chargestation_vertices[i][7] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle+math.pi) 
-            if(i==0):
-                print(angle)
-                print(self.chargestation_vertices[0]) 
 
         self.root_velocities = self._swerve.get_velocities(clone=False)
         root_positions = self.root_pos - self._env_pos
@@ -383,7 +377,6 @@ class Swerve_Charge_Station_Task(RLTask):
         target_dist = torch.sqrt(torch.square(
             self.target_positions - root_positions).sum(-1))
         charge_station_score = in_charge_station(self.chargestation_vertices,self._swerve.get_axle_positions(), self._device)
-        print(f"shape_cs:{charge_station_score}")
         balance_reward = torch.mul(self._charge_station.if_balanced(self._device)[0],charge_station_score[:])*100
         # print(f"shape_balance:{balance_reward.shape}")
         # print(charge_station_score.tolist())
@@ -400,6 +393,7 @@ class Swerve_Charge_Station_Task(RLTask):
         # print(f"shape_numerator:{numerator.shape}")
         numerator = self.root_position_reward*pos_reward+balance_reward
         self.rew_buf[:] = torch.div(numerator,1+self.dt_total)
+        print('REWARDS: ', torch.div(numerator,1+self.dt_total))
 
     def is_done(self) -> None:
         # print("line 312")
@@ -409,6 +403,7 @@ class Swerve_Charge_Station_Task(RLTask):
         die = torch.zeros_like(self.reset_buf)
         die = torch.where(self.target_dist > 20.0, ones, die)
         die = torch.where(self.root_positions[..., 2] > 0.5, ones, die)
+        # die = torch.where(abs(math.atan2(2*self.root_rot[..., 2]*self.root_rot[..., 0] - 2*self.root_rot[1]*self.root_rot[..., 3], 1 - 2*self.root_rot[..., 2]*self.root_rot[..., 2] - 2*self.root_rot[..., 3]*self.root_rot[..., 3])) > math.pi/2, ones, die)
 
         # resets due to episode length
         self.reset_buf[:] = torch.where(
@@ -446,7 +441,7 @@ def findB(Cx,Cy, angle_change,angle_init=0.463647609,r=1.363107039084):
     By = Cy + r*math.sin(angle_init)
     return Bx, By
 def in_charge_station(charge_station_verticies,axle_position, device):
-    if_in_chargestation = torch.tensor([check_point(i, j) for i, j in zip(charge_station_verticies, axle_position)], device=device)
+    if_in_chargestation = torch.tensor([check_point_2(i, j) for i, j in zip(charge_station_verticies, axle_position)], device=device)
     return if_in_chargestation
 
 def check_point(r,m):
@@ -467,3 +462,11 @@ def check_point(r,m):
         if out == False:
             return 0.0
     return 1.0
+
+def check_point_2(r, m):
+    charge_station = Polygon([(r[0], r[1]), (r[2], r[3]), (r[4], r[5]), (r[6], r[7])])
+    swerve = Polygon([(m[0], m[1]), (m[4], m[5]), (m[7], m[8]), (m[10], m[11])])
+
+    if charge_station.contains(swerve):
+            return 1.0
+    return 0.0

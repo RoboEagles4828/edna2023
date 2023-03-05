@@ -88,7 +88,6 @@ class SwerveView(ArticulationView):
                  torch.transpose(axle_pose4, 0, 1)
                 )        
         tuple_tensor = torch.cat(tuple)
-        print(torch.transpose(tuple_tensor, 0, 1).shape)
         return torch.transpose(tuple_tensor, 0, 1)
     # def get_knee_transforms(self):
     #     return self._knees.get_world_poses()

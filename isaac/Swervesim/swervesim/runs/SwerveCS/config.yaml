@@ -145,7 +145,7 @@ rl_device: cuda:0
 num_threads: 4
 solver_type: 1
 test: true
-checkpoint: /root/edna/isaac/Swervesim/swervesim/runs/SwerveCS/nn/SwerveCS.pth
+checkpoint: /root/edna/isaac/Swervesim/swervesim/runs/SwerveCS/nn/last_SwerveCS_ep_750_rew_166.53838.pth
 headless: false
 wandb_activate: false
 wandb_group: ''
