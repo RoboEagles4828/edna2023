@@ -35,12 +35,12 @@
     ros__parameters:
       joints:
         - 'arm_roller_bar_joint'
-        - 'elevator_left_elevator_center_joint'
-        - 'elevator_left_elevator_outer_1_joint'
-        - 'elevator_left_elevator_outer_2_joint'
-        - 'elevator_right_elevator_center_joint'
-        - 'elevator_right_elevator_outer_1_joint'
-        - 'elevator_right_elevator_outer_2_joint'
+        - 'elevator_center_joint'
+        - 'elevator_outer_1_joint'
+        - 'elevator_outer_2_joint'
+        - 'top_gripper_right_arm_joint'
+        - 'top_gripper_left_arm_joint'
+        - 'top_slider_joint'
 
       command_interfaces:
         - position

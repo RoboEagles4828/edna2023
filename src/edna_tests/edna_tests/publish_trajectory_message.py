@@ -6,57 +6,85 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from sensor_msgs.msg import Joy
 import os
 
+import time
+
 class PublishTrajectoryMsg(Node):
 
     def __init__(self):
         super().__init__('publish_trajectory_msg')
 
-        # self.declare_parameters(
-        #     parameters = [{
-        #         "arm_roller_bar_joint": "arm_roller_bar_joint",
-        #         "elevator_left_elevator_center_joint": "elevator_left_elevator_center_joint"
-        #     }]
-        # )
-
         self.joints = [
-            'arm_roller_bar_joint', 
-            'elevator_left_elevator_center_joint',
-            'elevator_left_elevator_outer_1_joint',
-            'elevator_left_elevator_outer_2_joint',
-            'elevator_right_elevator_center_joint',
-            'elevator_right_elevator_outer_1_joint',
-            'elevator_right_elevator_outer_2_joint'
+            'arm_roller_bar_joint',
+            'elevator_center_joint',
+            'elevator_outer_1_joint',
+            'elevator_outer_2_joint',
+            'top_gripper_right_arm_joint',
+            'top_gripper_left_arm_joint',
+            'top_slider_joint',
         ]
+
+        self.button_dict = {
+            'A': 0,
+            'B': 1,
+            'X': 2,
+            'Y': 3,
+            'LB': 4,
+            'RB': 5,
+            'MENU': 7,
+            'SQUARES': 6,
+        }
+        self.axis_dict = {
+            'DPAD_Y': 7,
+            'DPAD_X': 6,
+            'LT': 2,
+            'RT': 5,
+        }
 
         self.NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
 
+        self.pos = 0.0
+
         self.publisher_ = self.create_publisher(JointTrajectory, f'/{self.NAMESPACE}/joint_trajectory_controller/joint_trajectory', 10)
         self.subscriber = self.create_subscription(Joy, f'/{self.NAMESPACE}/joy', self.controller_callback, 10)
-        timer_period = 0.5  # seconds
-        self.i = 0
+        self.timer_period = 0.5  # seconds
 
-    def controller_callback(self, msg: Joy):
+    def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
-        position_cmds.positions = [float(not msg.buttons[5]), float(not msg.buttons[2]), float(not msg.buttons[5]), float(not msg.buttons[2]), float(not msg.buttons[2]), float(not msg.buttons[5]), float(not msg.buttons[2])]
+        self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
 
+        x_flag = False
+        y_flag = False
+        y_flag_negative = False
+        if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
+            y_flag = not y_flag
+        if joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
+            y_flag_negative = not y_flag_negative
+        if joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
+            x_flag = not x_flag
+
+        if y_flag:
+            self.pos = 1.0
+        elif y_flag_negative:
+            self.pos = 0.0
+        elif x_flag:
+            self.pos = 0.3
+
+        position_cmds.positions = [
+            float(joystick.buttons[self.button_dict['A']]),
+            self.pos,
+            float(joystick.buttons[self.button_dict['RB']]),
+            self.pos,
+            float(joystick.buttons[self.button_dict['X']]),
+            float(joystick.buttons[self.button_dict['X']]),
+            float(joystick.buttons[self.button_dict['B']]),
+        ]
         
         cmds.joint_names = self.joints
         cmds.points = [position_cmds]
         
         self.publisher_.publish(cmds)
         self.get_logger().info('Publishing...')
-        self.i += 1
-
-
-# 'front_left_wheel_joint',
-#             'front_left_axle_joint',
-#             'front_right_wheel_joint',
-#             'front_right_axle_joint',
-#             'rear_left_wheel_joint',
-#             'rear_left_axle_joint',
-#             'rear_right_wheel_joint',
-#             'rear_right_axle_joint']
 
 def main(args=None):
     rclpy.init(args=args)
@@ -65,9 +93,6 @@ def main(args=None):
 
     rclpy.spin(node)
 
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
     node.destroy_node()
     rclpy.shutdown()
 

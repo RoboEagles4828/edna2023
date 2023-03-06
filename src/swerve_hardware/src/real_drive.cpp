@@ -176,7 +176,7 @@ namespace swerve_hardware
 
         // Make i of the pos command interface 0.0
         hw_command_velocity_[i] = 0.0;
-        if (joint.name.find("elevator_left_elevator_center_joint") != std::string::npos || joint.name.find("arm_roller_bar_joint") != std::string::npos || joint.name.find("axle") != std::string::npos || joint.name.find("slider_joint") != std::string::npos || joint.name.find("left_arm_joint") != std::string::npos || joint.name.find("bottom_arm_joint") != std::string::npos)
+        if (joint.name.find("elevator_center_joint") != std::string::npos || joint.name.find("arm_roller_bar_joint") != std::string::npos || joint.name.find("axle") != std::string::npos || joint.name.find("slider_joint") != std::string::npos || joint.name.find("left_arm_joint") != std::string::npos || joint.name.find("bottom_arm_joint") != std::string::npos)
         {
           joint_names_output_.push_back(joint.name);
           RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Added Position Simplified Joint: %s", joint.name.c_str());
@@ -259,11 +259,11 @@ namespace swerve_hardware
         rotation_pos = hw_command_position_converted_[i];
       }
 
-      else if (joint_names_[i].find("elevator_left_elevator_center_joint") != std::string::npos)
+      else if (joint_names_[i].find("elevator_center_joint") != std::string::npos)
       {
         add_command += hw_command_position_converted_[i];
       }
-      else if (joint_names_[i].find("elevator_left_elevator_outer_2_joint") != std::string::npos)
+      else if (joint_names_[i].find("elevator_outer_2_joint") != std::string::npos)
       {
         add_command += hw_command_position_converted_[i];
       }
@@ -299,7 +299,7 @@ namespace swerve_hardware
       {
         hw_command_position_output_[i] = rotation_pos;
       }
-      else if (joint_names_output_[i].find("elevator_left_elevator_center_joint") != std::string::npos)
+      else if (joint_names_output_[i].find("elevator_center_joint") != std::string::npos)
       {
         hw_command_position_output_[i] = add_command;
       }
@@ -342,9 +342,9 @@ namespace swerve_hardware
       if (joint_names_input[i].find("arm_roller_bar_joint") != std::string::npos)
       {
 
-        joint_names_input.push_back("elevator_left_elevator_outer_1_joint");
+        joint_names_input.push_back("elevator_outer_1_joint");
         hw_positions_input_.push_back(ros_input_position * 1.8);
-        joint_names_input.push_back("elevator_right_elevator_outer_1_joint");
+        joint_names_input.push_back("elevator_outer_1_joint");
         hw_positions_input_.push_back(ros_input_position * 1.8);
         hw_velocities_input_.push_back(ros_input_velocity);
         hw_velocities_input_.push_back(ros_input_velocity);
@@ -362,17 +362,17 @@ namespace swerve_hardware
         hw_velocities_input_.push_back(ros_input_velocity);
       }
 
-      else if (joint_names_input[i].find("elevator_left_elevator_center_joint") != std::string::npos)
+      else if (joint_names_input[i].find("elevator_center_joint") != std::string::npos)
       {
         if (hw_velocities_input_[i] > 1.0)
         {
-          joint_names_input.push_back("elevator_left_elevator_outer_2_joint");
+          joint_names_input.push_back("elevator_outer_2_joint");
           hw_positions_input_.push_back(1.0);
           hw_velocities_input_.push_back(ros_input_velocity);
-          joint_names_input.push_back("elevator_right_elevator_outer_2_joint");
+          joint_names_input.push_back("elevator_outer_2_joint");
           hw_positions_input_.push_back(1.0);
           hw_velocities_input_.push_back(ros_input_velocity);
-          joint_names_input.push_back("elevator_right_elevator_center_joint");
+          joint_names_input.push_back("elevator_center_joint");
           hw_positions_input_.push_back(ros_input_position - 1.0);
           hw_velocities_input_.push_back(ros_input_velocity);
           hw_positions_input_[i] = (ros_input_position - 1.0);
@@ -380,13 +380,13 @@ namespace swerve_hardware
         }
         else
         {
-          joint_names_input.push_back("elevator_left_elevator_outer_2_joint");
+          joint_names_input.push_back("elevator_outer_2_joint");
           hw_positions_input_.push_back(ros_input_position);
           hw_velocities_input_.push_back(1.0);
-          joint_names_input.push_back("elevator_right_elevator_outer_2_joint");
+          joint_names_input.push_back("elevator_outer_2_joint");
           hw_positions_input_.push_back(ros_input_position);
           hw_velocities_input_.push_back(1.0);
-          joint_names_input.push_back("elevator_right_elevator_center_joint");
+          joint_names_input.push_back("elevator_center_joint");
           hw_positions_input_.push_back(0.0);
           hw_velocities_input_.push_back(0.0);
           hw_positions_input_[i] = (0.0);
