@@ -1,0 +1,5 @@
+#!/bin/bash
+mkdir -p ~/workspaces/ros_ws/src
+
+git clone https://github.com/introlab/rtabmap.git src/rtabmap
+git clone --branch ros2 https://github.com/introlab/rtabmap_ros.git src/rtabmap_ros
