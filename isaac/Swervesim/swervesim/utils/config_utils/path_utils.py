@@ -52,6 +52,7 @@ def break_ov_path(path):
     return omni.client.break_url(path)
 
 def retrieve_checkpoint_path(path):
+    print(to_absolute_path(path))
     # check if it's a local path
     if is_valid_local_file(path):
         return to_absolute_path(path)

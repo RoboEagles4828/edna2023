@@ -53,10 +53,10 @@ class ImportBot(BaseSample):
         friction_material.CreateDynamicFrictionAttr(1.0)
         friction_material.CreateStaticFrictionAttr(1.0)
 
-        front_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_left_wheel_link/collisions")
-        front_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_right_wheel_link/collisions")
-        rear_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_left_wheel_link/collisions")
-        rear_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_right_wheel_link/collisions")
+        front_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_left_wheel_link/collisions")
+        front_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/front_right_wheel_link/collisions")
+        rear_left_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_wheel_link/collisions")
+        rear_right_wheel_prim = stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_wheel_link/collisions")
 
         add_physics_material_to_prim(front_left_wheel_prim, mtl_prim)
         add_physics_material_to_prim(front_right_wheel_prim, mtl_prim)
@@ -80,7 +80,7 @@ class ImportBot(BaseSample):
         add_reference_to_stage(usd_path=field,prim_path="/World/Field")
         cone = os.path.join(self.project_root_path, "assets/2023_field/parts/cone_without_deformable_body.usd")
         cube = os.path.join(self.project_root_path, "assets/2023_field/parts/cube_without_deformable_body.usd")
-        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation/Assembly-1.usd")
+        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation-Copy/Assembly-1.usd")
         add_reference_to_stage(chargestation, "/World/ChargeStation_1")
         add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
         add_reference_to_stage(cone, "/World/Cone_1")
@@ -161,17 +161,17 @@ class ImportBot(BaseSample):
         w_sides = ['left', 'right']
         l_sides = ['front', 'back']
         stage = self._world.stage
-        chassis_name = f"{NAMESPACE}_swerve_chassis_link"
+        chassis_name = f"swerve_chassis_link"
 
        
-        front_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_front_left_axle_joint"), "angular")
-        front_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_front_right_axle_joint"), "angular")
-        rear_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_rear_left_axle_joint"), "angular")
-        rear_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/{NAMESPACE}_rear_right_axle_joint"), "angular")
-        front_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_left_axle_link/{NAMESPACE}_front_left_wheel_joint"), "angular")
-        front_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_front_right_axle_link/{NAMESPACE}_front_right_wheel_joint"), "angular")
-        rear_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_left_axle_link/{NAMESPACE}_rear_left_wheel_joint"), "angular")
-        rear_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{NAMESPACE}_rear_right_axle_link/{NAMESPACE}_rear_right_wheel_joint"), "angular")
+        front_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/front_left_axle_joint"), "angular")
+        front_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/front_right_axle_joint"), "angular")
+        rear_left_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/rear_left_axle_joint"), "angular")
+        rear_right_axle = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/{chassis_name}/rear_right_axle_joint"), "angular")
+        front_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/front_left_axle_link/front_left_wheel_joint"), "angular")
+        front_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint"), "angular")
+        rear_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint"), "angular")
+        rear_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint"), "angular")
         set_drive_params(front_left_axle, 1, 1000, 98.0)
         set_drive_params(front_right_axle, 1, 1000, 98.0)
         set_drive_params(rear_left_axle, 1, 1000, 98.0)
@@ -190,7 +190,7 @@ class ImportBot(BaseSample):
         return
 
     def create_lidar(self, robot_prim_path):
-        lidar_parent = f"{robot_prim_path}/{NAMESPACE}_lidar_link"
+        lidar_parent = f"{robot_prim_path}/lidar_link"
         lidar_path = "/lidar"
         self.lidar_prim_path = lidar_parent + lidar_path
         result, prim = omni.kit.commands.execute(
@@ -213,8 +213,8 @@ class ImportBot(BaseSample):
         return        
     
     def create_depth_camera(self, robot_prim_path):
-        self.depth_left_camera_path = f"{robot_prim_path}/{NAMESPACE}_zed_left_camera_optical_frame/left_cam"
-        self.depth_right_camera_path = f"{robot_prim_path}/{NAMESPACE}_zed_right_camera_optical_frame/right_cam"
+        self.depth_left_camera_path = f"{robot_prim_path}/zed_left_camera_optical_frame/left_cam"
+        self.depth_right_camera_path = f"{robot_prim_path}/zed_right_camera_optical_frame/right_cam"
         self.left_camera = prims.create_prim(
             prim_path=self.depth_left_camera_path,
             prim_type="Camera",
@@ -319,19 +319,19 @@ class ImportBot(BaseSample):
                     ("LeftCamBranch.inputs:condition", enable_left_cam),
                     ("LeftCamCreateViewport.inputs:name", "LeftCam"),
                     ("LeftCamHelperRgb.inputs:topicName", "left/rgb"),
-                    ("LeftCamHelperRgb.inputs:frameId", "zed_left_camera_frame"),
+                    ("LeftCamHelperRgb.inputs:frameId", f"{NAMESPACE}/zed_left_camera_frame"),
                     ("LeftCamHelperRgb.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("LeftCamHelperInfo.inputs:topicName", "left/camera_info"),
-                    ("LeftCamHelperInfo.inputs:frameId", "zed_left_camera_frame"),
+                    ("LeftCamHelperInfo.inputs:frameId", f"{NAMESPACE}/zed_left_camera_frame"),
                     ("LeftCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
 
                     ("RightCamBranch.inputs:condition", enable_right_cam),
                     ("RightCamCreateViewport.inputs:name", "RightCam"),
                     ("RightCamHelperRgb.inputs:topicName", "right/rgb"),
-                    ("RightCamHelperRgb.inputs:frameId", f"{NAMESPACE}_zed_right_camera_frame"),
+                    ("RightCamHelperRgb.inputs:frameId", f"{NAMESPACE}/zed_right_camera_frame"),
                     ("RightCamHelperRgb.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("RightCamHelperInfo.inputs:topicName", "right/camera_info"),
-                    ("RightCamHelperInfo.inputs:frameId", f"{NAMESPACE}_zed_right_camera_frame"),
+                    ("RightCamHelperInfo.inputs:frameId", f"{NAMESPACE}/zed_right_camera_frame"),
                     ("RightCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
                 ],
             }
@@ -343,8 +343,8 @@ class ImportBot(BaseSample):
 
     def setup_imu_action_graph(self, robot_prim_path):
         sensor_graph = "{}/imu_sensor_graph".format(robot_prim_path)
-        swerve_link = "{}/{}_swerve_chassis_link".format(robot_prim_path, NAMESPACE)
-        lidar_link = "{}/{}_lidar_link/lidar".format(robot_prim_path, NAMESPACE)
+        swerve_link = "{}/swerve_chassis_link".format(robot_prim_path)
+        lidar_link = "{}/lidar_link/lidar".format(robot_prim_path)
 
         og.Controller.edit(
             {"graph_path": sensor_graph, "evaluator_name": "execution"},
@@ -366,7 +366,11 @@ class ImportBot(BaseSample):
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
-                    ("PublishLidar.inputs:frameId", f"{NAMESPACE}_lidar_link"),
+                    ("PublishLidar.inputs:frameId", f"{NAMESPACE}/lidar_link"),
+                    ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
+                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
+                    ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
+                    ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections

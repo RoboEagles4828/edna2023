@@ -28,17 +28,19 @@
 
 
 def initialize_task(config, env, init_sim=True):
-    from swervesim.tasks.swerve import SwerveTask
+    from swervesim.tasks.swerve import Swerve_Task
     from swervesim.tasks.swerve_with_kinematics import Swerve_Kinematics_Task
     from swervesim.tasks.swerve_field import Swerve_Field_Task
     from swervesim.tasks.swerve_multi_action_auton import Swerve_Multi_Action_Task
+    from swervesim.tasks.swerve_charge_station import Swerve_Charge_Station_Task
     
     # Mappings from strings to environments
     task_map = {
-        "Swerve": SwerveTask,
+        "Swerve": Swerve_Task,
         "SwerveK": Swerve_Kinematics_Task,
         "SwerveF": Swerve_Field_Task,
-        "SwerveMAA": Swerve_Multi_Action_Task
+        "SwerveMAA": Swerve_Multi_Action_Task,
+        "SwerveCS": Swerve_Charge_Station_Task,
 
     }
 

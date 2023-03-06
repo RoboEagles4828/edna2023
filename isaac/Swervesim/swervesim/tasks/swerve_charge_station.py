@@ -29,23 +29,26 @@
 from swervesim.tasks.base.rl_task import RLTask
 from swervesim.robots.articulations.swerve import Swerve
 from swervesim.robots.articulations.views.swerve_view import SwerveView
+from swervesim.robots.articulations.views.charge_station_view import ChargeStationView
+
 from swervesim.tasks.utils.usd_utils import set_drive
 from omni.isaac.core.objects import DynamicSphere
+from omni.isaac.core.articulations import Articulation
 
 
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.rotations import *
-from omni.isaac.core.prims import RigidPrimView, GeometryPrim
+from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.utils.stage import add_reference_to_stage
-
-
 
 import numpy as np
 import torch
 import math
 
+from shapely.geometry import Polygon
 
-class Swerve_Field_Task(RLTask):
+
+class Swerve_Charge_Station_Task(RLTask):
     def __init__(
         self,
         name,
@@ -59,12 +62,13 @@ class Swerve_Field_Task(RLTask):
         self._task_cfg = sim_config.task_config
 
         # limits max velocity of wheels and axles
-        self.velocity_limit = 10
+        self.velocity_limit = 10*math.pi
 
-        self.dt = 1 / 60
+        self.dt = 1 / 10
+        self.dt_total = 0.0
         self.max_episode_length_s = self._task_cfg["env"]["episodeLength_s"]
         self._max_episode_length = int(
-            self.max_episode_length_s / self.dt + 0.5)
+            self.max_episode_length_s / self.dt)
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
 
@@ -75,18 +79,22 @@ class Swerve_Field_Task(RLTask):
         self._swerve_translation = torch.tensor([0.0, 0.0, 0.0])
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         # Number of data points the policy is recieving
-        self._num_observations = 29
+        self._num_observations = 37
         # Number of data points the policy is producing
         self._num_actions = 8
         # starting position of the swerve module
         self.swerve_position = torch.tensor([0, 0, 0])
         # starting position of the target
-        self._ball_position = torch.tensor([1, 1, 0])
+        self._chargestation_part_1_position = torch.tensor([1, 1, 0])
+
+
         self.swerve_initia_pos = []
         RLTask.__init__(self, name, env)
 
         self.target_positions = torch.zeros(
             (self._num_envs, 3), device=self._device, dtype=torch.float32)  # xyx of target position
+        self.target_rotation = torch.zeros(
+            (self._num_envs, 4), device=self._device, dtype=torch.float32) #ypr
         self.target_positions[:, 1] = 1
 
         return
@@ -96,14 +104,13 @@ class Swerve_Field_Task(RLTask):
         # Adds USD of swerve to stage
         self.get_swerve()
         # Adds ball to stage
-        self.get_target()
+        self.get_charge_station()
         super().set_up_scene(scene)
         # Sets up articluation controller for swerve
         self._swerve = SwerveView(
             prim_paths_expr="/World/envs/.*/swerve", name="swerveview")
+        self._charge_station= ChargeStationView(prim_paths_expr="/World/envs/.*/ChargeStation", name="ChargeStation_1_view")
         # Allows for position tracking of targets
-        # self._balls = RigidPrimView(
-        #     prim_paths_expr="/World/envs/.*/ball", name="targets_view", reset_xform_properties=False)
         # Adds everything to the scene
         scene.add(self._swerve)
         for axle in self._swerve._axle:
@@ -111,7 +118,7 @@ class Swerve_Field_Task(RLTask):
         for wheel in self._swerve._wheel:
             scene.add(wheel)
         scene.add(self._swerve._base)
-        # scene.add(self._balls)
+        scene.add(self._charge_station)
         # print("scene set up")
 
         return
@@ -123,79 +130,51 @@ class Swerve_Field_Task(RLTask):
         self._sim_config.apply_articulation_settings("swerve", get_prim_at_path(
             swerve.prim_path), self._sim_config.parse_actor_config("swerve"))
 
-    # def get_target(self):
-    #     # Adds a red ball as target
-    #     radius = 0.1  # meters
-    #     color = torch.tensor([0, 0, 1])
-    #     ball = DynamicSphere(
-    #         prim_path=self.default_zero_env_path + "/ball",
-    #         translation=self._ball_position,
-    #         name="target_0",
-    #         radius=radius,
-    #         color=color,
-    #     )
-    #     self._sim_config.apply_articulation_settings("ball", get_prim_at_path(
-    #         ball.prim_path), self._sim_config.parse_actor_config("ball"))
-    #     ball.set_collision_enabled(False)
-    def get_target(self):
-        # world = self.get_world()
-        self.task_path = os.path.abspath(__file__)
-        self.project_root_path = os.path.abspath(os.path.join(self.task_path, "../../../../../../../.."))
-        field = os.path.join(self.project_root_path, "isaac/assets/2023_field/FE-2023.usd")
-        add_reference_to_stage(usd_path=field,prim_path=self.default_zero_env_path+"/Field")
-        cone = os.path.join(self.project_root_path, "isaac/assets/2023_field/parts/cone_without_deformable_body.usd")
-        cube = os.path.join(self.project_root_path, "isaac/assets/2023_field/parts/cube_without_deformable_body.usd")
-        chargestation = os.path.join(self.project_root_path, "isaac/assets/Charge Station/Assembly-1.usd")
-        add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation_1")
-        add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation_2") 
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_1")
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_2")
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_3")
-        add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_4")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_5")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_6")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_7")
-        # add_reference_to_stage(cone, self.default_zero_env_path+"/Cone_8")
-        self.cone_1 = GeometryPrim(self.default_zero_env_path+"/Cone_1","cone_1_view",position=np.array([1.20298,-0.56861,0.0]))
-        self.cone_2 = GeometryPrim(self.default_zero_env_path+"/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0]))
-        self.cone_3 = GeometryPrim(self.default_zero_env_path+"/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0]))
-        self.cone_4 = GeometryPrim(self.default_zero_env_path+"/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0]))
-        chargestation_1 = GeometryPrim(self.default_zero_env_path+"/ChargeStation_1","cone_3_view",position=np.array([-4.20298,-0.56861,0.0]))
-        chargestation_2 = GeometryPrim(self.default_zero_env_path+"/ChargeStation_2","cone_4_view",position=np.array([4.20298,0.56861,0.0]))
-        
-
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_1")
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_2")
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_3")
-        add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_4")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_5")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_6")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_7")
-        # add_reference_to_stage(cube, self.default_zero_env_path+"/Cube_8")
-        self.cube_1 = GeometryPrim(self.default_zero_env_path+"/Cube_1","cube_1_view",position=np.array([1.20298,0.65059,0.121]))
-        self.cube_2 = GeometryPrim(self.default_zero_env_path+"/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121]))
-        self.cube_3 = GeometryPrim(self.default_zero_env_path+"/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121]))
-        self.cube_4 = GeometryPrim(self.default_zero_env_path+"/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121]))
-
-        return
+    def get_charge_station(self):
+        chargestation = "/root/edna/isaac/assets/ChargeStation-Copy/Assembly-1.usd"
+        add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation")
+        charge_station_1 = Articulation(prim_path=self.default_zero_env_path+"/ChargeStation",name="ChargeStation")
+        self._sim_config.apply_articulation_settings("ChargeStation", get_prim_at_path(
+            charge_station_1.prim_path), self._sim_config.parse_actor_config("ChargeStation"))
 
     def get_observations(self) -> dict:
         # Gets various positions and velocties to observations
-        self.root_pos, self.root_rot = self._swerve.get_world_poses(
-            clone=False)
+        self.root_pos, self.root_rot = self._swerve.get_world_poses(clone=False)
         self.joint_velocities = self._swerve.get_joint_velocities()
         self.joint_positions = self._swerve.get_joint_positions()
+        self.charge_station_pos, self.charge_station_rot = self._charge_station.get_world_poses(clone=False)
+        self.chargestation_vertices = torch.zeros(
+            (self._num_envs, 8), device=self._device, dtype=torch.float32) #ypr
+        charge_station_pos = self.charge_station_pos - self._env_pos
+
+        for i in range(len(self.charge_station_pos)):
+            w=self.charge_station_rot[i][0]
+            x=self.charge_station_rot[i][1]
+            y=self.charge_station_rot[i][2]
+            z=self.charge_station_rot[i][3]
+            # print(f"x:{x} y:{y} z:{z} w:{w}")
+            siny_cosp = 2 * (w * z + x * y)
+            cosy_cosp = 1 - 2 * (y * y + z * z)
+            angle = math.atan2(siny_cosp, cosy_cosp)
+            self.chargestation_vertices[i][0] , self.chargestation_vertices[i][1] = findB(charge_station_pos[i][0],charge_station_pos[i][1],math.pi-angle) 
+            self.chargestation_vertices[i][2] , self.chargestation_vertices[i][3] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle) 
+            self.chargestation_vertices[i][4] , self.chargestation_vertices[i][5] = findB(charge_station_pos[i][0],charge_station_pos[i][1],(2*math.pi)-angle)  
+            self.chargestation_vertices[i][6] , self.chargestation_vertices[i][7] = findB(charge_station_pos[i][0],charge_station_pos[i][1],angle+math.pi) 
+
         self.root_velocities = self._swerve.get_velocities(clone=False)
         root_positions = self.root_pos - self._env_pos
         root_quats = self.root_rot
-        # root_linvels = self.root_velocities[:, :3]
-        # root_angvels = self.root_velocities[:, 3:]
-        self.obs_buf[..., 0:3] = (self.target_positions - root_positions) / 3
-        self.obs_buf[..., 3:6] = (self.target_positions - root_positions) / 3
-        self.obs_buf[..., 6:9] = (self.target_positions - root_positions) / 3
-        self.obs_buf[..., 9:13] = root_quats
+        root_linvels = self.root_velocities[:, :3]
+        root_angvels = self.root_velocities[:, 3:]
+        self.obs_buf[..., 0:3] = (root_positions) / 3
+        self.obs_buf[..., 3:7] = root_quats
+        self.obs_buf[..., 7:10] = root_linvels / 2
+        self.obs_buf[..., 10:13] = root_angvels / math.pi
         self.obs_buf[..., 13:21] = self.joint_velocities
         self.obs_buf[..., 21:29] = self.joint_positions
+        self.obs_buf[..., 29:37] = self.chargestation_vertices
+        
+
         # Should not exceed observation ssize declared earlier
         # An observation is created for each swerve in each environment
         observations = {
@@ -279,9 +258,9 @@ class Swerve_Field_Task(RLTask):
 
         #   Set Wheel Positions
         #   Has a 1 degree tolerance. Turns clockwise if less than, counter clockwise if greater than
-            if (i == 1):
-                print(f"front_left_position:{front_left_position}")
-                print(f"rear_left_position:{rear_left_position}")
+            # if (i == 1):
+                # print(f"front_left_position:{front_left_position}")
+                # print(f"rear_left_position:{rear_left_position}")
             action.append(calculate_turn_velocity(front_left_current_pos, front_left_position))
             action.append(calculate_turn_velocity(front_right_current_pos, front_right_position))
             action.append(calculate_turn_velocity(rear_left_current_pos, rear_left_position))
@@ -338,6 +317,7 @@ class Swerve_Field_Task(RLTask):
         # bookkeeping
         self.reset_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
+        self.dt_total = 0
         # print("line 249")
 
     def post_reset(self):
@@ -348,8 +328,8 @@ class Swerve_Field_Task(RLTask):
         self.dof_pos = self._swerve.get_joint_positions()
         self.dof_vel = self._swerve.get_joint_velocities()
 
-        # self.initial_ball_pos, self.initial_ball_rot = self._balls.get_world_poses()
-        # self.initial_root_pos, self.initial_root_rot = self.root_pos.clone(), self.root_rot.clone()
+        self.initial_charge_station_pos, self.initial_charge_station_rot = self._charge_station.get_world_poses()
+        self.initial_root_pos, self.initial_root_rot = self.root_pos.clone(), self.root_rot.clone()
 
         # initialize some data used later on
         self.extras = {}
@@ -371,41 +351,59 @@ class Swerve_Field_Task(RLTask):
     def set_targets(self, env_ids):
         num_sets = len(env_ids)
         envs_long = env_ids.long()
-        # set target position randomly with x, y in (-20, 20)
+        # set target position randomly with x, y in (-8, 8)
         self.target_positions[envs_long, 0:2] = torch.rand(
-            (num_sets, 2), device=self._device) * 20 - 1
-        self.target_positions[envs_long, 2] = 0.1
+            (num_sets, 2), device=self._device) * 8 - 1
+        self.target_rotation[envs_long, 0]= 0
+        self.target_rotation[envs_long, 1]= torch.rand((num_sets), device=self._device) 
+        # self.target_rotation = self.target_rotation[envs_long]+self.initial_charge_station_rot[envs_long]
+        self.target_rotation[envs_long, 2]= 1
+        self.target_rotation[envs_long, 3] = 0#
+       
+        self.target_positions[envs_long,2] = 0
         # print(self.target_positions)
 
         # shift the target up so it visually aligns better
-        ball_pos = self.target_positions[envs_long] + self._env_pos[envs_long]
-        self._balls.set_world_poses(
-            ball_pos[:, 0:3], self.initial_ball_rot[envs_long].clone(), indices=env_ids)
+        charge_station_pos = self.target_positions[envs_long] + self._env_pos[envs_long]
+        # print(self.initial_charge_station_rot)
+        # print(self.target_rotation)
+        self._charge_station.set_world_poses(
+            charge_station_pos[:, 0:3], self.target_rotation[envs_long].clone(), indices=env_ids)
 
     def calculate_metrics(self) -> None:
-
+        self.dt_total += self.dt
         root_positions = self.root_pos - self._env_pos
         # distance to target
         target_dist = torch.sqrt(torch.square(
             self.target_positions - root_positions).sum(-1))
-
+        charge_station_score = in_charge_station(self.chargestation_vertices,self._swerve.get_axle_positions(), self._device)
+        balance_reward = torch.mul(self._charge_station.if_balanced(self._device)[0],charge_station_score[:])*100
+        # print(f"shape_balance:{balance_reward.shape}")
+        # print(charge_station_score.tolist())
         pos_reward = 1.0 / (1.0 + 2.5 * target_dist * target_dist)
         self.target_dist = target_dist
         self.root_positions = root_positions
-        self.root_position_reward = self.rew_buf
+        self.root_position_reward = torch.zeros_like(self.rew_buf)
         # rewards for moving away form starting point
-        for i in range(len(self.root_position_reward)):
-            self.root_position_reward[i] = sum(root_positions[i][0:3])
+        # for i in range(len(self.root_position_reward)):
+        #     self.root_position_reward[i] = sum(root_positions[i][0:3])
+        
+        self.root_position_reward = torch.tensor([sum(i[0:3]) for i in root_positions], device=self._device)
 
-        self.rew_buf[:] = self.root_position_reward*pos_reward
+        # print(f"shape_numerator:{numerator.shape}")
+        numerator = self.root_position_reward*pos_reward+balance_reward
+        self.rew_buf[:] = torch.div(numerator,1+self.dt_total)
+        print('REWARDS: ', torch.div(numerator,1+self.dt_total))
 
     def is_done(self) -> None:
         # print("line 312")
         # These are the dying constaints. It dies if it is going in the wrong direction or starts flying
+
         ones = torch.ones_like(self.reset_buf)
         die = torch.zeros_like(self.reset_buf)
         die = torch.where(self.target_dist > 20.0, ones, die)
         die = torch.where(self.root_positions[..., 2] > 0.5, ones, die)
+        # die = torch.where(abs(math.atan2(2*self.root_rot[..., 2]*self.root_rot[..., 0] - 2*self.root_rot[1]*self.root_rot[..., 3], 1 - 2*self.root_rot[..., 2]*self.root_rot[..., 2] - 2*self.root_rot[..., 3]*self.root_rot[..., 3])) > math.pi/2, ones, die)
 
         # resets due to episode length
         self.reset_buf[:] = torch.where(
@@ -433,3 +431,42 @@ def calculate_turn_velocity(current_pos, turn_position):
         if (turn_position < current_pos):
             setspeed *= -1
     return setspeed
+def findB(Cx,Cy, angle_change,angle_init=0.463647609,r=1.363107039084):
+    L= angle_init*r
+    if(angle_change < 0):
+        angle_init -= angle_change
+    else:
+        angle_init += angle_change
+    Bx = Cx + r*math.cos(angle_init)
+    By = Cy + r*math.sin(angle_init)
+    return Bx, By
+def in_charge_station(charge_station_verticies,axle_position, device):
+    if_in_chargestation = torch.tensor([check_point_2(i, j) for i, j in zip(charge_station_verticies, axle_position)], device=device)
+    return if_in_chargestation
+
+def check_point(r,m):
+    def dot(a, b):
+        return a[0]*b[0] + a[1]*b[1]
+    
+    # print(len(m))
+    for i in range(4):
+        AB = [r[3]-r[1],r[2]-r[0]]
+        AM = [m[3*i]-r[1],m[3*i + 1]-r[0]]
+        BC = [r[5]-r[3],r[4]-r[2]]
+        BM = [m[3*i]-r[3],m[3*i + 1]-r[2]]
+        dotABAM = dot(AB, AM)
+        dotABAB = dot(AB, AB)
+        dotBCBC = dot(BC, BC)
+        dotBCBM = dot(BC, BM)
+        out = 0 <= dotABAM and dotABAM <= dotABAB and 0 <= dotBCBM and dotBCBM <= dotBCBC
+        if out == False:
+            return 0.0
+    return 1.0
+
+def check_point_2(r, m):
+    charge_station = Polygon([(r[0], r[1]), (r[2], r[3]), (r[4], r[5]), (r[6], r[7])])
+    swerve = Polygon([(m[0], m[1]), (m[4], m[5]), (m[7], m[8]), (m[10], m[11])])
+
+    if charge_station.contains(swerve):
+            return 1.0
+    return 0.0

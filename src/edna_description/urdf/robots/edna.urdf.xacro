@@ -3,8 +3,6 @@
 
   <!-- Args -->
   <xacro:arg name="hw_interface_plugin" default="swerve_hardware/IsaacDriveHardware"/>
-  <xacro:arg name="namespace" default="default"/>
-  <xacro:property name="ns" value="$(arg namespace)" />
 
   <!-- Include Files -->
   <xacro:include filename="$(find edna_description)/urdf/control/drive.xacro" />
@@ -13,7 +11,10 @@
   <xacro:include filename="$(find edna_description)/urdf/parts/square_chassis.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/swerve_axle.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/zed_macro.urdf.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/elevator_leg.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/back_leg.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/lidar.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/elevator.xacro" />
 
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
@@ -28,32 +29,53 @@
 
   <!-- Chassis -->
   <link name="base_link"></link>
-  <xacro:square_chassis prefix="${ns}_swerve" parent="base_link">
+  <xacro:square_chassis prefix="swerve" parent="base_link">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:square_chassis>
 
   <!-- Drive Train -->
-  <xacro:swerve_axle prefix="${ns}_front_left" parent="${ns}_swerve_chassis_link">
+  <xacro:swerve_axle prefix="front_left" parent="swerve_chassis_link">
     <origin xyz="${axle_pos} ${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="${ns}_front_right" parent="${ns}_swerve_chassis_link">
+  <xacro:swerve_axle prefix="front_right" parent="swerve_chassis_link">
     <origin xyz="${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="${ns}_rear_left" parent="${ns}_swerve_chassis_link">
+  <xacro:swerve_axle prefix="rear_left" parent="swerve_chassis_link">
     <origin xyz="-${axle_pos} ${axle_pos} ${axle_pos_z} " rpy="0 0 0" />
   </xacro:swerve_axle>
-  <xacro:swerve_axle prefix="${ns}_rear_right" parent="${ns}_swerve_chassis_link">
+  <xacro:swerve_axle prefix="rear_right" parent="swerve_chassis_link">
     <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
   <!-- Sensors -->
-  <xacro:zed_camera prefix="${ns}_zed" model="zed2i" parent="${ns}_swerve_chassis_link">
+  <xacro:zed_camera prefix="zed" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
-  </xacro:zed_camera> 
+  </xacro:zed_camera>
 
-  <xacro:lidar prefix="${ns}_lidar" parent="${ns}_swerve_chassis_link" radius="0.035" length="0.025">
+  <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
     <origin xyz="0 0 .035" rpy="0 0 0" />
   </xacro:lidar>
 
-  <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)" ns="${ns}"/>
+  <!-- Arm -->
+  <xacro:property name="elevator_leg_z" value="0.527"/>
+  <xacro:elevator_leg prefix="arm" parent="swerve_chassis_link">
+    <origin xyz = "0.1905 0 ${elevator_leg_z/2 + 0.03}" rpy = "0 0 0"/>
+  </xacro:elevator_leg>
+
+  <xacro:back_leg prefix="arm" parent="swerve_chassis_link">
+    <origin xyz = "-${chassis_length/2 - back_leg_length/2} 0 ${back_leg_height/2 + chassis_height}" rpy = "0 0 0" />
+  </xacro:back_leg>
+
+  <!--Right Elevator-->
+  <xacro:elevator prefix="elevator_right" parent="arm_back_leg_link" suffix="right">
+    <origin xyz = "0 ${-back_leg_width/2 - 0.04} ${back_leg_height/2 - 0.02}" rpy = "0 0 0" />
+  </xacro:elevator>
+
+  <!--Left Elevator-->
+  <xacro:elevator prefix="elevator_left" parent="arm_back_leg_link" suffix="left">
+    <origin xyz = "0 ${back_leg_width/2 + 0.04} ${back_leg_height/2 - 0.02}" rpy = "0 0 0" />
+  </xacro:elevator>
+
+  <!-- Control -->
+  <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)"/>
 </robot>
