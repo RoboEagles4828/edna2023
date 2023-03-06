@@ -283,7 +283,8 @@ class ImportBot(BaseSample):
         enable_right_cam = False
         rgbType = "RgbType"
         infoType = "InfoType"
-        depthType = "DepthPclType"
+        depthType = "DepthType"
+        depthPclType = "DepthPclType"
 
         def createCamType(side, name, typeNode, topic):
             return {
@@ -296,7 +297,7 @@ class ImportBot(BaseSample):
                     (f"{typeNode}.inputs:value", f"{side}CamHelper{name}.inputs:type"),
                 ],
                 "setvalues": [
-                    (f"{side}CamHelper{name}.inputs:topicName", f"{side}/{topic}"),
+                    (f"{side}CamHelper{name}.inputs:topicName", f"{side.lower()}/{topic}"),
                     (f"{side}CamHelper{name}.inputs:frameId", f"{NAMESPACE}/zed_{side.lower()}_camera_frame"),
                     (f"{side}CamHelper{name}.inputs:nodeNamespace", f"/{NAMESPACE}"),
                 ]
@@ -330,10 +331,11 @@ class ImportBot(BaseSample):
             }
             rgbNodes = createCamType(side, "RGB", rgbType, "rgb")
             infoNodes = createCamType(side, "Info", infoType, "camera_info")
-            depthPClnodes = createCamType(side, "DepthPcl", depthType, "depth_pcl")
-            camNodes["create"] += rgbNodes["create"] + infoNodes["create"] + depthPClnodes["create"]
-            camNodes["connect"] += rgbNodes["connect"] + infoNodes["connect"] + depthPClnodes["connect"]
-            camNodes["setvalues"] += rgbNodes["setvalues"] + infoNodes["setvalues"] + depthPClnodes["setvalues"]
+            depthNodes = createCamType(side, "Depth", depthType, "depth")
+            depthPClNodes = createCamType(side, "DepthPcl", depthPclType, "depth_pcl")
+            camNodes["create"] += rgbNodes["create"] + infoNodes["create"] + depthNodes["create"] + depthPClNodes["create"]
+            camNodes["connect"] += rgbNodes["connect"] + infoNodes["connect"] + depthNodes["connect"] + depthPClNodes["connect"]
+            camNodes["setvalues"] += rgbNodes["setvalues"] + infoNodes["setvalues"] + depthNodes["setvalues"] + depthPClNodes["setvalues"]
             return camNodes
 
         leftCamNodes = getCamNodes("Left", enable_left_cam)
@@ -346,6 +348,7 @@ class ImportBot(BaseSample):
                     (rgbType, "omni.graph.nodes.ConstantToken"),
                     (infoType, "omni.graph.nodes.ConstantToken"),
                     (depthType, "omni.graph.nodes.ConstantToken"),
+                    (depthPclType, "omni.graph.nodes.ConstantToken"),
                 ] + leftCamNodes["create"] + rightCamNodes["create"],
 
                 og.Controller.Keys.CONNECT: leftCamNodes["connect"] + rightCamNodes["connect"],
@@ -353,7 +356,8 @@ class ImportBot(BaseSample):
                 og.Controller.Keys.SET_VALUES: [
                     (f"{rgbType}.inputs:value", "rgb"),
                     (f"{infoType}.inputs:value", "camera_info"),
-                    (f"{depthType}.inputs:value", "depth_pcl"),
+                    (f"{depthType}.inputs:value", "depth"),
+                    (f"{depthPclType}.inputs:value", "depth_pcl"),
                 ] + leftCamNodes["setvalues"] + rightCamNodes["setvalues"],
             }
         )
@@ -376,9 +380,9 @@ class ImportBot(BaseSample):
                     ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     # Odometry Nodes
-                    # ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
-                    # ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
-                    # ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
+                    ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                    ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
+                    ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
                     # LiDAR Nodes
                     ("ReadLidar", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
                     ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan"),
@@ -387,31 +391,31 @@ class ImportBot(BaseSample):
                     ("PublishImu", "omni.isaac.ros2_bridge.ROS2PublishImu"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
-                    # ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("PublishImu.inputs:nodeNamespace", f"/{NAMESPACE}"), 
                     ("PublishLidar.inputs:frameId", f"{NAMESPACE}/lidar_link"),
-                    # ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
-                    # ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
-                    # ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
-                    # ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
+                    ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
+                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
+                    ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
+                    ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
                     ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed_camera_center"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
-                    # ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
-                    # ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
-                    # ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
-                    # ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
-                    # ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
-                    # ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
-                    # ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
-                    # ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
-                    # ("ComputeOdometry.outputs:position", "RawOdomTransform.inputs:translation"),
-                    # ("Context.outputs:context", "PublishOdometry.inputs:context"),
-                    # ("Context.outputs:context", "RawOdomTransform.inputs:context"),
-                    # ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
-                    # ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
+                    ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
+                    ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
+                    ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
+                    ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
+                    ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
+                    ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
+                    ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
+                    ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
+                    ("ComputeOdometry.outputs:position", "RawOdomTransform.inputs:translation"),
+                    ("Context.outputs:context", "PublishOdometry.inputs:context"),
+                    ("Context.outputs:context", "RawOdomTransform.inputs:context"),
+                    ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
+                    ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
 
                     # LiDAR Connections
                     ("OnPlaybackTick.outputs:tick", "ReadLidar.inputs:execIn"),
