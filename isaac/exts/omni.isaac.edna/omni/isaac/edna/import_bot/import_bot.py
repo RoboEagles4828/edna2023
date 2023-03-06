@@ -8,7 +8,7 @@ from omni.isaac.core.utils import prims
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.kit.viewport_legacy import get_default_viewport_window
-from omni.isaac.sensor import IMUSensor
+# from omni.isaac.sensor import IMUSensor
 from pxr import UsdPhysics, UsdShade, Sdf, Gf
 import omni.kit.commands
 import os
@@ -182,6 +182,7 @@ class ImportBot(BaseSample):
         set_drive_params(rear_right_wheel, 1, 1000, 98.0)
         # set_drive_params(base,1,1000,98.0)
         self.create_lidar(robot_prim_path)
+        self.create_imu(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
         self.setup_camera_action_graph(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
@@ -209,6 +210,20 @@ class ImportBot(BaseSample):
             high_lod=False,
             yaw_offset=0.0,
             enable_semantics=False
+        )
+        return
+
+    def create_imu(self, robot_prim_path):
+        imu_parent = f"{robot_prim_path}/zed_camera_center"
+        imu_path = "/imu"
+        self.imu_prim_path = imu_parent + imu_path
+        result, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path=imu_path,
+            parent=imu_parent,
+            translation=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=False,
         )
         return        
     
@@ -265,7 +280,7 @@ class ImportBot(BaseSample):
     def setup_camera_action_graph(self, robot_prim_path):
         camera_graph = "{}/camera_sensor_graph".format(robot_prim_path)
         enable_left_cam = True
-        enable_right_cam = True
+        enable_right_cam = False
         rgbType = "RgbType"
         infoType = "InfoType"
         depthType = "DepthPclType"
@@ -361,38 +376,42 @@ class ImportBot(BaseSample):
                     ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                     ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     # Odometry Nodes
-                    ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
-                    ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
-                    ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
+                    # ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                    # ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
+                    # ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
                     # LiDAR Nodes
                     ("ReadLidar", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
-                    ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan")
-
+                    ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan"),
+                    # IMU Nodes
+                    ("IsaacReadImu", "omni.isaac.sensor.IsaacReadIMU"),
+                    ("PublishImu", "omni.isaac.ros2_bridge.ROS2PublishImu"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
-                    ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    # ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishImu.inputs:nodeNamespace", f"/{NAMESPACE}"), 
                     ("PublishLidar.inputs:frameId", f"{NAMESPACE}/lidar_link"),
-                    ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
-                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
-                    ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
-                    ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
+                    # ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
+                    # ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
+                    # ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
+                    # ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
+                    ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed_camera_center"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
-                    ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
-                    ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
-                    ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
-                    ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
-                    ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
-                    ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
-                    ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
-                    ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
-                    ("ComputeOdometry.outputs:position", "RawOdomTransform.inputs:translation"),
-                    ("Context.outputs:context", "PublishOdometry.inputs:context"),
-                    ("Context.outputs:context", "RawOdomTransform.inputs:context"),
-                    ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
-                    ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
+                    # ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
+                    # ("OnPlaybackTick.outputs:tick", "RawOdomTransform.inputs:execIn"),
+                    # ("ComputeOdometry.outputs:execOut", "PublishOdometry.inputs:execIn"),
+                    # ("ComputeOdometry.outputs:angularVelocity", "PublishOdometry.inputs:angularVelocity"),
+                    # ("ComputeOdometry.outputs:linearVelocity", "PublishOdometry.inputs:linearVelocity"),
+                    # ("ComputeOdometry.outputs:orientation", "PublishOdometry.inputs:orientation"),
+                    # ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
+                    # ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
+                    # ("ComputeOdometry.outputs:position", "RawOdomTransform.inputs:translation"),
+                    # ("Context.outputs:context", "PublishOdometry.inputs:context"),
+                    # ("Context.outputs:context", "RawOdomTransform.inputs:context"),
+                    # ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
+                    # ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
 
                     # LiDAR Connections
                     ("OnPlaybackTick.outputs:tick", "ReadLidar.inputs:execIn"),
@@ -410,13 +429,22 @@ class ImportBot(BaseSample):
                     ("ReadLidar.outputs:numRows", "PublishLidar.inputs:numRows"),
                     ("ReadLidar.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
                     
-                    
+                    # IMU Connections
+                    ("OnPlaybackTick.outputs:tick", "IsaacReadImu.inputs:execIn"),
+                    ("IsaacReadImu.outputs:execOut", "PublishImu.inputs:execIn"),
+                    ("Context.outputs:context", "PublishImu.inputs:context"),
+                    ("SimTime.outputs:simulationTime", "PublishImu.inputs:timeStamp"),
+
+                    ("IsaacReadImu.outputs:angVel", "PublishImu.inputs:angularVelocity"),
+                    ("IsaacReadImu.outputs:linAcc", "PublishImu.inputs:linearAcceleration"),
+                    ("IsaacReadImu.outputs:orientation", "PublishImu.inputs:orientation"),
                 ],
             }
         )
         # Setup target prims for the Odometry and the Lidar
+        set_target_prims(primPath=f"{sensor_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim")
         set_target_prims(primPath=f"{sensor_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
-        set_target_prims(primPath=f"{sensor_graph}/ReadLidar", targetPrimPaths=[lidar_link], inputName="inputs:lidarPrim")
+        set_target_prims(primPath=f"{sensor_graph}/IsaacReadImu", targetPrimPaths=[self.imu_prim_path], inputName="inputs:imuPrim")
         return
 
     def setup_robot_action_graph(self, robot_prim_path):
