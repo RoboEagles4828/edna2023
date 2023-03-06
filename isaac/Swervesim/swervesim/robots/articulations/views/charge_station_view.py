@@ -22,7 +22,7 @@ class ChargeStationView(ArticulationView):
             reset_xform_properties=False
         )
 
-        self.chargestation_base = RigidPrimView(prim_paths_expr="/World/envs/.*/ChargeStation/Assembly_1/Part_1", name="base_view", reset_xform_properties=False)
+        self.chargestation_base = RigidPrimView(prim_paths_expr="/World/envs/.*/ChargeStation", name="base_view", reset_xform_properties=False)
         # self.top = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field", name="field_view", reset_xform_properties=False)
         # self.red_ball_1 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_08", name="redball[1]", reset_xform_properties=False)
         # self.red_ball_2 = RigidPrimView(prim_paths_expr="/World/envs/.*/Root/Rapid_React_Field/Group_1/Tennis_Ball___Red_09", name="redball[2]", reset_xform_properties=False)
