@@ -28,7 +28,14 @@ def generate_launch_description():
         name='teleop_twist_joy_node',
         parameters=[joystick_file],
         remappings={(f'/{NAMESPACE}/cmd_vel', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
-        )
+    )
+    joint_trajectory_teleop = Node(
+        package='joint_trajectory_teleop',
+        namespace=namespace,
+        executable='publish_trajectory_message',
+        name='joint_trajectory_teleop_node',
+        parameters=[]
+    )
     
     # Launch!
     return LaunchDescription([
@@ -45,5 +52,6 @@ def generate_launch_description():
             default_value='',
             description='The file with joystick parameters'),
         joy,
-        joy_teleop_twist
+        joy_teleop_twist,
+        joint_trajectory_teleop
     ])
