@@ -17,7 +17,6 @@ import asyncio
 from omni.isaac.edna.base_sample import BaseSample
 from omni.isaac.core import World
 
-
 class BaseSampleExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._menu_items = None
@@ -90,7 +89,7 @@ class BaseSampleExtension(omni.ext.IExt):
 
     def _build_ui(self, name, title, doc_link, overview, file_path, number_of_extra_frames, window_width):
         self._window = omni.ui.Window(
-            name, width=window_width, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            name, width=window_width, height=0, visible=True, dockPreference=ui.DockPreference.RIGHT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
@@ -138,6 +137,15 @@ class BaseSampleExtension(omni.ext.IExt):
                         }
                         self._buttons["Reset"] = btn_builder(**dict)
                         self._buttons["Reset"].enabled = False
+                        dict = {
+                            "label": "Clear",
+                            "type": "button",
+                            "text": "Clear",
+                            "tooltip": "Clear the full environment",
+                            "on_clicked_fn": self._on_clear,
+                        }
+                        self._buttons["Clear"] = btn_builder(**dict)
+                        self._buttons["Clear"].enabled = True
         return
 
     def _set_button_tooltip(self, button_name, tool_tip):
@@ -164,6 +172,16 @@ class BaseSampleExtension(omni.ext.IExt):
             self.post_reset_button_event()
 
         asyncio.ensure_future(_on_reset_async())
+        return
+
+    def _on_clear(self):
+        async def _on_clear_async():
+            await self._sample.clear_async()
+            await omni.kit.app.get_app().next_update_async()
+            self.post_clear_button_event()
+            self._buttons["Load World"].enabled = True
+
+        asyncio.ensure_future(_on_clear_async())
         return
 
     @abstractmethod
