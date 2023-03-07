@@ -94,6 +94,7 @@ class TesterNode(Node):
         for index, position in enumerate(self.lastPositions):
             if position is None:
                 print(f"{RED}FAILED: Did not recieve any positions from the robot!{RESET}")
+                self.testStatus[self.currentTest]["fail"] += 1
                 continue
             difference = abs(self.expectedPositions[index] - position)
             if difference == 0:
