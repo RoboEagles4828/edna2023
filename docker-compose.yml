@@ -16,7 +16,7 @@ services:
     ports:
     - "1-65535:1-65535"
   zed_cam:
-    image: ghcr.io/roboeagles4828/jetson-zed:2023.1
+    image: ghcr.io/roboeagles4828/jetson-zed:1
     network_mode: "host"
     privileged: true
     ports:
