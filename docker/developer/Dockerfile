@@ -72,6 +72,15 @@ USER ${USERNAME}
 RUN /opt/install-scripts/install-rosdeps
 USER root
 
+################
+# Install RTAB #
+################
+COPY install-scripts/install-rtab /opt/install-scripts/install-rtab
+RUN chmod +x /opt/install-scripts/install-rtab
+USER ${USERNAME}
+RUN /opt/install-scripts/install-rtab
+USER root
+
 ######################
 # Docker Permissions #
 ######################
