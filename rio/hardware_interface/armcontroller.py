@@ -17,13 +17,11 @@ TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
 PORTS = {
     # Modules
     'HUB': 1,
-    'COMPRESSOR': 0,
-    'MODULE': 0,
     # Pistons
-    'ARM_ROLLER_BAR': [0, 1],
-    'TOP_GRIPPER_SLIDER': [2, 3],
-    'TOP_GRIPPER': [4, 5],
-    'BOTTOM_GRIPPER': [6, 7],
+    'ARM_ROLLER_BAR': [14, 15],
+    'TOP_GRIPPER_SLIDER': [10, 11],
+    'TOP_GRIPPER': [12, 13],
+    'BOTTOM_GRIPPER': [8, 9],
     # Wheels
     'ELEVATOR': 0,
     'BOTTOM_GRIPPER_LIFT': 1

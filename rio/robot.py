@@ -179,7 +179,7 @@ class edna_robot(wpilib.TimedRobot):
         self.use_threading = use_threading
 
     def robotInit(self) -> None:
-        if wpilib.RobotBase.isSimulation(): print("\033[1;33;48mRunning in wpilib simulation!\033[1;37;0m")
+        logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
         initDriveTrain()
         # initJoystick()
