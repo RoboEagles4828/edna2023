@@ -30,7 +30,7 @@
         <parent link="${parent}"/>
         <child link="${prefix}_slider_link"/>
         <axis xyz = "1 0 0"/>
-        <limit effort = "100.0" lower = "0" upper = "0.4" velocity = "1"/>
+        <limit effort = "100.0" lower = "0" upper = "0.3" velocity = "1"/>
     </joint>
 
     <xacro:gripper prefix="${prefix}" parent="${prefix}_slider_link">
