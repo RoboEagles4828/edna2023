@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'joint_trajectory_teleop = joint_trajectory_teleop.joint_trajectory_teleop:main',
         ],
     },
 )

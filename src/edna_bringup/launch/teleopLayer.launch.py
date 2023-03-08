@@ -32,9 +32,11 @@ def generate_launch_description():
     joint_trajectory_teleop = Node(
         package='joint_trajectory_teleop',
         namespace=namespace,
-        executable='publish_trajectory_message',
-        name='joint_trajectory_teleop_node',
+        executable='joint_trajectory_teleop',
+        name='joint_trajectory_teleop',
         parameters=[]
+        # remappings={(f'/{NAMESPACE}/J', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
+
     )
     
     # Launch!
