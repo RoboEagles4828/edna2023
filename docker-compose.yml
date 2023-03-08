@@ -1,26 +1,29 @@
 version: "3.9"
 services:
-  humble2204:
-    image: "ghcr.io/roboeagles4828/jetson:2023"
-    network_mode: "host"
-    environment:
-      - ROS_DOMAIN_ID=0
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 2s
-        max_attempts: 3
-        window: 120s
-    volumes:
-    - ./:/opt/workspace
-    ports:
-    - "1-65535:1-65535"
+  # humble2204:
+  #   image: "ghcr.io/roboeagles4828/jetson:2023"
+  #   network_mode: "host"
+  #   environment:
+  #     - ROS_DOMAIN_ID=0
+  #   deploy:
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 2s
+  #       max_attempts: 3
+  #       window: 120s
+  #   volumes:
+  #   - ./:/opt/workspace
+  #   ports:
+  #   - "1-65535:1-65535"
   zed_cam:
     image: ghcr.io/roboeagles4828/jetson-zed:1
     network_mode: "host"
     privileged: true
     ports:
     - "1-65535:1-65535"
+    environment:
+      - ROS_DOMAIN_ID=0
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml
     deploy:
       resources:
           reservations:
