@@ -1,5 +1,6 @@
 import wpilib
 import ctre
+import ctre.sensors
 from enum import Enum, auto
 import math
 import time
@@ -144,7 +145,7 @@ class SwerveModule():
 
         self.wheel_motor = ctre.TalonFX(self.wheel_joint_port)
         self.axle_motor = ctre.TalonFX(self.axle_joint_port)
-        self.encoder = ctre.CANCoder(self.axle_encoder_port)
+        self.encoder = ctre.sensors.CANCoder(self.axle_encoder_port)
 
         self.last_wheel_vel_cmd = None
         self.last_axle_vel_cmd = None
@@ -156,14 +157,14 @@ class SwerveModule():
         
 
     def setupEncoder(self):
-        self.encoderconfig = ctre.CANCoderConfiguration()
-        self.encoderconfig.absoluteSensorRange = ctre.AbsoluteSensorRange.Unsigned_0_to_360
-        self.encoderconfig.initializationStrategy = ctre.SensorInitializationStrategy.BootToAbsolutePosition
+        self.encoderconfig = ctre.sensors.CANCoderConfiguration()
+        self.encoderconfig.absoluteSensorRange = ctre.sensors.AbsoluteSensorRange.Unsigned_0_to_360
+        self.encoderconfig.initializationStrategy = ctre.sensors.SensorInitializationStrategy.BootToAbsolutePosition
         self.encoderconfig.sensorDirection = ENCODER_DIRECTION
-        self.encoder = ctre.CANCoder(self.axle_encoder_port)
+        self.encoder = ctre.sensors.CANCoder(self.axle_encoder_port)
         self.encoder.configAllSettings(self.encoderconfig)
         self.encoder.setPositionToAbsolute(timeout_ms)
-        self.encoder.setStatusFramePeriod(ctre.CANCoderStatusFrame.SensorData, 10, timeout_ms)
+        self.encoder.setStatusFramePeriod(ctre.sensors.CANCoderStatusFrame.SensorData, 10, timeout_ms)
     
     def getEncoderPosition(self):
         return math.radians(self.encoder.getAbsolutePosition() - self.encoder_offset)
