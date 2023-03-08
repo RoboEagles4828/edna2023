@@ -1,0 +1,13 @@
+#!/bin/bash
+mkdir -p ~/workspaces/rtab_ws/src
+
+export MAKEFLAGS="-j6"
+
+sudo apt-get update -y && rosdep update --rosdistro=humble
+
+source /opt/ros/humble/setup.bash
+cd ~/workspaces/rtab_ws && \
+    git clone --branch humble-devel https://github.com/introlab/rtabmap.git src/rtabmap && \
+    git clone --branch humble-devel https://github.com/introlab/rtabmap_ros.git src/rtabmap_ros && \
+    rosdep install --from-paths src --ignore-src -r -y && \
+    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release

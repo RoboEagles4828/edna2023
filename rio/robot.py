@@ -6,6 +6,7 @@ import time
 import os, inspect
 from hardware_interface.drivetrain import DriveTrain
 from hardware_interface.joystick import Joystick
+from hardware_interface.armcontroller import ArmController
 from dds.dds import DDS_Publisher, DDS_Subscriber
 
 # Locks
@@ -13,6 +14,7 @@ FRC_STAGE = "DISABLED"
 STOP_THREADS = False
 rti_init_lock = threading.Lock()
 drive_train_lock = threading.Lock()
+arm_controller_lock = threading.Lock()
 
 # Logging
 format = "%(asctime)s: %(message)s"
@@ -23,13 +25,13 @@ curr_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe
 xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
 ## Hardware
-drive_train = None
+drive_train : DriveTrain = None
 def initDriveTrain():
     global drive_train
     drive_train = DriveTrain()
     logging.info("Success: DriveTrain created")
 
-joystick = None
+joystick : Joystick = None
 def initJoystick():
     try:
         global joystick
@@ -40,6 +42,11 @@ def initJoystick():
         logging.error("Failed to create joystick")
         return False
 
+arm_controller : ArmController = None
+def initArmController():
+    global arm_controller
+    arm_controller = ArmController()
+    logging.info("Success: ArmController created")
 
 ## Generic Loop that is used for all threads
 def threadLoop(name, dds, action):
@@ -59,12 +66,14 @@ def threadLoop(name, dds, action):
     logging.info(f"Closing {name} thread")
     dds.close()
 # Generic Start Thread Function
-def startThread(name):
+def startThread(name) -> threading.Thread | None:
     thread = None
     if name == "encoder":
         thread = threading.Thread(target=encoderThread, daemon=True)
     elif name == "command":
         thread = threading.Thread(target=commandThread, daemon=True)
+    elif name == "arm-command":
+        thread = threading.Thread(target=armThread, daemon=True)
     elif name == "joystick":
         thread = threading.Thread(target=joystickThread, daemon=True)
     
@@ -86,9 +95,22 @@ def encoderThread():
 
 def encoderAction(publisher):
     data = None
+
+    drive_data = None
     global drive_train
     with drive_train_lock:
-        data = drive_train.getEncoderData()
+        drive_data = drive_train.getEncoderData()
+    
+    arm_data = None
+    global arm_controller
+    with arm_controller_lock:
+        arm_data = arm_controller.getEncoderData()
+
+    data = {
+        "name": drive_data["name"] + arm_data["name"],
+        "position": drive_data["position"] + arm_data["position"],
+        "velocity": drive_data["velocity"] + arm_data["velocity"]
+    }
     publisher.write(data)
 
 
@@ -104,13 +126,28 @@ def commandThread():
         command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
     threadLoop('command', command_subscriber, commandAction)
 
-def commandAction(subscriber):
+def commandAction(subscriber : DDS_Subscriber):
     data = subscriber.read()
     global drive_train
     with drive_train_lock:
         drive_train.sendCommands(data)
 
 
+######### Arm Thread and Action #########
+ARM_COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::arm_commands"
+ARM_COMMAND_WRITER_NAME = "isaac_arm_commands_subscriber::arm_commands_reader"
+
+def armThread():
+    arm_command_subscriber = None
+    with rti_init_lock:
+        arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+    threadLoop('arm', arm_command_subscriber, armAction)
+
+def armAction(subscriber : DDS_Subscriber):
+    data = subscriber.read()
+    global arm_controller
+    with arm_controller_lock:
+        arm_controller.sendCommands(data)
 
 
 ######### Joystick Thread and Action #########
@@ -123,7 +160,7 @@ def joystickThread():
         joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
     threadLoop('joystick', joystick_publisher, joystickAction)
 
-def joystickAction(publisher):
+def joystickAction(publisher : DDS_Publisher):
     global joystick
     data = None
     try:
@@ -134,8 +171,6 @@ def joystickAction(publisher):
     publisher.write(data)
 
 
-
-
 ######### Robot Class #########
 class edna_robot(wpilib.TimedRobot):
 
@@ -144,8 +179,12 @@ class edna_robot(wpilib.TimedRobot):
         self.use_threading = use_threading
 
     def robotInit(self) -> None:
+        logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
+
         initDriveTrain()
-        initJoystick()
+        # initJoystick()
+        initArmController()
+
         self.threads = []
         if self.use_threading:
             logging.info("Initializing Threads")
@@ -154,12 +193,14 @@ class edna_robot(wpilib.TimedRobot):
             self.threads = [
                 {"name": "encoder", "thread": startThread("encoder") },
                 {"name": "command", "thread": startThread("command") },
-                {"name": "joystick", "thread": startThread("joystick") }
+                {"name": "arm-command", "thread": startThread("arm-command")},
+                # {"name": "joystick", "thread": startThread("joystick") },
             ]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
             self.joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
+            self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
 
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")
@@ -178,6 +219,8 @@ class edna_robot(wpilib.TimedRobot):
         FRC_STAGE = "DISABLED"
         with drive_train_lock:
             drive_train.stop()
+        with arm_controller_lock:
+            arm_controller.stop()
 
     def manageThreads(self):
         # Check all threads and make sure they are alive
@@ -188,12 +231,15 @@ class edna_robot(wpilib.TimedRobot):
                     logging.warning(f"Stopping robot due to command thread failure")
                     with drive_train_lock:
                         drive_train.stop()
+                    with arm_controller_lock:
+                        arm_controller.stop()
                 logging.warning(f"Thread {thread['name']} is not alive, restarting...")
                 thread["thread"] = startThread(thread["name"])
     
     def doActions(self):
         encoderAction(self.encoder_publisher)
         commandAction(self.command_subscriber)
+        armAction(self.arm_command_subscriber)
         joystickAction(self.joystick_publisher)
         return
 
@@ -211,4 +257,3 @@ class edna_robot(wpilib.TimedRobot):
 
 if __name__ == '__main__':
     wpilib.run(edna_robot)
-

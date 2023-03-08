@@ -60,6 +60,18 @@ RUN /opt/install-scripts/install-docker
 RUN groupadd --system docker
 RUN usermod -aG docker ${USERNAME}
 
+################
+# Install RTAB #
+################
+
+
+COPY install-scripts/install-rtab /opt/install-scripts/install-rtab
+RUN chmod +x /opt/install-scripts/install-rtab
+USER ${USERNAME}
+RUN sudo apt-get install -y python3-pip
+RUN /opt/install-scripts/install-rtab
+USER root
+
 ####################
 # Preload ROS Deps #
 ####################

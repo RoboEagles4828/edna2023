@@ -37,6 +37,7 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:square_chassis>
 
+
   <!-- Drive Train -->
   <xacro:swerve_axle prefix="front_left" parent="swerve_chassis_link">
     <origin xyz="${axle_pos} ${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
@@ -51,14 +52,16 @@
     <origin xyz="-${axle_pos} -${axle_pos} ${axle_pos_z}" rpy="0 0 0" />
   </xacro:swerve_axle>
   
+
   <!-- Sensors -->
   <xacro:zed_camera prefix="zed" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera>
 
   <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
-    <origin xyz="0 0 .035" rpy="0 0 0" />
+    <origin xyz="${lidar_pos}" rpy="0 0 0" />
   </xacro:lidar>
+
 
   <!-- Arm -->
   <xacro:property name="elevator_leg_z" value="0.527"/>

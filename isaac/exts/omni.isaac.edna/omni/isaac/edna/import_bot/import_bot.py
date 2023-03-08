@@ -8,7 +8,7 @@ from omni.isaac.core.utils import prims
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.kit.viewport_legacy import get_default_viewport_window
-from omni.isaac.sensor import IMUSensor
+# from omni.isaac.sensor import IMUSensor
 from pxr import UsdPhysics, UsdShade, Sdf, Gf
 import omni.kit.commands
 import os
@@ -115,7 +115,7 @@ class ImportBot(BaseSample):
     async def setup_post_load(self):
         self._world = self.get_world()
         # self._world.get_physics_context().enable_gpu_dynamics(True)
-        self.robot_name = "Swerve"
+        self.robot_name = "edna"
         self.extension_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
         self.path_to_urdf = os.path.join(self.extension_path, "../../../../../../../..", "src/edna_description/urdf/edna.urdf")
@@ -197,6 +197,7 @@ class ImportBot(BaseSample):
         set_drive_params(top_slider_joint, 10000000, 100000, 98.0)
         
         self.create_lidar(robot_prim_path)
+        self.create_imu(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
         self.setup_camera_action_graph(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
@@ -224,6 +225,20 @@ class ImportBot(BaseSample):
             high_lod=False,
             yaw_offset=0.0,
             enable_semantics=False
+        )
+        return
+
+    def create_imu(self, robot_prim_path):
+        imu_parent = f"{robot_prim_path}/zed_camera_center"
+        imu_path = "/imu"
+        self.imu_prim_path = imu_parent + imu_path
+        result, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path=imu_path,
+            parent=imu_parent,
+            translation=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=False,
         )
         return        
     
@@ -279,76 +294,86 @@ class ImportBot(BaseSample):
     
     def setup_camera_action_graph(self, robot_prim_path):
         camera_graph = "{}/camera_sensor_graph".format(robot_prim_path)
-        enable_left_cam = False
+        enable_left_cam = True
         enable_right_cam = False
+        rgbType = "RgbType"
+        infoType = "InfoType"
+        depthType = "DepthType"
+        depthPclType = "DepthPclType"
 
+        def createCamType(side, name, typeNode, topic):
+            return {
+                "create": [
+                    (f"{side}CamHelper{name}", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                ],
+                "connect": [
+                    (f"{side}CamViewProduct.outputs:renderProductPath", f"{side}CamHelper{name}.inputs:renderProductPath"),
+                    (f"{side}CamSet.outputs:execOut", f"{side}CamHelper{name}.inputs:execIn"),
+                    (f"{typeNode}.inputs:value", f"{side}CamHelper{name}.inputs:type"),
+                ],
+                "setvalues": [
+                    (f"{side}CamHelper{name}.inputs:topicName", f"{side.lower()}/{topic}"),
+                    (f"{side}CamHelper{name}.inputs:frameId", f"{NAMESPACE}/zed_{side.lower()}_camera_frame"),
+                    (f"{side}CamHelper{name}.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                ]
+            }
+
+        def getCamNodes(side, enable):
+            camNodes = {
+                "create": [
+                    (f"{side}CamBranch", "omni.graph.action.Branch"),
+                    (f"{side}CamCreateViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                    (f"{side}CamViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
+                    (f"{side}CamViewProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                    (f"{side}CamSet", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                ],
+                "connect": [
+                    ("OnPlaybackTick.outputs:tick", f"{side}CamBranch.inputs:execIn"),
+                    (f"{side}CamBranch.outputs:execTrue", f"{side}CamCreateViewport.inputs:execIn"),
+                    (f"{side}CamCreateViewport.outputs:execOut", f"{side}CamViewportResolution.inputs:execIn"),
+                    (f"{side}CamCreateViewport.outputs:viewport", f"{side}CamViewportResolution.inputs:viewport"),
+                    (f"{side}CamCreateViewport.outputs:viewport", f"{side}CamViewProduct.inputs:viewport"),
+                    (f"{side}CamViewportResolution.outputs:execOut", f"{side}CamViewProduct.inputs:execIn"),
+                    (f"{side}CamViewProduct.outputs:execOut", f"{side}CamSet.inputs:execIn"),
+                    (f"{side}CamViewProduct.outputs:renderProductPath", f"{side}CamSet.inputs:renderProductPath"),
+                ],
+                "setvalues": [
+                    (f"{side}CamBranch.inputs:condition", enable),
+                    (f"{side}CamCreateViewport.inputs:name", f"{side}Cam"),
+                    (f"{side}CamViewportResolution.inputs:width", 640),
+                    (f"{side}CamViewportResolution.inputs:height", 360),
+                ]
+            }
+            rgbNodes = createCamType(side, "RGB", rgbType, "rgb")
+            infoNodes = createCamType(side, "Info", infoType, "camera_info")
+            depthNodes = createCamType(side, "Depth", depthType, "depth")
+            depthPClNodes = createCamType(side, "DepthPcl", depthPclType, "depth_pcl")
+            camNodes["create"] += rgbNodes["create"] + infoNodes["create"] + depthNodes["create"] + depthPClNodes["create"]
+            camNodes["connect"] += rgbNodes["connect"] + infoNodes["connect"] + depthNodes["connect"] + depthPClNodes["connect"]
+            camNodes["setvalues"] += rgbNodes["setvalues"] + infoNodes["setvalues"] + depthNodes["setvalues"] + depthPClNodes["setvalues"]
+            return camNodes
+
+        leftCamNodes = getCamNodes("Left", enable_left_cam)
+        rightCamNodes = getCamNodes("Right", enable_right_cam)
         og.Controller.edit(
             {"graph_path": camera_graph, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("InfoType", "omni.graph.nodes.ConstantToken"),
-                    
-                    ("LeftCamBranch", "omni.graph.action.Branch"),
-                    ("LeftCamCreateViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-                    ("LeftCamViewProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
-                    ("LeftCamSet", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
-                    ("LeftCamHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                    ("LeftCamHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                    
-                    ("RightCamBranch", "omni.graph.action.Branch"),
-                    ("RightCamCreateViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-                    ("RightCamViewProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
-                    ("RightCamSet", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
-                    ("RightCamHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                    ("RightCamHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                ],
-                og.Controller.Keys.CONNECT: [
-                    ("OnPlaybackTick.outputs:tick", "LeftCamBranch.inputs:execIn"),
-                    ("LeftCamBranch.outputs:execTrue", "LeftCamCreateViewport.inputs:execIn"),
-                    ("LeftCamCreateViewport.outputs:execOut", "LeftCamViewProduct.inputs:execIn"),
-                    ("LeftCamCreateViewport.outputs:viewport", "LeftCamViewProduct.inputs:viewport"),
-                    ("LeftCamViewProduct.outputs:execOut", "LeftCamSet.inputs:execIn"),
-                    ("LeftCamViewProduct.outputs:renderProductPath", "LeftCamSet.inputs:renderProductPath"),
-                    ("LeftCamViewProduct.outputs:renderProductPath", "LeftCamHelperRgb.inputs:renderProductPath"),
-                    ("LeftCamViewProduct.outputs:renderProductPath", "LeftCamHelperInfo.inputs:renderProductPath"),
-                    ("LeftCamSet.outputs:execOut", "LeftCamHelperRgb.inputs:execIn"),
-                    ("LeftCamSet.outputs:execOut", "LeftCamHelperInfo.inputs:execIn"),
-                    ("InfoType.inputs:value", "LeftCamHelperInfo.inputs:type"),
+                    (rgbType, "omni.graph.nodes.ConstantToken"),
+                    (infoType, "omni.graph.nodes.ConstantToken"),
+                    (depthType, "omni.graph.nodes.ConstantToken"),
+                    (depthPclType, "omni.graph.nodes.ConstantToken"),
+                ] + leftCamNodes["create"] + rightCamNodes["create"],
 
-                    ("OnPlaybackTick.outputs:tick", "RightCamBranch.inputs:execIn"),
-                    ("RightCamBranch.outputs:execTrue", "RightCamCreateViewport.inputs:execIn"),
-                    ("RightCamCreateViewport.outputs:execOut", "RightCamViewProduct.inputs:execIn"),
-                    ("RightCamCreateViewport.outputs:viewport", "RightCamViewProduct.inputs:viewport"),
-                    ("RightCamViewProduct.outputs:execOut", "RightCamSet.inputs:execIn"),
-                    ("RightCamViewProduct.outputs:renderProductPath", "RightCamSet.inputs:renderProductPath"),
-                    ("RightCamViewProduct.outputs:renderProductPath", "RightCamHelperRgb.inputs:renderProductPath"),
-                    ("RightCamViewProduct.outputs:renderProductPath", "RightCamHelperInfo.inputs:renderProductPath"),
-                    ("RightCamSet.outputs:execOut", "RightCamHelperRgb.inputs:execIn"),
-                    ("RightCamSet.outputs:execOut", "RightCamHelperInfo.inputs:execIn"),
-                    ("InfoType.inputs:value", "RightCamHelperInfo.inputs:type"),
-                ],
+                og.Controller.Keys.CONNECT: leftCamNodes["connect"] + rightCamNodes["connect"],
+
                 og.Controller.Keys.SET_VALUES: [
-                    ("InfoType.inputs:value", "camera_info"),
-
-                    ("LeftCamBranch.inputs:condition", enable_left_cam),
-                    ("LeftCamCreateViewport.inputs:name", "LeftCam"),
-                    ("LeftCamHelperRgb.inputs:topicName", "left/rgb"),
-                    ("LeftCamHelperRgb.inputs:frameId", f"{NAMESPACE}/zed_left_camera_frame"),
-                    ("LeftCamHelperRgb.inputs:nodeNamespace", f"/{NAMESPACE}"),
-                    ("LeftCamHelperInfo.inputs:topicName", "left/camera_info"),
-                    ("LeftCamHelperInfo.inputs:frameId", f"{NAMESPACE}/zed_left_camera_frame"),
-                    ("LeftCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
-
-                    ("RightCamBranch.inputs:condition", enable_right_cam),
-                    ("RightCamCreateViewport.inputs:name", "RightCam"),
-                    ("RightCamHelperRgb.inputs:topicName", "right/rgb"),
-                    ("RightCamHelperRgb.inputs:frameId", f"{NAMESPACE}/zed_right_camera_frame"),
-                    ("RightCamHelperRgb.inputs:nodeNamespace", f"/{NAMESPACE}"),
-                    ("RightCamHelperInfo.inputs:topicName", "right/camera_info"),
-                    ("RightCamHelperInfo.inputs:frameId", f"{NAMESPACE}/zed_right_camera_frame"),
-                    ("RightCamHelperInfo.inputs:nodeNamespace", f"/{NAMESPACE}"),
-                ],
+                    (f"{rgbType}.inputs:value", "rgb"),
+                    (f"{infoType}.inputs:value", "camera_info"),
+                    (f"{depthType}.inputs:value", "depth"),
+                    (f"{depthPclType}.inputs:value", "depth_pcl"),
+                ] + leftCamNodes["setvalues"] + rightCamNodes["setvalues"],
             }
         )
         set_target_prims(primPath=f"{camera_graph}/RightCamSet", targetPrimPaths=[self.depth_right_camera_path], inputName="inputs:cameraPrim")
@@ -375,17 +400,21 @@ class ImportBot(BaseSample):
                     ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
                     # LiDAR Nodes
                     ("ReadLidar", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
-                    ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan")
-
+                    ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan"),
+                    # IMU Nodes
+                    ("IsaacReadImu", "omni.isaac.sensor.IsaacReadIMU"),
+                    ("PublishImu", "omni.isaac.ros2_bridge.ROS2PublishImu"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    ("PublishImu.inputs:nodeNamespace", f"/{NAMESPACE}"), 
                     ("PublishLidar.inputs:frameId", f"{NAMESPACE}/lidar_link"),
                     ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
                     ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
                     ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
                     ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
+                    ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed_camera_center"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
@@ -419,13 +448,22 @@ class ImportBot(BaseSample):
                     ("ReadLidar.outputs:numRows", "PublishLidar.inputs:numRows"),
                     ("ReadLidar.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
                     
-                    
+                    # IMU Connections
+                    ("OnPlaybackTick.outputs:tick", "IsaacReadImu.inputs:execIn"),
+                    ("IsaacReadImu.outputs:execOut", "PublishImu.inputs:execIn"),
+                    ("Context.outputs:context", "PublishImu.inputs:context"),
+                    ("SimTime.outputs:simulationTime", "PublishImu.inputs:timeStamp"),
+
+                    ("IsaacReadImu.outputs:angVel", "PublishImu.inputs:angularVelocity"),
+                    ("IsaacReadImu.outputs:linAcc", "PublishImu.inputs:linearAcceleration"),
+                    ("IsaacReadImu.outputs:orientation", "PublishImu.inputs:orientation"),
                 ],
             }
         )
         # Setup target prims for the Odometry and the Lidar
+        set_target_prims(primPath=f"{sensor_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim")
         set_target_prims(primPath=f"{sensor_graph}/ComputeOdometry", targetPrimPaths=[swerve_link], inputName="inputs:chassisPrim") 
-        set_target_prims(primPath=f"{sensor_graph}/ReadLidar", targetPrimPaths=[lidar_link], inputName="inputs:lidarPrim")
+        set_target_prims(primPath=f"{sensor_graph}/IsaacReadImu", targetPrimPaths=[self.imu_prim_path], inputName="inputs:imuPrim")
         return
 
     def setup_robot_action_graph(self, robot_prim_path):
@@ -478,5 +516,7 @@ class ImportBot(BaseSample):
         return
     
     def world_cleanup(self):
-        self._world.scene.remove_object(self.robot_name)
+        carb.log_info(f"Removing {self.robot_name}")
+        if self._world is not None:
+            self._world.scene.remove_object(self.robot_name)
         return

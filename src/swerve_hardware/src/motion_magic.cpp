@@ -35,34 +35,44 @@ namespace swerve_hardware
     
 
     double MotionMagic::getNextVelocity(const double targetPosition, const double sensorPosition, const double sensorVelocity, const double dt) {
-        // Basic implementation for now
-        double error = getPositionDifference(targetPosition, sensorPosition);
-        double absError = std::abs(error);
-        if (targetPosition != prevTargetPosition) {
-                totalDistance = absError;
-                prevTargetPosition = targetPosition;
-        }
-        if (absError < tolerance) {
-            return 0.0;
-        }
-
-        double dir = 1.0;
-        if (error < 0.0) {
-            dir = -1.0;
-        }
-        
-        if (absError <= rampWindow1) {
-            return velocityInRampWindow1 * dir;
-        } else if (absError <= rampWindow2) {
-            return velocityInRampWindow2 * dir;
-        } else {
-            return velocityInCruiseWindow * dir;
-        }
-
-        // if(targetPosition >= sensorPosition) {
-        //     if(abs(sensorVelocity - MAX_VELOCITY) <= epsilon) {
-
-        //     }
+        // method 0
+        // double error = getPositionDifference(targetPosition, sensorPosition);
+        // double absError = std::abs(error);
+        // if (targetPosition != prevTargetPosition) {
+        //         totalDistance = absError;
+        //         prevTargetPosition = targetPosition;
         // }
+        // if (absError < tolerance) {
+        //     return 0.0;
+        // }
+
+        // double dir = 1.0;
+        // if (error < 0.0) {
+        //     dir = -1.0;
+        // }
+        
+        // if (absError <= rampWindow1) {
+        //     return velocityInRampWindow1 * dir;
+        // } else if (absError <= rampWindow2) {
+        //     return velocityInRampWindow2 * dir;
+        // } else {
+        //     return velocityInCruiseWindow * dir;
+        // }
+
+        //method 1
+        double displacement = std::abs(getPositionDifference(targetPosition, sensorPosition));
+        double dir = targetPosition - sensorPosition;
+        double slow_down_dist = (MAX_JERK/6) * pow(2*sensorVelocity/MAX_JERK, 1.5);
+
+        if(std::abs(displacement - 0.0) <= tolerance) return 0.0;
+
+        if(dir > 0) {
+            if(displacement <= slow_down_dist) return std::max(sensorVelocity - dt * dt * MAX_JERK, -1*MAX_VELOCITY);
+            // std::cout<<std::min(sensorVelocity + dt * dt * MAX_JERK, MAX_VELOCITY);
+            else return std::min(sensorVelocity + dt * dt * MAX_JERK, MAX_VELOCITY);
+        } else {
+            if(displacement <= slow_down_dist) return std::min(sensorVelocity + dt * dt * MAX_JERK, MAX_VELOCITY);
+            else return std::max(sensorVelocity - dt * dt * MAX_JERK, -1*MAX_VELOCITY);
+        }
     }
 } // namespace swerve_hardware

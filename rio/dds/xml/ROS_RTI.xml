@@ -49,6 +49,10 @@ This code contains trade secrets of Real-Time Innovations, Inc.
           <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
           <topic name="rt/real/real_joint_commands" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
         </domain>
+        <domain name="ROS2_DOMAIN_ARM_CMDS" domain_id="0">
+          <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
+          <topic name="rt/real/real_arm_commands" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
+        </domain>
         <domain name="ROS2_DOMAIN_ENCODER_INFO" domain_id="0">
           <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
           <topic name="rt/real/real_joint_states" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
@@ -75,6 +79,12 @@ This code contains trade secrets of Real-Time Innovations, Inc.
       <domain_participant name="joint_commands" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_JOINT_CMDS">
         <subscriber name="isaac_joint_commands_subscriber">
             <data_reader name="joint_commands_reader" topic_ref="rt/real/real_joint_commands" />
+        </subscriber>
+      </domain_participant>
+
+      <domain_participant name="arm_commands" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_ARM_CMDS">
+        <subscriber name="isaac_arm_commands_subscriber">
+            <data_reader name="arm_commands_reader" topic_ref="rt/real/real_arm_commands" />
         </subscriber>
       </domain_participant>
 
