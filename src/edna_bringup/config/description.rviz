@@ -61,7 +61,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /gage/robot_description
+      Value: /saranga/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -197,7 +197,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: gage
+    TF Prefix: saranga
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -217,7 +217,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 116; 116; 116
-    Fixed Frame: gage/base_link
+    Fixed Frame: saranga/base_link
     Frame Rate: 30
   Name: root
   Tools:

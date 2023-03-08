@@ -1,12 +1,12 @@
 <?xml version = "1.0"?>
 <robot xmlns:xacro = "http://www.ros.org/wiki/xacro">
 
-    <xacro:property name="elevator_leg_length" value="0.052" />
-    <xacro:property name="elevator_leg_width" value="0.330" />
-    <xacro:property name="elevator_leg_height" value="0.59" />
+    <xacro:property name="elevator_leg_length" value="0.0508" />
+    <xacro:property name="elevator_leg_width" value="0.3302" />
+    <xacro:property name="elevator_leg_height" value="0.5842" />
     
     <xacro:property name="roller_bar_length" value="0.0508" />
-    <xacro:property name="roller_bar_width" value="0.711" />
+    <xacro:property name="roller_bar_width" value="0.7112" />
     <!-- <xacro:property name="roller_bar_height" value="0.527" /> -->
     <xacro:property name="roller_bar_height" value="0.1" />
     <xacro:property name="roller_bar_wheel_radius" value="0.0254"/>

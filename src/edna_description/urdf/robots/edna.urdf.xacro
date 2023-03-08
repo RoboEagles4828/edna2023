@@ -17,6 +17,7 @@
   <xacro:include filename="$(find edna_description)/urdf/parts/elevator.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/gripper.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/slider.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/intake.xacro" />
 
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
@@ -58,9 +59,9 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera>
 
-  <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
+  <!-- <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
     <origin xyz="${lidar_pos}" rpy="0 0 0" />
-  </xacro:lidar>
+  </xacro:lidar> -->
 
 
   <!-- Arm -->
@@ -83,6 +84,12 @@
   <xacro:slider prefix="top" parent="elevator_outer_2_link">
     <origin xyz = "${slider_pos}" rpy = "0 0 0" />
   </xacro:slider>
+
+  <!-- Bottom Intake + Gripper -->
+  <xacro:property name= "intake_pos" value = "${chassis_length/2} 0 -${elevator_leg_height/2}" />
+  <xacro:intake prefix="bottom" parent="elevator_outer_1_link">
+    <origin xyz = "${intake_pos}" rpy = "0 0 0" />
+  </xacro:intake>
 
   <!-- Control -->
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)"/>
