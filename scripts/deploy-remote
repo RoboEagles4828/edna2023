@@ -1,0 +1,20 @@
+#!/bin/bash
+USERNAME=${1:-"sorineagle"}
+IP_ADDRESS=${2:-"sorin.local"}
+REMOTE_PATH=${3:-"/home/$USERNAME/edna2023"}
+
+if [ ! $(ping $IP_ADDRESS) ]; then
+    echo Could not connect to jetson at $IP_ADDRESS!
+    echo Exitting!
+    exit 1
+fi
+
+if [ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]; then # Add it as a remote
+        if [ $(git remote | grep "jetson") ]; then # Remove the old jetson remote
+                git remote remove jetson
+        fi
+        echo "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
+        git remote add jetson "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
+fi
+
+git push jetson main
