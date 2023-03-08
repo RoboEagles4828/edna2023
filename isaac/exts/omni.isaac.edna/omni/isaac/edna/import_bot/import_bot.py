@@ -129,7 +129,7 @@ class ImportBot(BaseSample):
             return
         
         self._robot_prim = self._world.scene.add(
-            Robot(prim_path=self._robot_prim_path, name=self.robot_name, position=np.array([0.0, 0.0, 0.3]))
+            Robot(prim_path=self._robot_prim_path, name=self.robot_name, position=np.array([0.0, 0.0, 0.3]), orientation=np.array([0.0, 0.0, 0.0, 1.0]))
         )
         
         self.configure_robot(self._robot_prim_path)
