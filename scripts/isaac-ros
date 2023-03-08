@@ -1,0 +1,52 @@
+#!/usr/bin/bash
+IMAGE_NAME="ghcr.io/roboeagles4828/developer-isaac-ros:1"
+CONTAINTER_NAME="isaac-ros"
+DEFAULT_CMD="/bin/bash"
+CMD=${@:-$DEFAULT_CMD}
+
+if [[ "$1" == "stop" ]]; then
+    docker stop $CONTAINTER_NAME > /dev/null 2>&1
+    exit 0
+fi
+
+if [[ "$1" == "rm" ]]; then
+    docker stop $CONTAINTER_NAME > /dev/null 2>&1
+    docker rm $CONTAINTER_NAME > /dev/null 2>&1
+    exit 0
+fi
+
+if [[ "$1" == "vslam" ]]; then 
+    CMD="/home/admin/entrypoint.sh ros2 launch isaac_ros_visual_slam isaac_ros_visual_slam_isaac_sim.launch.py"
+fi
+
+local_sim_launch_path="${WORKSPACE_LOCAL_PATH}/src/edna_bringup/launch/vslam.py"
+sim_launch_path="/home/admin/workspaces/isaac_ros-dev/src/isaac_ros_visual_slam/isaac_ros_visual_slam/launch/isaac_ros_visual_slam_isaac_sim.launch.py"
+
+launch_isaac() {
+    docker run -d -t \
+    --name $CONTAINTER_NAME \
+    --entrypoint "" \
+    --gpus 0 \
+    --network=host -P \
+    --privileged \
+    --runtime nvidia \
+    -v "$local_sim_launch_path:$sim_launch_path:rw" \
+    -e "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES" \
+    -e "NVIDIA_DRIVER_CAPABILITIES=$NVIDIA_DRIVER_CAPABILITIES" \
+    -e "ROS_NAMESPACE=$ROS_NAMESPACE" \
+    -e "FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml" \
+    $IMAGE_NAME sleep infinity
+}
+
+# Check if an isaac-ros container already exists
+if [ $( docker ps -a | grep $CONTAINTER_NAME | wc -l ) -gt 0 ]; then
+    status=$( docker container inspect -f '{{.State.Running}}' $CONTAINTER_NAME )
+    if [[ "$status" == "false" ]]; then
+        docker start $CONTAINTER_NAME > /dev/null 2>&1
+    fi
+    docker exec -it $CONTAINTER_NAME $CMD
+else
+    echo "Isaac-ROS container does not exist, creating...."
+    launch_isaac
+    docker exec -it $CONTAINTER_NAME $CMD
+fi

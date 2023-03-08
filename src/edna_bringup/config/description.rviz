@@ -69,82 +69,127 @@ Visualization Manager:
       Expand Link Details: false
       Expand Tree: false
       Link Tree Style: Links in Alphabetic Order
+      arm_back_leg_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      arm_elevator_leg_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      arm_roller_bar_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
       base_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_front_left_axle_link:
+      elevator_left_elevator_center_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_front_left_wheel_link:
+      elevator_left_elevator_outer_1_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_front_right_axle_link:
+      elevator_left_elevator_outer_2_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_front_right_wheel_link:
+      elevator_right_elevator_center_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_lidar_link:
+      elevator_right_elevator_outer_1_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_left_axle_link:
+      elevator_right_elevator_outer_2_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_left_wheel_link:
+      front_left_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_right_axle_link:
+      front_left_wheel_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_rear_right_wheel_link:
+      front_right_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_swerve_chassis_link:
+      front_right_wheel_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_zed_base_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-      gage_zed_camera_center:
+      lidar_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      gage_zed_left_camera_frame:
+      rear_left_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_zed_left_camera_optical_frame:
+        Value: true
+      rear_left_wheel_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_zed_right_camera_frame:
+        Value: true
+      rear_right_axle_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      gage_zed_right_camera_optical_frame:
+        Value: true
+      rear_right_wheel_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      swerve_chassis_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      zed_base_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed_camera_center:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      zed_left_camera_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed_left_camera_optical_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed_right_camera_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed_right_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -157,69 +202,18 @@ Visualization Manager:
     Value: true
     Visual Enabled: true
   - Class: rviz_default_plugins/TF
-    Enabled: true
+    Enabled: false
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      gage/base_link:
-        Value: true
-      gage/gage_front_left_axle_link:
-        Value: true
-      gage/gage_front_left_wheel_link:
-        Value: false
-      gage/gage_front_right_axle_link:
-        Value: true
-      gage/gage_front_right_wheel_link:
-        Value: false
-      gage/gage_lidar_link:
-        Value: false
-      gage/gage_rear_left_axle_link:
-        Value: true
-      gage/gage_rear_left_wheel_link:
-        Value: false
-      gage/gage_rear_right_axle_link:
-        Value: true
-      gage/gage_rear_right_wheel_link:
-        Value: false
-      gage/gage_swerve_chassis_link:
-        Value: false
-      gage/gage_zed_base_link:
-        Value: false
-      gage/gage_zed_camera_center:
-        Value: false
-      gage/gage_zed_left_camera_frame:
-        Value: false
-      gage/gage_zed_left_camera_optical_frame:
-        Value: false
-      gage/gage_zed_right_camera_frame:
-        Value: false
-      gage/gage_zed_right_camera_optical_frame:
-        Value: false
     Marker Scale: 1
     Name: TF
     Show Arrows: true
     Show Axes: true
     Show Names: false
-    Tree:
-      gage/base_link:
-        gage/gage_swerve_chassis_link:
-          gage/gage_front_left_axle_link:
-            gage/gage_front_left_wheel_link: {}
-          gage/gage_front_right_axle_link:
-            gage/gage_front_right_wheel_link: {}
-          gage/gage_lidar_link: {}
-          gage/gage_rear_left_axle_link:
-            gage/gage_rear_left_wheel_link: {}
-          gage/gage_rear_right_axle_link:
-            gage/gage_rear_right_wheel_link: {}
-          gage/gage_zed_base_link:
-            gage/gage_zed_camera_center:
-              gage/gage_zed_left_camera_frame:
-                gage/gage_zed_left_camera_optical_frame: {}
-              gage/gage_zed_right_camera_frame:
-                gage/gage_zed_right_camera_optical_frame: {}
+    Tree: {}
     Update Interval: 0
-    Value: true
+    Value: false
   Enabled: true
   Global Options:
     Background Color: 116; 116; 116
@@ -266,25 +260,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.2485342025756836
+      Distance: 2.990233898162842
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
-      Focal Shape Fixed Size: false
+        X: 0.033792316913604736
+        Y: -0.24759666621685028
+        Z: 0.5461775064468384
+      Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6003983616828918
+      Pitch: 0.3803986608982086
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 0.745398223400116
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 5.673586368560791
     Saved: null
 Window Geometry:
   Displays:
@@ -302,5 +296,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1846
-  X: 3088
+  X: 714
   Y: 238

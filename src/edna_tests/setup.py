@@ -22,7 +22,8 @@ setup(
         'console_scripts': [
             'publish-joints = edna_tests.publish_joint_command:main',
             'publish-twist = edna_tests.publish_twist_command:main',
-            'run-tests = edna_tests.run_tests_command:main'
+            'run-tests = edna_tests.run_tests_command:main',
+            'arm-tests = edna_tests.arm_tests:main'
         ],
     },
 )

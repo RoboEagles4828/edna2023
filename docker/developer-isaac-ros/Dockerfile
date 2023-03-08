@@ -9,15 +9,6 @@ RUN mkdir -p /opt/install-scripts
 RUN mkdir -p /usr/local/share/middleware_profiles
 COPY config/*_profile.xml /usr/local/share/middleware_profiles/
 
-####################
-# ROS Dependencies #
-####################
-
-# Copy and isntall docker
-COPY install-scripts/install-ros-deps /opt/install-scripts/install-ros-deps
-RUN chmod +x /opt/install-scripts/install-ros-deps
-RUN /opt/install-scripts/install-ros-deps
-
 ######################
 # User configuration #
 ######################
@@ -58,3 +49,28 @@ RUN usermod -aG docker ${USERNAME}
 ENV USERNAME=${USERNAME}
 ENV USER_GID=${USER_GID}
 ENV USER_UID=${USER_UID}
+
+####################################
+# Install and Build Isaac ROS Pkgs #
+####################################
+USER ${USERNAME}
+
+# Download
+COPY install-scripts/install-isaac-pkgs /opt/install-scripts/install-isaac-pkgs
+RUN sudo chmod +x /opt/install-scripts/install-isaac-pkgs
+RUN /opt/install-scripts/install-isaac-pkgs
+
+# Build
+RUN sudo rm /usr/lib/x86_64-linux-gnu/libcuda.so.1
+RUN sudo ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so.1
+RUN cd /home/${USERNAME}/workspaces/isaac_ros-dev && source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install
+
+#####################
+# Interactive Setup #
+#####################
+
+WORKDIR /home/${USERNAME}/workspaces/isaac_ros-dev
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USERNAME}/.bashrc
+RUN echo "source /home/${USERNAME}/workspaces/isaac_ros-dev/install/setup.bash" >> /home/${USERNAME}/.bashrc
+COPY entrypoint.sh /home/${USERNAME}/entrypoint.sh
+RUN sudo chmod +x /home/${USERNAME}/entrypoint.sh

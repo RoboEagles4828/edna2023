@@ -26,9 +26,9 @@ def processRvizFileForNamespace(rviz_file, NAMESPACE):
     if current_namespace:
         print('Found namespace: ', current_namespace)
         print(f"mapping {current_namespace} -> {NAMESPACE}")
-        raw_rviz_data.replace(current_namespace, NAMESPACE)
+        new_rviz_data = yaml.safe_load(raw_rviz_data.replace(current_namespace, NAMESPACE))
         with open(rviz_file, 'w') as stream:
-            yaml.dump(rviz_data, stream)
+            yaml.dump(new_rviz_data, stream)
     else:
         with open('err', 'w') as stream:
             stream.write("Couldn't find namespace in rviz file")
