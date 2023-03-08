@@ -23,6 +23,7 @@ services:
     - "1-65535:1-65535"
     environment:
       - ROS_DOMAIN_ID=0
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       - FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml
     deploy:
       resources:
