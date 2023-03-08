@@ -86,7 +86,7 @@
   </xacro:slider>
 
   <!-- Bottom Intake + Gripper -->
-  <xacro:property name= "intake_pos" value = "${chassis_length/2} 0 -${elevator_leg_height/2}" />
+  <xacro:property name= "intake_pos" value = "${chassis_length/2 + 0.17} ${intake_block_width/2 + 0.025} -${elevator_leg_height/2 + 0.23}" />
   <xacro:intake prefix="bottom" parent="elevator_outer_1_link">
     <origin xyz = "${intake_pos}" rpy = "0 0 0" />
   </xacro:intake>

@@ -10,7 +10,7 @@
             <origin xyz = "0 0 0" rpy = "0 0 0"/>
         </xacro:inertial_box>
         <visual>
-            <origin xyz = "0 0 0" rpy = "${pi/2} 0 0"/>
+            <origin xyz = "${intake_block_length} ${intake_block_width/2} 0" rpy = "${pi/2} 0 0"/>
             <geometry>
                 <mesh filename = "package://edna_description/meshes/Front_Intake_V2.stl" scale="0.001 0.001 0.001"/>
             </geometry>
@@ -19,7 +19,7 @@
         <collision>
             <origin xyz = "0 0 0" rpy = "0 0 0"/>
             <geometry>
-                <box size="${intake_block_length} ${intake_block_length} ${intake_block_height}"/>
+                <box size="${intake_block_length} ${intake_block_width} ${intake_block_height}"/>
             </geometry>
         </collision>
     </link>
@@ -33,7 +33,7 @@
     </joint>
 
     <xacro:gripper prefix="${prefix}" parent="${prefix}_intake_link">
-        <origin xyz = "0 -${intake_block_width/2} ${intake_block_height/2}" rpy = "0 0 0" />
+        <origin xyz = "${intake_block_length} 0 0.0127" rpy = "0 0 0" />
     </xacro:gripper>
 
 
