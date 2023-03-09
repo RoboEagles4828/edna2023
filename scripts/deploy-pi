@@ -1,6 +1,6 @@
 #!/bin/bash
 USERNAME=${1:-"ubuntu"}
-IP_ADDRESS=${2:-"192.168.1.172"}
+IP_ADDRESS=${2:-"10.48.28.22"}
 REMOTE_PATH=${3:-"/home/$USERNAME/edna2023"}
 
 MACHINE_NAME=${4:-"pi"}
