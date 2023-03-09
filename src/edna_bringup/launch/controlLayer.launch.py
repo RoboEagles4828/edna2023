@@ -8,11 +8,12 @@ from launch_ros.actions import Node
 from launch.conditions import IfCondition
 
 # Easy use of namespace since args are not strings
-NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
+# NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     use_ros2_control = LaunchConfiguration('use_ros2_control')
+    load_controllers = LaunchConfiguration('load_controllers')
     namespace = LaunchConfiguration('namespace')
     hardware_plugin = LaunchConfiguration('hardware_plugin')
 
@@ -59,19 +60,19 @@ def generate_launch_description():
         namespace=namespace,
         executable="spawner",
         arguments=["joint_state_broadcaster", "-c", ['/', namespace, "/controller_manager"]],
-        condition=IfCondition(use_ros2_control),
+        condition=IfCondition(use_ros2_control and load_controllers),
     )
 
     joint_trajectory_controller_spawner = Node(
         package="controller_manager",
         namespace=namespace,
         executable="spawner",
-        arguments=["joint_trajectory_controller", "-c", f"/{NAMESPACE}/controller_manager"],
+        arguments=["joint_trajectory_controller", "-c", ['/', namespace, "/controller_manager"]],
         parameters=[{
             "robot_description": edna_description_xml,
             "use_sim_time": use_sim_time,
             }, controllers_file],
-        condition=IfCondition(use_ros2_control),
+        condition=IfCondition(use_ros2_control and load_controllers),
     )
 
     #Starts ROS2 Control Swerve Drive Controller
@@ -89,12 +90,16 @@ def generate_launch_description():
         )
     )
 
-    # Starts ROS2 Control Joint State Broadcaster
+    # Starts Joint State Publisher GUI for rviz
     joint_state_publisher_gui = Node (
         package='joint_state_publisher_gui',
         namespace=namespace,
         executable='joint_state_publisher_gui',
         output='screen',
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'publish_default_velocities':  True,
+        }],
         condition=IfCondition( PythonExpression([ "'", use_ros2_control, "' == 'false'" ]) ),
     )
 
@@ -117,6 +122,10 @@ def generate_launch_description():
             'hardware_plugin',
             default_value='swerve_hardware/IsaacDriveHardware',
             description='Which ros2 control hardware plugin to use'),
+        DeclareLaunchArgument(
+            'load_controllers',
+            default_value='true',
+            description='Enable or disable ros2 controllers but leave hardware interfaces'),
         node_robot_state_publisher,
         control_node,
         joint_state_broadcaster_spawner,

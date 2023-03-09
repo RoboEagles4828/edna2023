@@ -46,4 +46,6 @@ def generate_launch_description():
     # Launch!
     return LaunchDescription([
         control_layer,
+        teleop_layer,
+        delay_debug_layer,
     ])

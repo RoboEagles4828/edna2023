@@ -9,8 +9,8 @@ devenv_path="$SCRIPT_PATH/../.devcontainer/.env"
 # Graphics Driver Check
 hasDriver=$(nvidia-smi | grep "Version: 525")
 if [[ -z "$hasDriver" ]]; then
-  echo -e "${RED}Please install nvidia driver 525 before this install script${NC}"
-  exit 1
+ echo -e "${RED}Please install nvidia driver 525 before this install script${NC}"
+ exit 1
 fi
 
 echo -e "${ORANGE}INSTALLING APT PACKAGES${NC}"

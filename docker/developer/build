@@ -1,14 +1,17 @@
 #!/bin/bash
-VERSION="5" # Increment manually for now
+VERSION=6 # Increment manually for now
+PREV_VERSION="$((VERSION-1))"
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
-IMAGE_NAME="developer-environment:$VERSION"
+IMAGE_NAME="developer-environment"
+
+echo "Building image $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION from $GITHUB_REGISTRY/$IMAGE_NAME:$PREV_VERSION"
 
 rm -rf ./src
 cp -r ../../src .
 # Copy rio requirements to be installed
 cp ../../rio/requirements.txt ./src/requirements.txt
 
-docker build -t $GITHUB_REGISTRY/$IMAGE_NAME --cache-from $GITHUB_REGISTRY/$IMAGE_NAME .
+docker build -t $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION --cache-from $GITHUB_REGISTRY/$IMAGE_NAME:$PREV_VERSION .
 
 echo "Build finished"
 
@@ -16,14 +19,14 @@ echo "Would you like to run the image in interactive mode? (y/n)"
 read INTERACTIVE
 
 if [ "$INTERACTIVE" = "y" ]; then
-    docker run --rm -it -e ACCEPT_EULA=y $GITHUB_REGISTRY/$IMAGE_NAME
+    docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock:rw --user="1000:1000" $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION zsh
 fi
 
 echo "Would you like to push the image to the registry? (y/n)"
 read PUSH
 
 if [ "$PUSH" = "y" ]; then
-    docker push $GITHUB_REGISTRY/$IMAGE_NAME
+    docker push $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION
 fi
 
 rm -rf src

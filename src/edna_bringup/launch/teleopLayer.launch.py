@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 from launch.conditions import IfCondition
 
 # Easy use of namespace since args are not strings
-NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
+# NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -21,7 +21,7 @@ def generate_launch_description():
             executable='joy_node', 
             name='joy_node',
             condition=IfCondition(enable_joy),
-            parameters=[])
+            parameters=[{'use_sim_time': use_sim_time}])
 
     controller_prefix = 'swerve_controller'
     joy_teleop_twist = Node(
@@ -29,17 +29,15 @@ def generate_launch_description():
         namespace=namespace,
         executable='teleop_node',
         name='teleop_twist_joy_node',
-        parameters=[joystick_file],
-        remappings={(f'/{NAMESPACE}/cmd_vel', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
+        parameters=[joystick_file, {'use_sim_time': use_sim_time}],
+        remappings={("cmd_vel", f"{controller_prefix}/cmd_vel_unstamped")},
     )
     joint_trajectory_teleop = Node(
         package='joint_trajectory_teleop',
         namespace=namespace,
         executable='joint_trajectory_teleop',
         name='joint_trajectory_teleop',
-        parameters=[]
-        # remappings={(f'/{NAMESPACE}/J', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
-
+        parameters=[{'use_sim_time': use_sim_time}]
     )
     
     # Launch!

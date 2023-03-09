@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/developer-environment:5",
+    "image": "ghcr.io/roboeagles4828/developer-environment:6",
     "containerEnv": {
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
@@ -54,8 +54,6 @@
 				"eamodio.gitlens",
 				"appulate.filewatcher",
 				"formulahendry.code-runner",
-				"ms-python.python",
-				"VisualStudioExptTeam.vscodeintellicode"
 			]
         }
     }
