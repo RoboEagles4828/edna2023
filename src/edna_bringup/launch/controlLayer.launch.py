@@ -60,7 +60,7 @@ def generate_launch_description():
         namespace=namespace,
         executable="spawner",
         arguments=["joint_state_broadcaster", "-c", ['/', namespace, "/controller_manager"]],
-        condition=IfCondition(use_ros2_control and load_controllers),
+        condition=IfCondition(use_ros2_control),
     )
 
     joint_trajectory_controller_spawner = Node(
@@ -81,7 +81,7 @@ def generate_launch_description():
         namespace=namespace,
         executable="spawner",
         arguments=["swerve_controller", "-c", ['/', namespace, "/controller_manager"]],
-        condition=IfCondition(use_ros2_control),
+        condition=IfCondition(use_ros2_control and load_controllers),
     )
     swerve_drive_controller_delay = RegisterEventHandler(
         event_handler=OnProcessExit(
