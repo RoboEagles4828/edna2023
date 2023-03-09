@@ -47,6 +47,7 @@ class PublishTrajectoryMsg(Node):
         self.NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
 
         self.pos = 0.0
+        self.rot = 0.0
 
         self.publisher_ = self.create_publisher(JointTrajectory, f'/{self.NAMESPACE}/joint_trajectory_controller/joint_trajectory', 10)
         self.subscriber = self.create_subscription(Joy, f'/{self.NAMESPACE}/joy', self.controller_callback, 10)
@@ -76,14 +77,21 @@ class PublishTrajectoryMsg(Node):
         elif y_flag_negative:
             self.pos = 0.0
         elif x_flag:
-            self.pos = 0.25
+            self.pos = 0.2
         elif x_flag_negative:
-            self.pos = 1.33
+            self.pos = 0.4
+
+        if joystick.buttons[self.button_dict['RB']] == 1.0:
+            self.rot = 0.1
+        else:
+            self.rot = 0.0
+
+        
 
         position_cmds.positions = [
             float(joystick.buttons[self.button_dict['RB']]),
             self.pos,
-            float(joystick.buttons[self.button_dict['RB']]/4),
+            self.rot,
             self.pos,
             float(joystick.buttons[self.button_dict['X']]),
             float(joystick.buttons[self.button_dict['X']]),
