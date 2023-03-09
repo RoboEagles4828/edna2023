@@ -13,6 +13,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
 find_package(realtime_tools REQUIRED)
 
 ## COMPILE
@@ -36,6 +37,7 @@ ament_target_dependencies(
   rclcpp
   rclcpp_lifecycle
   sensor_msgs
+  trajectory_msgs
   realtime_tools
 )
 

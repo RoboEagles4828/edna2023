@@ -70,11 +70,20 @@ private:
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
+  std::vector<double> hw_command_position_output_;
+  std::vector<double> hw_command_velocity_output_;
+  
+
+  std::vector<std::string> joint_names_output_;
+
+
   std::vector<double> hw_command_position_converted_;
 
   // The state vectors
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
+  std::vector<double> hw_positions_input_;
+  std::vector<double> hw_velocities_input_;
 
   // Joint name array will align with state and command interface array
   // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
@@ -96,7 +105,9 @@ private:
   // Converts isaac position range -2pi - 2pi into expected ros position range -pi - pi
   double convertToRosPosition(double real_position);
   double convertToRosVelocity(double real_velocity);
+  void convertToRealElevatorPosition();
   void convertToRealPositions(std::vector<double> ros_positions);
+  std::vector<std::string> convertToRosElevatorPosition(std::vector<std::string> joint_names_input);
 };
 
 }  // namespace swerve_hardware
