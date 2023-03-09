@@ -48,14 +48,13 @@ def generate_launch_description():
         )
     )
     debugger_gui = Node(
-        package='edna_tests',
+        package='edna_debugger',
         namespace=namespace,
         executable='debugger',
         name='debugger',
         output='screen',
         parameters=[{
             'use_sim_time': use_sim_time,
-            'source_list': ['/r/joint_states'],
             'publish_default_velocities': 'true'
         }],
         remappings={("joint_states", "real_joint_commands")},

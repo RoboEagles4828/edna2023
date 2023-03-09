@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>edna_tests</name>
-  <version>0.0.1</version>
-  <description>Test robot functions</description>
-  <maintainer email="roboeagles4828@gmail.com">roboeagles</maintainer>
-  <license>MIT</license>
-
-  <exec_depend>rclpy</exec_depend>
+  <name>edna_debugger</name>
+  <version>0.0.0</version>
+  <description>Reworked joint state publisher gui that allows for direct commands to be sent to the robot</description>
+  <maintainer email="gagemiller155@gmail.com">admin</maintainer>
+  <license>Apache License 2.0</license>
+  <exec_depend>python_qt_binding</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
