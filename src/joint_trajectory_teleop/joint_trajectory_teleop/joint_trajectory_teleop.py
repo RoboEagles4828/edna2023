@@ -21,6 +21,9 @@ class PublishTrajectoryMsg(Node):
             'top_gripper_right_arm_joint',
             'top_gripper_left_arm_joint',
             'top_slider_joint',
+            'top_gripper_right_arm_joint',
+            'bottom_gripper_left_arm_joint',
+            'bottom_intake_joint'
         ]
 
         self.button_dict = {
@@ -78,13 +81,16 @@ class PublishTrajectoryMsg(Node):
             self.pos = 1.33
 
         position_cmds.positions = [
-            float(joystick.buttons[self.button_dict['A']]),
+            float(joystick.buttons[self.button_dict['RB']]),
             self.pos,
-            float(joystick.buttons[self.button_dict['A']]/4),
+            float(joystick.buttons[self.button_dict['RB']]/4),
             self.pos,
             float(joystick.buttons[self.button_dict['X']]),
             float(joystick.buttons[self.button_dict['X']]),
             float(joystick.buttons[self.button_dict['B']]),
+            float(joystick.buttons[self.button_dict['Y']]),
+            float(joystick.buttons[self.button_dict['Y']]),
+            float(joystick.buttons[self.button_dict['A']]),
         ]
         
         cmds.joint_names = self.joints
