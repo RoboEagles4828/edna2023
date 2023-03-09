@@ -198,9 +198,8 @@ class JointStatePublisherGui(QMainWindow):
         slidervalue = joint_info['slider'].value()
         joint = joint_info['joint']
         if 'wheel' in name:
-            # joint['velocity'] = self.sliderToValue(slidervalue, joint)
-            # joint_info['display'].setText("%.3f" % joint['velocity'])
-            pass
+            joint['velocity'] = self.sliderToValue(slidervalue, joint)
+            joint_info['display'].setText("%.3f" % joint['velocity'])
         else:
             joint['position'] = self.sliderToValue(slidervalue, joint)
             joint_info['display'].setText("%.3f" % joint['position'])
@@ -210,8 +209,7 @@ class JointStatePublisherGui(QMainWindow):
         for name, joint_info in self.joint_map.items():
             joint = joint_info['joint']
             if 'wheel' in name:
-                pass
-                # slidervalue = self.valueToSlider(joint['velocity'], joint)
+                slidervalue = self.valueToSlider(joint['velocity'], joint)
             else:
                 slidervalue = self.valueToSlider(joint['position'], joint)
             joint_info['slider'].setValue(slidervalue)

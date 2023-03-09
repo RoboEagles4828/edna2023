@@ -55,7 +55,8 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'use_sim_time': use_sim_time,
-            'source_list': ['/real/joint_states']
+            'source_list': ['/r/joint_states'],
+            'publish_default_velocities': 'true'
         }],
         remappings={("joint_states", "real_joint_commands")},
         condition=IfCondition(enable_debugger_gui),
