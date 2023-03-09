@@ -57,19 +57,31 @@ class PublishTrajectoryMsg(Node):
         x_flag = False
         y_flag = False
         y_flag_negative = False
+        x_flag_negative = False
+
+        if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
+            y_flag = True
+        elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
+            y_flag_negative = True
+        elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
+            x_flag = True
+        elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
+            x_flag_negative = True
 
         if y_flag:
             self.pos = 1.0
         elif y_flag_negative:
             self.pos = 0.0
         elif x_flag:
-            self.pos = 0.3
+            self.pos = 0.25
+        elif x_flag_negative:
+            self.pos = 1.33
 
         position_cmds.positions = [
             float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['RIN']]),
-            float(joystick.buttons[self.button_dict['LB']]),
-            float(joystick.buttons[self.button_dict['RIN']]),
+            self.pos,
+            float(joystick.buttons[self.button_dict['A']]/4),
+            self.pos,
             float(joystick.buttons[self.button_dict['X']]),
             float(joystick.buttons[self.button_dict['X']]),
             float(joystick.buttons[self.button_dict['B']]),

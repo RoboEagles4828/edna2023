@@ -190,7 +190,7 @@ class ImportBot(BaseSample):
         set_drive_params(rear_right_wheel, 1, 1000, 98.0)
         set_drive_params(arm_roller_bar_joint, 10000000, 100000, 98.0)
         set_drive_params(elevator_center_joint, 10000000, 100000, 98.0)
-        set_drive_params(elevator_outer_1_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_outer_1_joint, 10000000, 100000, 2000.0)
         set_drive_params(elevator_outer_2_joint, 10000000, 100000, 98.0)
         set_drive_params(top_gripper_left_arm_joint, 10000000, 100000, 98.0)
         set_drive_params(top_gripper_right_arm_joint, 10000000, 100000, 98.0)

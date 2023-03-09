@@ -91,32 +91,37 @@ Visualization Manager:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      elevator_left_elevator_center_link:
+      bottom_gripper_bar_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_left_elevator_outer_1_link:
+      bottom_gripper_left_arm_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_left_elevator_outer_2_link:
+      bottom_gripper_right_arm_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_right_elevator_center_link:
+      bottom_intake_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_right_elevator_outer_1_link:
+      elevator_center_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_right_elevator_outer_2_link:
+      elevator_outer_1_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      elevator_outer_2_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -137,11 +142,6 @@ Visualization Manager:
         Show Trail: false
         Value: true
       front_right_wheel_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      lidar_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -167,6 +167,26 @@ Visualization Manager:
         Show Trail: false
         Value: true
       swerve_chassis_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_gripper_bar_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_gripper_left_arm_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_gripper_right_arm_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_slider_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -209,6 +229,10 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
+      gage/base_link:
+        Value: false
+      gage/odom:
+        Value: false
       saranga/arm_back_leg_link:
         Value: false
       saranga/arm_elevator_leg_link:
@@ -217,18 +241,16 @@ Visualization Manager:
         Value: false
       saranga/base_link:
         Value: true
-      saranga/elevator_left_elevator_center_link:
-        Value: false
-      saranga/elevator_left_elevator_outer_1_link:
-        Value: false
-      saranga/elevator_left_elevator_outer_2_link:
-        Value: false
-      saranga/elevator_right_elevator_center_link:
-        Value: false
-      saranga/elevator_right_elevator_outer_1_link:
-        Value: false
-      saranga/elevator_right_elevator_outer_2_link:
-        Value: false
+      saranga/bottom_gripper_bar_link:
+        Value: true
+      saranga/bottom_intake_link:
+        Value: true
+      saranga/elevator_center_link:
+        Value: true
+      saranga/elevator_outer_1_link:
+        Value: true
+      saranga/elevator_outer_2_link:
+        Value: true
       saranga/front_left_axle_link:
         Value: true
       saranga/front_left_wheel_link:
@@ -237,8 +259,8 @@ Visualization Manager:
         Value: true
       saranga/front_right_wheel_link:
         Value: false
-      saranga/lidar_link:
-        Value: false
+      saranga/odom:
+        Value: true
       saranga/rear_left_axle_link:
         Value: true
       saranga/rear_left_wheel_link:
@@ -249,6 +271,14 @@ Visualization Manager:
         Value: false
       saranga/swerve_chassis_link:
         Value: false
+      saranga/top_gripper_bar_link:
+        Value: true
+      saranga/top_gripper_left_arm_link:
+        Value: true
+      saranga/top_gripper_right_arm_link:
+        Value: true
+      saranga/top_slider_link:
+        Value: true
       saranga/zed_base_link:
         Value: false
       saranga/zed_camera_center:
@@ -270,19 +300,19 @@ Visualization Manager:
       saranga/base_link:
         saranga/swerve_chassis_link:
           saranga/arm_back_leg_link:
-            saranga/elevator_left_elevator_outer_1_link:
-              saranga/elevator_left_elevator_center_link:
-                saranga/elevator_left_elevator_outer_2_link: {}
-            saranga/elevator_right_elevator_outer_1_link:
-              saranga/elevator_right_elevator_center_link:
-                saranga/elevator_right_elevator_outer_2_link: {}
+            saranga/elevator_outer_1_link:
+              saranga/elevator_center_link:
+                saranga/elevator_outer_2_link:
+                  saranga/top_slider_link:
+                    saranga/top_gripper_bar_link:
+                      saranga/top_gripper_left_arm_link: {}
+                      saranga/top_gripper_right_arm_link: {}
           saranga/arm_elevator_leg_link:
             saranga/arm_roller_bar_link: {}
           saranga/front_left_axle_link:
             saranga/front_left_wheel_link: {}
           saranga/front_right_axle_link:
             saranga/front_right_wheel_link: {}
-          saranga/lidar_link: {}
           saranga/rear_left_axle_link:
             saranga/rear_left_wheel_link: {}
           saranga/rear_right_axle_link:
