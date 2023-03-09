@@ -29,15 +29,17 @@ def generate_launch_description():
         namespace=namespace,
         executable='teleop_node',
         name='teleop_twist_joy_node',
-        parameters=[joystick_file, {'use_sim_time': use_sim_time}],
-        remappings={("cmd_vel", f"{controller_prefix}/cmd_vel_unstamped")},
+        parameters=[joystick_file],
+        remappings={(f'/{NAMESPACE}/cmd_vel', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
     )
     joint_trajectory_teleop = Node(
         package='joint_trajectory_teleop',
         namespace=namespace,
         executable='joint_trajectory_teleop',
         name='joint_trajectory_teleop',
-        parameters=[{'use_sim_time': use_sim_time}]
+        parameters=[]
+        # remappings={(f'/{NAMESPACE}/J', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
+
     )
     
     # Launch!
