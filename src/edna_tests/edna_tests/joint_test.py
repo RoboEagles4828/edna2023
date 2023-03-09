@@ -16,6 +16,8 @@ PUBLISH_INTERVAL = .5 # seconds
 PASS_TOLERANCE = 0.5
 WARN_TOLERANCE = 1
 
+SCALING_FACTOR_FIX = 10000
+
 class TesterNode(Node):
 
     def __init__(self, tests, joint_names, joint_range, pub_topic_name, sub_topic_name=SUBSCRIBE_TOPIC_NAME, pub_interval=PUBLISH_INTERVAL, pass_tolerance=PASS_TOLERANCE, warn_tolerance=WARN_TOLERANCE):
@@ -72,7 +74,7 @@ class TesterNode(Node):
 
     def recieve(self, msg : JointState):
         if self.recieving:
-            self.lastPositions = msg.position[self.JOINT_RANGE[0]:self.JOINT_RANGE[1]]
+            self.lastPositions = [i / SCALING_FACTOR_FIX for i in msg.position[self.JOINT_RANGE[0]:self.JOINT_RANGE[1]]]
 
     def testFinished(self):
         if not self.recieving:
