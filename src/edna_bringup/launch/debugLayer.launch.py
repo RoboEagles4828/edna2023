@@ -13,6 +13,7 @@ def generate_launch_description():
     namespace = LaunchConfiguration('namespace')
     enable_rviz = LaunchConfiguration('enable_rviz')
     enable_foxglove = LaunchConfiguration('enable_foxglove')
+    enable_debugger_gui = LaunchConfiguration('enable_debugger_gui')
     rviz_file = LaunchConfiguration('rviz_file')
 
 
@@ -46,6 +47,18 @@ def generate_launch_description():
             on_exit=[rviz2],
         )
     )
+    debugger_gui = Node(
+        package='edna_tests',
+        namespace=namespace,
+        executable='debugger',
+        output='screen',
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'source_list': ['joint_states']
+        }],
+        remappings={("joint_states", "real_joint_commands")},
+        condition=IfCondition(enable_debugger_gui),
+    )
     
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -68,7 +81,12 @@ def generate_launch_description():
             'enable_foxglove',
             default_value='true',
             description='enables foxglove bridge'),
+        DeclareLaunchArgument(
+            'enable_debugger_gui',
+            default_value='false',
+            description='enables the debugger gui tool'),
             foxglove,
             parseRvizFile,
             rviz2_delay,
+            debugger_gui
     ])
