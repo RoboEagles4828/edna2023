@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+python_path="/isaac-sim/python.sh"
+scripts_path="/root/edna/isaac/Swervesim/swervesim/scripts/rlgames_train.py"
+isaac $python_path $scripts_path $@
