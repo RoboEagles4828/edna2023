@@ -1,0 +1,5 @@
+#!/bin/bash
+cd ..
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install
+sudo systemctl restart edna.service
