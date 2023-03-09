@@ -61,3 +61,11 @@ if ! dpkg -s nvidia-docker2 > /dev/null; then
 else
   echo -e "${GREEN}NVIDIA DOCKER ALREADY INSTALLED${NC}"
 fi
+
+# Deployment Keys
+if [ ! -f ~/.ssh/robot_deploy ]; then
+  echo -e "${ORANGE}SETTING UP DEPLOY KEYS${NC}"
+  ssh-keygen -b 2048 -t rsa -f ~/.ssh/robot_deploy -q -N ""
+else
+  echo -e "${GREEN}DEPLOY KEYS ALREADY SET${NC}"
+fi
