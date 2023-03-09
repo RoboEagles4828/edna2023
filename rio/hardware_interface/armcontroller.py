@@ -16,7 +16,7 @@ TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
 # The numbers below will **need** to be changed to fit the robot wiring
 PORTS = {
     # Modules
-    'HUB': 1,
+    'HUB': 18,
     # Pistons
     'ARM_ROLLER_BAR': [14, 15],
     'TOP_GRIPPER_SLIDER': [10, 11],
