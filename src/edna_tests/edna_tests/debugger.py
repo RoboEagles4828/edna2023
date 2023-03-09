@@ -198,8 +198,9 @@ class JointStatePublisherGui(QMainWindow):
         slidervalue = joint_info['slider'].value()
         joint = joint_info['joint']
         if 'wheel' in name:
-            joint['velocity'] = self.sliderToValue(slidervalue, joint)
-            joint_info['display'].setText("%.3f" % joint['velocity'])
+            # joint['velocity'] = self.sliderToValue(slidervalue, joint)
+            # joint_info['display'].setText("%.3f" % joint['velocity'])
+            pass
         else:
             joint['position'] = self.sliderToValue(slidervalue, joint)
             joint_info['display'].setText("%.3f" % joint['position'])
@@ -209,7 +210,8 @@ class JointStatePublisherGui(QMainWindow):
         for name, joint_info in self.joint_map.items():
             joint = joint_info['joint']
             if 'wheel' in name:
-                slidervalue = self.valueToSlider(joint['velocity'], joint)
+                pass
+                # slidervalue = self.valueToSlider(joint['velocity'], joint)
             else:
                 slidervalue = self.valueToSlider(joint['position'], joint)
             joint_info['slider'].setValue(slidervalue)
@@ -256,7 +258,7 @@ def main():
     parsed_args = parser.parse_args(args=stripped_args[1:])
 
     app = QApplication(sys.argv)
-    jsp_gui = JointStatePublisherGui('Joint State Publisher',
+    jsp_gui = JointStatePublisherGui('Debugger',
                                      JointStatePublisher(parsed_args.urdf_file))
 
     jsp_gui.show()
