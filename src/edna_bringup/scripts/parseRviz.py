@@ -2,7 +2,7 @@ import sys
 import yaml
 import os
 
-NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
+# NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def processRvizFileForNamespace(rviz_file, NAMESPACE):
     rviz_data = None
@@ -35,4 +35,4 @@ def processRvizFileForNamespace(rviz_file, NAMESPACE):
 
 
 if __name__ == "__main__":
-    processRvizFileForNamespace(sys.argv[1], NAMESPACE)
+    processRvizFileForNamespace(sys.argv[1], sys.argv[2])

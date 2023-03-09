@@ -29,7 +29,7 @@ def generate_launch_description():
     )
 
     parse_script = os.path.join(bringup_pkg_path, 'scripts', 'parseRviz.py')
-    parseRvizFile = ExecuteProcess(cmd=["python3", parse_script, rviz_file])
+    parseRvizFile = ExecuteProcess(cmd=["python3", parse_script, rviz_file, namespace])
 
     rviz2 = Node(
         package='rviz2',
