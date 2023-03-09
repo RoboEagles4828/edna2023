@@ -11,7 +11,7 @@ MACHINE_NAME=${4:-"pi"}
 #     exit 1
 # fi
 
-if [ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]; then # Add it as a remote
+if [[ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]]; then # Add it as a remote
         if [ $(git remote | grep "$MACHINE_NAME") ]; then # Remove the old jetson remote
                 git remote remove $MACHINE_NAME
         fi
