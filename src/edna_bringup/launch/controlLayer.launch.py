@@ -57,7 +57,7 @@ def generate_launch_description():
         package="controller_manager",
         namespace=namespace,
         executable="spawner",
-        arguments=["joint_state_broadcaster", "-c", f"/{NAMESPACE}/controller_manager"],
+        arguments=["joint_state_broadcaster", "-c", ['/', namespace, "/controller_manager"]],
         condition=IfCondition(use_ros2_control),
     )
 
@@ -66,7 +66,7 @@ def generate_launch_description():
         package="controller_manager",
         namespace=namespace,
         executable="spawner",
-        arguments=["swerve_controller", "-c", f"/{NAMESPACE}/controller_manager"],
+        arguments=["swerve_controller", "-c", ['/', namespace, "/controller_manager"]],
         condition=IfCondition(use_ros2_control),
     )
     swerve_drive_controller_delay = RegisterEventHandler(

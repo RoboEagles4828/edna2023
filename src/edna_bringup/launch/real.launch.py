@@ -18,10 +18,11 @@ def generate_launch_description():
     
     teleoplaunch_args = common | {
         'joystick_file': joystick_file,
+        'enable_joy': 'false'
     }
     
     debug_launch_args = common | {
-        'enable_rviz': 'true',
+        'enable_rviz': 'false',
         'enable_foxglove': 'true',
         'rviz_file': rviz_file
     }
@@ -45,6 +46,4 @@ def generate_launch_description():
     # Launch!
     return LaunchDescription([
         control_layer,
-        teleop_layer,
-        delay_debug_layer,
     ])
