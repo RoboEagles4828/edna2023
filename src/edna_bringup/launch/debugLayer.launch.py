@@ -51,10 +51,11 @@ def generate_launch_description():
         package='edna_tests',
         namespace=namespace,
         executable='debugger',
+        name='debugger',
         output='screen',
         parameters=[{
             'use_sim_time': use_sim_time,
-            'source_list': ['joint_states']
+            'source_list': ['/real/joint_states']
         }],
         remappings={("joint_states", "real_joint_commands")},
         condition=IfCondition(enable_debugger_gui),

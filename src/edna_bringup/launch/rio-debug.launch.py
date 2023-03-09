@@ -6,7 +6,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     bringup_path = get_package_share_directory("edna_bringup")
-    joystick_file = os.path.join(bringup_path, 'config', 'xbox-real.yaml')
     rviz_file = os.path.join(bringup_path, 'config', 'riodebug.rviz')
     
     common = { 'use_sim_time': 'false', 'namespace': 'real' }
@@ -17,13 +16,8 @@ def generate_launch_description():
         'hardware_plugin': 'swerve_hardware/RealDriveHardware',
     }
     
-    teleoplaunch_args = common | {
-        'joystick_file': joystick_file,
-        'enable_joy': 'false'
-    }
-    
     debug_launch_args = common | {
-        'enable_rviz': 'true',
+        'enable_rviz': 'false',
         'enable_foxglove': 'false',
         'enable_debugger_gui': 'true',
         'rviz_file': rviz_file
@@ -33,11 +27,6 @@ def generate_launch_description():
                 PythonLaunchDescriptionSource([os.path.join(
                     bringup_path,'launch','controlLayer.launch.py'
                 )]), launch_arguments=control_launch_args.items())
-    
-    teleop_layer = IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([os.path.join(
-                    bringup_path,'launch','teleopLayer.launch.py'
-                )]), launch_arguments=teleoplaunch_args.items())
 
     debug_layer = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
@@ -48,6 +37,5 @@ def generate_launch_description():
     # Launch!
     return LaunchDescription([
         control_layer,
-        teleop_layer,
         delay_debug_layer
     ])
