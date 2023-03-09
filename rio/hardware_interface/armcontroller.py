@@ -57,23 +57,23 @@ class ArmController():
         self.JOINT_MAP : dict[str, Piston | ElevatorWheel] = {
             # Pneumatics
             'arm_roller_bar_joint':     self.arm_roller_bar,
-            'top_gripper_slider_joint': self.top_gripper_slider,
-            'top_gripper_joint':        self.top_gripper,
-            'bottom_gripper_joint':     self.bottom_gripper,
+            'top_slider_joint': self.top_gripper_slider,
+            'top_gripper_left_arm_joint':        self.top_gripper,
+            'bottom_gripper_left_arm_joint':     self.bottom_gripper,
             # Wheels
-            'elevator_left_elevator_center_joint': self.elevator,
-            'bottom_gripper_lift_joint': self.bottom_gripper_lift
+            'elevator_center_joint': self.elevator,
+            'bottom_intake_joint': self.bottom_gripper_lift
         }
 
         self.LAST_COMMANDS = {
             # Pneumatics
             'arm_roller_bar_joint':     None,
-            'top_gripper_slider_joint': None,
-            'top_gripper_joint':        None,
-            'bottom_gripper_joint':     None,
+            'top_slider_joint': None,
+            'top_gripper_left_arm_joint':        None,
+            'bottom_gripper_left_arm_joint':     None,
             # Wheels
-            'elevator_left_elevator_center_joint': None,
-            'bottom_gripper_lift_joint': None
+            'elevator_center_joint': None,
+            'bottom_intake_joint': None
         }
         
 
