@@ -54,8 +54,6 @@
 				"eamodio.gitlens",
 				"appulate.filewatcher",
 				"formulahendry.code-runner",
-				"ms-python.python",
-				"VisualStudioExptTeam.vscodeintellicode"
 			]
         }
     }

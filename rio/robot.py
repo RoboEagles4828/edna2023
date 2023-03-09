@@ -182,7 +182,7 @@ class edna_robot(wpilib.TimedRobot):
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
         initDriveTrain()
-        # initJoystick()
+        initJoystick()
         initArmController()
 
         self.threads = []
@@ -194,7 +194,7 @@ class edna_robot(wpilib.TimedRobot):
                 {"name": "encoder", "thread": startThread("encoder") },
                 {"name": "command", "thread": startThread("command") },
                 {"name": "arm-command", "thread": startThread("arm-command")},
-                # {"name": "joystick", "thread": startThread("joystick") },
+                {"name": "joystick", "thread": startThread("joystick") },
             ]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)

@@ -16,15 +16,15 @@ TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
 # The numbers below will **need** to be changed to fit the robot wiring
 PORTS = {
     # Modules
-    'HUB': 1,
+    'HUB': 18,
     # Pistons
     'ARM_ROLLER_BAR': [14, 15],
     'TOP_GRIPPER_SLIDER': [10, 11],
     'TOP_GRIPPER': [12, 13],
     'BOTTOM_GRIPPER': [8, 9],
     # Wheels
-    'ELEVATOR': 0,
-    'BOTTOM_GRIPPER_LIFT': 1
+    'ELEVATOR': 13,
+    'BOTTOM_GRIPPER_LIFT': 14
 }
 
 ELEVATOR_CONFIG = {
@@ -57,23 +57,23 @@ class ArmController():
         self.JOINT_MAP : dict[str, Piston | ElevatorWheel] = {
             # Pneumatics
             'arm_roller_bar_joint':     self.arm_roller_bar,
-            'top_gripper_slider_joint': self.top_gripper_slider,
-            'top_gripper_joint':        self.top_gripper,
-            'bottom_gripper_joint':     self.bottom_gripper,
+            'top_slider_joint': self.top_gripper_slider,
+            'top_gripper_left_arm_joint':        self.top_gripper,
+            'bottom_gripper_left_arm_joint':     self.bottom_gripper,
             # Wheels
-            'elevator_left_elevator_center_joint': self.elevator,
-            'bottom_gripper_lift_joint': self.bottom_gripper_lift
+            'elevator_center_joint': self.elevator,
+            'bottom_intake_joint': self.bottom_gripper_lift
         }
 
         self.LAST_COMMANDS = {
             # Pneumatics
             'arm_roller_bar_joint':     None,
-            'top_gripper_slider_joint': None,
-            'top_gripper_joint':        None,
-            'bottom_gripper_joint':     None,
+            'top_slider_joint': None,
+            'top_gripper_left_arm_joint':        None,
+            'bottom_gripper_left_arm_joint':     None,
             # Wheels
-            'elevator_left_elevator_center_joint': None,
-            'bottom_gripper_lift_joint': None
+            'elevator_center_joint': None,
+            'bottom_intake_joint': None
         }
         
 
