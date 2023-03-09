@@ -8,7 +8,7 @@ from launch_ros.actions import Node
 from launch.conditions import IfCondition
 
 # Easy use of namespace since args are not strings
-NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
+# NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -66,7 +66,7 @@ def generate_launch_description():
         package="controller_manager",
         namespace=namespace,
         executable="spawner",
-        arguments=["joint_trajectory_controller", "-c", f"/{NAMESPACE}/controller_manager"],
+        arguments=["joint_trajectory_controller", "-c", ['/', namespace, "/controller_manager"]],
         parameters=[{
             "robot_description": edna_description_xml,
             "use_sim_time": use_sim_time,
