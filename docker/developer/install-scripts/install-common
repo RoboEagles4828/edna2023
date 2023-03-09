@@ -5,6 +5,12 @@
 
 set -e
 
+INSTALL_COMMON=$1
+if [ "$INSTALL_COMMON" != "true" ]; then
+    echo "Skipping common packages"
+    exit 0
+fi
+
 INSTALL_ZSH="true"
 INSTALL_OH_MY_ZSH="true"
 CONFIGURE_ZSH_AS_DEFAULT_SHELL="true"
