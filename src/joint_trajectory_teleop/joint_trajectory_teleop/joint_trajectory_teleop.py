@@ -5,6 +5,7 @@ import math
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from sensor_msgs.msg import Joy
 import os
+from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSReliabilityPolicy, QoSProfile
 
 import time
 
@@ -48,9 +49,9 @@ class PublishTrajectoryMsg(Node):
 
         self.pos = 0.0
         self.rot = 0.0
-
-        self.publisher_ = self.create_publisher(JointTrajectory, f'/{self.NAMESPACE}/joint_trajectory_controller/joint_trajectory', 10)
-        self.subscriber = self.create_subscription(Joy, f'/{self.NAMESPACE}/joy', self.controller_callback, 10)
+        # qos = QoSProfile(durability=QoSDurabilityPolicy.VOLATILE, reliability=QoSReliabilityPolicy.BEST_EFFORT, history=QoSHistoryPolicy.KEEP_LAST, depth=10)
+        self.publisher_ = self.create_publisher(JointTrajectory, f'/{self.NAMESPACE}/joint_trajectory_controller/joint_trajectory', 10)#qos_profile=qos)
+        self.subscriber = self.create_subscription(Joy, f'/{self.NAMESPACE}/joy', self.controller_callback, 10)#qos_profile=qos)
         self.timer_period = 0.5  # seconds
 
     def controller_callback(self, joystick: Joy):
