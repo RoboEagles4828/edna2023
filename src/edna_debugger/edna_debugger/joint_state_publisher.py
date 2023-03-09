@@ -264,7 +264,7 @@ class JointStatePublisher(rclpy.node.Node):
         self.delta = self.get_param('delta')
 
         source_list = self.get_param('source_list')
-        self.sources = ["/real/joint_states"]
+        self.sources = []
         for source in source_list:
             self.sources.append(self.create_subscription(sensor_msgs.msg.JointState, source, self.source_cb, 10))
 
@@ -273,7 +273,8 @@ class JointStatePublisher(rclpy.node.Node):
         # joint_state_publisher_gui) to be notified when things are updated.
         self.source_update_cb = None
 
-        self.pub = self.create_publisher(sensor_msgs.msg.JointState, 'joint_states', 10)
+        # Override topic name here
+        self.pub = self.create_publisher(sensor_msgs.msg.JointState, 'real_joint_commands', 10)
 
         self.timer = self.create_timer(1.0 / self.get_param('rate'), self.timer_callback)
 
