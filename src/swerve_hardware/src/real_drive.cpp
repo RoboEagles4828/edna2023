@@ -176,7 +176,7 @@ namespace swerve_hardware
 
         // Make i of the pos command interface 0.0
         hw_command_velocity_[i] = 0.0;
-        if (joint.name.find("elevator_center_joint") != std::string::npos || joint.name.find("arm_roller_bar_joint") != std::string::npos || joint.name.find("axle") != std::string::npos || joint.name.find("slider_joint") != std::string::npos || joint.name.find("left_arm_joint") != std::string::npos || joint.name.find("bottom_arm_joint") != std::string::npos)
+        if (joint.name.find("elevator_center_joint") != std::string::npos || joint.name.find("arm_roller_bar_joint") != std::string::npos || joint.name.find("axle") != std::string::npos || joint.name.find("slider_joint") != std::string::npos || joint.name.find("left_arm_joint") != std::string::npos || joint.name.find("bottom_intake_joint") != std::string::npos)
         {
           joint_names_output_.push_back(joint.name);
           RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Added Position Simplified Joint: %s", joint.name.c_str());
@@ -271,7 +271,7 @@ namespace swerve_hardware
       {
         top_slider_arm_position = hw_command_position_converted_[i];
       }
-      else if (joint_names_[i].find("bottom_arm_joint") != std::string::npos)
+      else if (joint_names_[i].find("bottom_intake_joint") != std::string::npos)
       {
         bottom_arm_position = hw_command_position_converted_[i];
       }
@@ -307,7 +307,7 @@ namespace swerve_hardware
       {
         hw_command_position_output_[i] = top_slider_arm_position;
       }
-      else if (joint_names_[i].find("bottom_arm_joint") != std::string::npos)
+      else if (joint_names_[i].find("bottom_intake_joint") != std::string::npos)
       {
         hw_command_position_output_[i] = bottom_arm_position;
       }
