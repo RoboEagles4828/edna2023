@@ -53,7 +53,7 @@ Visualization Manager:
     Value: true
   - Alpha: 1
     Class: rviz_default_plugins/RobotModel
-    Collision Enabled: false
+    Collision Enabled: true
     Description File: ''
     Description Source: Topic
     Description Topic:
@@ -61,7 +61,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /saranga/robot_description
+      Value: /Nitin/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -217,7 +217,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: saranga
+    TF Prefix: Nitin
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -226,65 +226,65 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      saranga/arm_back_leg_link:
+      Nitin/arm_back_leg_link:
         Value: false
-      saranga/arm_elevator_leg_link:
+      Nitin/arm_elevator_leg_link:
         Value: false
-      saranga/arm_roller_bar_link:
+      Nitin/arm_roller_bar_link:
         Value: false
-      saranga/base_link:
+      Nitin/base_link:
         Value: false
-      saranga/bottom_gripper_bar_link:
+      Nitin/bottom_gripper_bar_link:
         Value: false
-      saranga/bottom_gripper_left_arm_link:
+      Nitin/bottom_gripper_left_arm_link:
         Value: false
-      saranga/bottom_gripper_right_arm_link:
+      Nitin/bottom_gripper_right_arm_link:
         Value: false
-      saranga/bottom_intake_link:
+      Nitin/bottom_intake_link:
         Value: true
-      saranga/elevator_center_link:
+      Nitin/elevator_center_link:
         Value: false
-      saranga/elevator_outer_1_link:
+      Nitin/elevator_outer_1_link:
         Value: false
-      saranga/elevator_outer_2_link:
+      Nitin/elevator_outer_2_link:
         Value: false
-      saranga/front_left_axle_link:
+      Nitin/front_left_axle_link:
         Value: false
-      saranga/front_left_wheel_link:
+      Nitin/front_left_wheel_link:
         Value: false
-      saranga/front_right_axle_link:
+      Nitin/front_right_axle_link:
         Value: false
-      saranga/front_right_wheel_link:
+      Nitin/front_right_wheel_link:
         Value: false
-      saranga/rear_left_axle_link:
+      Nitin/rear_left_axle_link:
         Value: false
-      saranga/rear_left_wheel_link:
+      Nitin/rear_left_wheel_link:
         Value: false
-      saranga/rear_right_axle_link:
+      Nitin/rear_right_axle_link:
         Value: false
-      saranga/rear_right_wheel_link:
+      Nitin/rear_right_wheel_link:
         Value: false
-      saranga/swerve_chassis_link:
+      Nitin/swerve_chassis_link:
         Value: false
-      saranga/top_gripper_bar_link:
+      Nitin/top_gripper_bar_link:
         Value: false
-      saranga/top_gripper_left_arm_link:
+      Nitin/top_gripper_left_arm_link:
         Value: false
-      saranga/top_gripper_right_arm_link:
+      Nitin/top_gripper_right_arm_link:
         Value: false
-      saranga/top_slider_link:
+      Nitin/top_slider_link:
         Value: false
-      saranga/zed_base_link:
+      Nitin/zed_base_link:
         Value: false
-      saranga/zed_camera_center:
+      Nitin/zed_camera_center:
         Value: false
-      saranga/zed_left_camera_frame:
+      Nitin/zed_left_camera_frame:
         Value: false
-      saranga/zed_left_camera_optical_frame:
+      Nitin/zed_left_camera_optical_frame:
         Value: false
-      saranga/zed_right_camera_frame:
+      Nitin/zed_right_camera_frame:
         Value: false
-      saranga/zed_right_camera_optical_frame:
+      Nitin/zed_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -292,42 +292,42 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      saranga/base_link:
-        saranga/swerve_chassis_link:
-          saranga/arm_back_leg_link:
-            saranga/elevator_outer_1_link:
-              saranga/bottom_intake_link:
-                saranga/bottom_gripper_bar_link:
-                  saranga/bottom_gripper_left_arm_link: {}
-                  saranga/bottom_gripper_right_arm_link: {}
-              saranga/elevator_center_link:
-                saranga/elevator_outer_2_link:
-                  saranga/top_slider_link:
-                    saranga/top_gripper_bar_link:
-                      saranga/top_gripper_left_arm_link: {}
-                      saranga/top_gripper_right_arm_link: {}
-          saranga/arm_elevator_leg_link:
-            saranga/arm_roller_bar_link: {}
-          saranga/front_left_axle_link:
-            saranga/front_left_wheel_link: {}
-          saranga/front_right_axle_link:
-            saranga/front_right_wheel_link: {}
-          saranga/rear_left_axle_link:
-            saranga/rear_left_wheel_link: {}
-          saranga/rear_right_axle_link:
-            saranga/rear_right_wheel_link: {}
-          saranga/zed_base_link:
-            saranga/zed_camera_center:
-              saranga/zed_left_camera_frame:
-                saranga/zed_left_camera_optical_frame: {}
-              saranga/zed_right_camera_frame:
-                saranga/zed_right_camera_optical_frame: {}
+      Nitin/base_link:
+        Nitin/swerve_chassis_link:
+          Nitin/arm_back_leg_link:
+            Nitin/elevator_outer_1_link:
+              Nitin/elevator_center_link:
+                Nitin/elevator_outer_2_link:
+                  Nitin/top_slider_link:
+                    Nitin/top_gripper_bar_link:
+                      Nitin/top_gripper_left_arm_link: {}
+                      Nitin/top_gripper_right_arm_link: {}
+          Nitin/arm_elevator_leg_link:
+            Nitin/arm_roller_bar_link: {}
+            Nitin/bottom_intake_link:
+              Nitin/bottom_gripper_bar_link:
+                Nitin/bottom_gripper_left_arm_link: {}
+                Nitin/bottom_gripper_right_arm_link: {}
+          Nitin/front_left_axle_link:
+            Nitin/front_left_wheel_link: {}
+          Nitin/front_right_axle_link:
+            Nitin/front_right_wheel_link: {}
+          Nitin/rear_left_axle_link:
+            Nitin/rear_left_wheel_link: {}
+          Nitin/rear_right_axle_link:
+            Nitin/rear_right_wheel_link: {}
+          Nitin/zed_base_link:
+            Nitin/zed_camera_center:
+              Nitin/zed_left_camera_frame:
+                Nitin/zed_left_camera_optical_frame: {}
+              Nitin/zed_right_camera_frame:
+                Nitin/zed_right_camera_optical_frame: {}
     Update Interval: 0
     Value: true
   Enabled: true
   Global Options:
     Background Color: 116; 116; 116
-    Fixed Frame: saranga/base_link
+    Fixed Frame: Nitin/base_link
     Frame Rate: 30
   Name: root
   Tools:

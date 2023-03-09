@@ -128,6 +128,30 @@
           <state_interface name="position"/>
           <state_interface name="velocity"/>
       </joint>
+       <joint name = "bottom_intake_joint" type = "revolute">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
+      <joint name = "bottom_gripper_left_arm_joint" type = "revolute">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
+      <joint name = "bottom_gripper_right_arm_joint" type = "prismatic">
+          <command_interface name="position">
+            <param name="min">-1</param>
+            <param name="max">1</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+      </joint>
     </ros2_control>
   </xacro:macro>
 

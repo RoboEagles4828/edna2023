@@ -17,7 +17,7 @@
             <material name = "blue"/>
         </visual>
         <collision>
-            <origin xyz = "${intake_block_length/2} 0 ${intake_block_height/2}" rpy = "0 0 0"/>
+            <origin xyz = "${intake_block_length/2 - 0.03} 0 0" rpy = "0 0 0"/>
             <geometry>
                 <box size="${intake_block_length} ${intake_block_width} ${intake_block_height}"/>
             </geometry>
@@ -33,7 +33,7 @@
     </joint>
 
     <xacro:gripper prefix="${prefix}" parent="${prefix}_intake_link">
-        <origin xyz = "${intake_block_length - 0.1} 0 -0.035" rpy = "0 0 0" />
+        <origin xyz = "${intake_block_length - 0.05} 0 -0.035" rpy = "0 0 0" />
     </xacro:gripper>
 
 
