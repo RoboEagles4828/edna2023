@@ -83,9 +83,9 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   pimpl_ = new Impl;
   // rclcpp::Node node = Node("teleop_twist_joy_node", options);
   pimpl_->cmd_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-  pimpl_->odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("odom", rclcpp::QoS(10),
+  pimpl_->odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("odom", rclcpp::QoS(10).best_effort(),
     std::bind(&TeleopTwistJoy::Impl::odomCallback, this->pimpl_, std::placeholders::_1));
-  pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10),
+  pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10).best_effort(),
     std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
 
 
