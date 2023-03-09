@@ -23,8 +23,8 @@ PORTS = {
     'TOP_GRIPPER': [12, 13],
     'BOTTOM_GRIPPER': [8, 9],
     # Wheels
-    'ELEVATOR': 0,
-    'BOTTOM_GRIPPER_LIFT': 1
+    'ELEVATOR': 13,
+    'BOTTOM_GRIPPER_LIFT': 14
 }
 
 ELEVATOR_CONFIG = {
