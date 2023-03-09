@@ -1,0 +1,22 @@
+#!/bin/bash
+USERNAME=${1:-"ubuntu"}
+IP_ADDRESS=${2:-"192.168.1.172"}
+REMOTE_PATH=${3:-"/home/$USERNAME/edna2023"}
+
+MACHINE_NAME=${4:-"pi"}
+
+# if [ ! $(ping $IP_ADDRESS) ]; then
+#     echo Could not connect to jetson at $IP_ADDRESS!
+#     echo Exitting!
+#     exit 1
+# fi
+
+if [[ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]]; then # Add it as a remote
+        if [ $(git remote | grep "$MACHINE_NAME") ]; then # Remove the old jetson remote
+                git remote remove $MACHINE_NAME
+        fi
+        echo "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
+        git remote add $MACHINE_NAME "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
+fi
+
+git push $MACHINE_NAME main
