@@ -79,7 +79,7 @@ def generate_launch_description():
         package="controller_manager",
         namespace=namespace,
         executable="spawner",
-        arguments=["joint_trajectory_controller", "-c", f"/{NAMESPACE}/controller_manager"],
+        arguments=["joint_trajectory_controller", "-c", f"/{namespace}/controller_manager"],
         parameters=[{
             "robot_description": edna_description_xml,
             "use_sim_time": use_sim_time,
