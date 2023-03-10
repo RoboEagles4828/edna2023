@@ -85,8 +85,8 @@ slot_idx = 0
 pid_loop_idx = 0
 timeout_ms = 30
 
-velocityConstant = 0.4
-accelerationConstant = 0.15
+velocityConstant = 0.2
+accelerationConstant = 0.01
 # Conversion Functions
 positionCoefficient = 2.0 * math.pi / TICKS_PER_REV / AXLE_JOINT_GEAR_RATIO
 velocityCoefficient = positionCoefficient * 10.0
@@ -363,7 +363,8 @@ class DriveTrain():
                     module = self.module_lookup[axle_name]
                     module.set(wheel_velocity, axle_position)
                     if axle_name == "front_left_axle_joint":
-                        logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
+                        # logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
+                        pass
         else:
             current_time = time.time()
             if current_time - self.last_cmds_time > CMD_TIMEOUT_SECONDS:

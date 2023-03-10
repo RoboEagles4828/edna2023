@@ -27,7 +27,7 @@ class PublishJointCmd(Node):
             'rear_left_axle_joint',
             'rear_right_axle_joint'
         ]
-        # rad = math.pi
+        rad = math.pi
         cmds.velocity = [ 
             0.0,
             0.0,
@@ -43,7 +43,7 @@ class PublishJointCmd(Node):
             0.0, #ignore
             0.0, #ignore
             0.0, #ignore
-            0.0,
+            2*rad,
             0.0,
             0.0,
             0.0
