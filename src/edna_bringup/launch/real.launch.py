@@ -18,12 +18,12 @@ def generate_launch_description():
     
     teleoplaunch_args = common | {
         'joystick_file': joystick_file,
-        'enable_joy': 'false'
+        'enable_joy': 'true'
     }
     
     debug_launch_args = common | {
         'enable_rviz': 'false',
-        'enable_foxglove': 'true',
+        'enable_foxglove': 'false',
         'rviz_file': rviz_file
     }
     
