@@ -118,6 +118,8 @@ class TalonWheel(ctre.TalonFX):
         self.setSensorPhase(False)
         self.setInverted(False)
 
+        
+
         self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
         self.totalRevolutions = totalRevolutions
     
@@ -154,6 +156,8 @@ class ElevatorWheel(TalonWheel):
         self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
     
     def getPosition(self) -> float:
+        if self.isRevLimitSwitchClosed():
+            self.setSelectedSensorPosition(0)
         return super().getPosition() * 2
     
     def getVelocity(self) -> float:
