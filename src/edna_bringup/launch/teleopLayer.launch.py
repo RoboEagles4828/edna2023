@@ -30,7 +30,7 @@ def generate_launch_description():
         executable='teleop_node',
         name='teleop_twist_joy_node',
         parameters=[joystick_file],
-        remappings={(f'/{namespace}/cmd_vel', f'/{namespace}/{controller_prefix}/cmd_vel_unstamped')},
+        remappings={(f'cmd_vel', f'{controller_prefix}/cmd_vel_unstamped')},
     )
     joint_trajectory_teleop = Node(
         package='joint_trajectory_teleop',
