@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'publish-joints = edna_tests.publish_joint_command:main',
+            'joint-arm = edna_tests.publish_joint_arm_command:main',
+            'joint-drive = edna_tests.publish_joint_drive_command:main',
             'publish-twist = edna_tests.publish_twist_command:main',
             'run-tests = edna_tests.run_tests_command:main',
             'arm-tests = edna_tests.arm_tests:main',
