@@ -70,10 +70,15 @@ private:
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
-  std::vector<double> hw_command_position_output_;
-  std::vector<double> hw_command_velocity_output_;
+  
+  std::vector<double> hw_command_position_output_drivetrain_;
+  std::vector<double> hw_command_position_output_arm_;
+  std::vector<double> hw_command_velocity_output_drivetrain_;
+  std::vector<double> hw_command_velocity_output_arm_;
   
 
+  std::vector<std::string> joint_names_output_drivetrain_;
+  std::vector<std::string> joint_names_output_arm_;
   std::vector<std::string> joint_names_output_;
 
 
@@ -92,11 +97,17 @@ private:
 
   // Pub Sub to isaac
   std::string joint_state_topic_ = "real_joint_states";
-  std::string joint_command_topic_ = "real_joint_commands";
+  
+  std::string joint_command_topic_arm_ = "real_arm_commands";
+  
+  std::string joint_command_topic_drivetrain_ = "real_joint_commands";
   rclcpp::Node::SharedPtr node_;
-  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_ = nullptr;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_drivetrain_ = nullptr;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_arm_ = nullptr;
   std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
-    realtime_real_publisher_ = nullptr;
+    realtime_real_publisher_1_ = nullptr;
+  std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
+    realtime_real_publisher_2_ = nullptr;
 
   bool subscriber_is_active_ = false;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr real_subscriber_ = nullptr;
