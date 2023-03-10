@@ -1,5 +1,8 @@
 from rosbags.rosbag2 import Reader
 from rosbags.serde import deserialize_cdr
+import networktables
+
+
 
 # create reader instance and open for reading
 with Reader('auto_ros_bag') as reader:
