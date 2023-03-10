@@ -39,6 +39,18 @@ ELEVATOR_CONFIG = {
     "kF": 0.2,
 }
 
+JOINT_LIST = [
+    'arm_roller_bar_joint',
+    'top_slider_joint',
+    'top_gripper_left_arm_joint',
+    'bottom_gripper_left_arm_joint',
+    'elevator_center_joint',
+    'bottom_intake_joint',
+]
+
+def getJointList():
+    return JOINT_LIST
+
 class ArmController():
 
     def __init__(self):
@@ -54,7 +66,7 @@ class ArmController():
         self.top_gripper =          Piston(self.hub, PORTS['TOP_GRIPPER'])
         self.bottom_gripper =       Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
         self.elevator =             ElevatorWheel(PORTS['ELEVATOR'])
-        self.bottom_gripper_lift =  TalonWheel(PORTS['BOTTOM_GRIPPER_LIFT'], TOTAL_GRIPPER_REVOLUTIONS)
+        self.bottom_gripper_lift =  IntakeWheel(PORTS['BOTTOM_GRIPPER_LIFT'])
 
         self.JOINT_MAP : dict[str, Piston | ElevatorWheel] = {
             # Pneumatics
@@ -115,6 +127,24 @@ class TalonWheel(ctre.TalonFX):
     def __init__(self, port : int, totalRevolutions : int):
         super().__init__(port)
         self.totalRevolutions = totalRevolutions
+
+        self.configFactoryDefault(WHEEL_TIMEOUT_MILLISECONDS)
+
+        # Voltage
+        self.configVoltageCompSaturation(12, WHEEL_TIMEOUT_MILLISECONDS)
+        self.enableVoltageCompensation(True)
+        
+        # Sensors and frame
+        self.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
+        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, WHEEL_TIMEOUT_MILLISECONDS)
+        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, WHEEL_TIMEOUT_MILLISECONDS)
+        
+        # Nominal and Peak
+        self.configNominalOutputForward(0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configNominalOutputReverse(0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configPeakOutputForward(1, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configPeakOutputReverse(-1, WHEEL_TIMEOUT_MILLISECONDS)
     
     def getPosition(self) -> float:
         return (self.getSelectedSensorPosition() / (TICKS_PER_REVOLUTION * self.totalRevolutions))
@@ -129,21 +159,30 @@ class TalonWheel(ctre.TalonFX):
             self.set(ctre.TalonFXControlMode.Position, position * (TICKS_PER_REVOLUTION * self.totalRevolutions))
 
 
+class IntakeWheel(TalonWheel):
+    def __init__(self, port : int):
+        super().__init__(port, TOTAL_GRIPPER_REVOLUTIONS)
+
+        self.setSensorPhase(False)
+        self.setInverted(False)
+
+        self.selectProfileSlot(ELEVATOR_CONFIG['SLOT'], 0)
+        self.config_kP(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kP'], WHEEL_TIMEOUT_MILLISECONDS)
+        self.config_kI(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kI'], WHEEL_TIMEOUT_MILLISECONDS)
+        self.config_kD(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kD'], WHEEL_TIMEOUT_MILLISECONDS)
+        self.config_kD(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kF'], WHEEL_TIMEOUT_MILLISECONDS)
+
+        self.configMotionCruiseVelocity(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum speed of motion magic (ticks/100ms)
+        self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
+
+
 class ElevatorWheel(TalonWheel):
     def __init__(self, port : int):
         super().__init__(port, TOTAL_ELEVATOR_REVOLUTIONS)
 
-        self.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
         self.setSensorPhase(False)
         self.setInverted(False)
 
-        self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
-        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, WHEEL_TIMEOUT_MILLISECONDS)
-        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, WHEEL_TIMEOUT_MILLISECONDS)
-        self.configNominalOutputForward(0, WHEEL_TIMEOUT_MILLISECONDS)
-        self.configNominalOutputReverse(0, WHEEL_TIMEOUT_MILLISECONDS)
-        self.configPeakOutputForward(1, WHEEL_TIMEOUT_MILLISECONDS)
-        self.configPeakOutputReverse(-1, WHEEL_TIMEOUT_MILLISECONDS)
         self.selectProfileSlot(ELEVATOR_CONFIG['SLOT'], 0)
         self.config_kP(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kP'], WHEEL_TIMEOUT_MILLISECONDS)
         self.config_kI(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kI'], WHEEL_TIMEOUT_MILLISECONDS)

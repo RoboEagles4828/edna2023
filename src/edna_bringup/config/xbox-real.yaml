@@ -6,11 +6,11 @@
         x: 1
         y: 0
       scale_linear: #1/10000 to offset shifted 0 in /joystick-data
-        x: 0.0003
-        y: 0.0003
+        x: 0.008
+        y: 0.008
       scale_linear_turbo:
-        x: 0.0008
-        y: 0.0008
+        x: 0.001
+        y: 0.001
 
       axis_angular:  # Right thumb stick horizontal
         yaw: 3

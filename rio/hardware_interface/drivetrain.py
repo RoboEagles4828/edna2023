@@ -46,6 +46,14 @@ MODULE_CONFIG = {
         "encoder_offset": 69.785 #201.094,
     }
 }
+
+def getJointList():
+    joint_list = []
+    for module in MODULE_CONFIG.values():
+        joint_list.append(module['wheel_joint_name'])
+        joint_list.append(module['axle_joint_name'])
+    return joint_list
+
 AXLE_DIRECTION = False
 WHEEL_DIRECTION = False
 ENCODER_DIRECTION = True
@@ -85,8 +93,8 @@ slot_idx = 0
 pid_loop_idx = 0
 timeout_ms = 30
 
-velocityConstant = 0.2
-accelerationConstant = 0.01
+velocityConstant = 0.5
+accelerationConstant = 0.25
 # Conversion Functions
 positionCoefficient = 2.0 * math.pi / TICKS_PER_REV / AXLE_JOINT_GEAR_RATIO
 velocityCoefficient = positionCoefficient * 10.0
@@ -227,7 +235,7 @@ class SwerveModule():
         self.axle_motor.config_kF(slot_idx, (1023.0 *  velocityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
         self.axle_motor.configMotionCruiseVelocity(2.0 / velocityConstant / velocityCoefficient, timeout_ms)
         self.axle_motor.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / velocityCoefficient, timeout_ms)
-        self.axle_motor.configMotionSCurveStrength(1)
+        self.axle_motor.configMotionSCurveStrength(4)
 
         # Voltage Comp
         self.axle_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)

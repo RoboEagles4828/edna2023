@@ -4,6 +4,9 @@ import threading
 import traceback
 import time
 import os, inspect
+# TODO Reuse this
+import hardware_interface.drivetrain as drivet
+import hardware_interface.armcontroller as armc
 from hardware_interface.drivetrain import DriveTrain
 from hardware_interface.joystick import Joystick
 from hardware_interface.armcontroller import ArmController
@@ -99,28 +102,36 @@ def encoderThread():
     threadLoop('encoder', encoder_publisher, encoderAction)
 
 def encoderAction(publisher):
+    # TODO: Make these some sort of null value to identify lost data
+    joint_list = drivet.getJointList() + armc.getJointList()
+    joint_count = len(joint_list)
+    drivet_joint_count = len(drivet.getJointList())
+    armc_joint_count = len(armc.getJointList())
     data = {
-        "name": [],
-        "position": [],
-        "velocity": []
+        "name": joint_list,
+        "position": [0.0]*joint_count,
+        "velocity": [0.0]*joint_count
     }
 
     global drive_train
     with drive_train_lock:
         if ENABLE_DRIVE:
             drive_data = drive_train.getEncoderData()
-            data["name"] += drive_data["name"],
-            data["position"] += drive_data["position"],
-            data["velocity"] += drive_data["velocity"],
+            for index, name in enumerate(drivet.getJointList()):
+                drive_data_index = drive_data['name'].index(name)
+                data['name'][index] = drive_data['name'][drive_data_index]
+                data["position"][index] = drive_data["position"][drive_data_index],
+                data["velocity"][index] = drive_data["velocity"][drive_data_index],
     
-    arm_data = None
     global arm_controller
     with arm_controller_lock:
         if ENABLE_ARM:
             arm_data = arm_controller.getEncoderData()
-            data["name"] += arm_data["name"],
-            data["position"] += arm_data["position"],
-            data["velocity"] += arm_data["velocity"],
+            for index, name in enumerate(armc.getJointList()):
+                arm_data_index = arm_data['name'].index(name)
+                data['name'][index] = drive_data['name'][arm_data_index]
+                data["position"][index] = arm_data["position"][arm_data_index],
+                data["velocity"][index] = arm_data["velocity"][arm_data_index],
 
     publisher.write(data)
 
