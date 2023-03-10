@@ -70,14 +70,14 @@ private:
   // Store the command for the simulated robot
   std::vector<double> hw_command_velocity_;
   std::vector<double> hw_command_position_;
-  std::vector<double> hw_command_position_output_;
-  std::vector<double> hw_command_velocity_output_;
-  
 
-  std::vector<std::string> joint_names_output_;
-
-
-  std::vector<double> hw_command_position_converted_;
+  // Output Topic Vectors
+  std::vector<std::string> arm_names_output_;
+  std::vector<double> hw_command_arm_velocity_output_;
+  std::vector<double> hw_command_arm_position_output_;
+  std::vector<std::string> drive_names_output_;
+  std::vector<double> hw_command_drive_velocity_output_;
+  std::vector<double> hw_command_drive_position_output_;
 
   // The state vectors
   std::vector<double> hw_positions_;
@@ -85,18 +85,42 @@ private:
   std::vector<double> hw_positions_input_;
   std::vector<double> hw_velocities_input_;
 
+  // Mimic Joints for joints not controlled by the real robot
+  struct MimicJoint
+  {
+    std::size_t joint_index;
+    std::size_t mimicked_joint_index;
+    double multiplier = 1.0;
+    double offset = 0.0;
+  };
+  std::vector<MimicJoint> mimic_joints_;
+  double parse_double(const std::string & text);
+
+  // Keep Track of Arm vs Drive Joints
+  struct JointGroupMember
+  {
+    std::size_t joint_index;
+    std::string joint_name;
+  };
+  std::vector<JointGroupMember> drive_joints_;
+  std::vector<JointGroupMember> arm_joints_;
+
   // Joint name array will align with state and command interface array
   // The command at index 3 of hw_command_ will be the joint name at index 3 of joint_names
   std::vector<std::string> joint_names_;
   std::vector<std::string> joint_types_;
 
-  // Pub Sub to isaac
+  // Pub Sub to real
   std::string joint_state_topic_ = "real_joint_states";
   std::string joint_command_topic_ = "real_joint_commands";
+  std::string joint_arm_command_topic_ = "real_arm_commands";
   rclcpp::Node::SharedPtr node_;
   std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_ = nullptr;
   std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
     realtime_real_publisher_ = nullptr;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_arm_publisher_ = nullptr;
+  std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
+    realtime_real_arm_publisher_ = nullptr;
 
   bool subscriber_is_active_ = false;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr real_subscriber_ = nullptr;
@@ -105,9 +129,7 @@ private:
   // Converts isaac position range -2pi - 2pi into expected ros position range -pi - pi
   double convertToRosPosition(double real_position);
   double convertToRosVelocity(double real_velocity);
-  void convertToRealElevatorPosition();
-  void convertToRealPositions(std::vector<double> ros_positions);
-  std::vector<std::string> convertToRosElevatorPosition(std::vector<std::string> joint_names_input);
+  // void convertToRealPositions(std::vector<double> ros_positions);
 };
 
 }  // namespace swerve_hardware

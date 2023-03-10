@@ -18,7 +18,7 @@ def generate_launch_description():
     
     teleoplaunch_args = common | {
         'joystick_file': joystick_file,
-        'enable_joy': 'true'
+        'enable_joy': 'true' # MAKE FALSE AFTER TESTING
     }
     
     debug_launch_args = common | {
