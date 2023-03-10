@@ -187,7 +187,7 @@ namespace swerve_hardware
         hw_command_velocity_[i] = 0.0;
         joint_names_output_.push_back(joint.name);
 
-        if (joint.name.find("elevator_center_joint") != std::string::npos || joint.name.find("arm_roller_bar_joint") != std::string::npos || joint.name.find("slider_joint") != std::string::npos || joint.name.find("left_arm_joint") != std::string::npos || joint.name.find("bottom_arm_joint") != std::string::npos)
+        if (joint.name.find("elevator_center_joint") != std::string::npos || joint.name.find("arm_roller_bar_joint") != std::string::npos || joint.name.find("slider_joint") != std::string::npos || joint.name.find("left_arm_joint") != std::string::npos || joint.name.find("bottom_intake_joint") != std::string::npos)
         {
           joint_names_output_arm_.push_back(joint.name);
           RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Added Position Simplified arm Joint: %s", joint.name.c_str());
@@ -270,9 +270,12 @@ namespace swerve_hardware
     double bottom_gripper_arm_position = 0.0;
     std::vector<double> hw_command_wheel;
     std::vector<double> hw_command_axle;
+    
+
     for (auto i = 0u; i < joint_names_.size(); i++)
     {
 
+      RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "hardware position oonverted:%f",hw_command_position_converted_[i]);
       if (joint_names_[i].find("arm_roller_bar_joint") != std::string::npos)
       {
         rotation_pos = hw_command_position_converted_[i];
@@ -326,7 +329,7 @@ namespace swerve_hardware
       {
         hw_command_position_output_arm_[i] = top_slider_arm_position;
       }
-      else if (joint_names_output_arm_[i].find("bottom_arm_joint") != std::string::npos)
+      else if (joint_names_output_arm_[i].find("bottom_intake_joint") != std::string::npos)
       {
         hw_command_position_output_arm_[i] = bottom_arm_position;
       }
@@ -353,6 +356,9 @@ namespace swerve_hardware
         hw_command_wheel.erase(hw_command_wheel.begin());
       }
     }
+    RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "hw command info:");
+
+
     
   }
   std::vector<std::string> RealDriveHardware::convertToRosElevatorPosition(std::vector<std::string> joint_names_input)
@@ -474,12 +480,19 @@ namespace swerve_hardware
     // Publish to Real
     if (realtime_real_publisher_1_->trylock())
     {
+      // auto &realtime_real_command_ = realtime_real_publisher_1_->msg_;
+      // realtime_real_command_.header.stamp = node_->get_clock()->now();
+      // realtime_real_command_.name = joint_names_output_drivetrain_;
+      // realtime_real_command_.velocity = hw_command_velocity_output_drivetrain_;
+      // realtime_real_command_.position = hw_command_position_output_drivetrain_;
+      // realtime_real_publisher_1_->unlockAndPublish();
       auto &realtime_real_command_ = realtime_real_publisher_1_->msg_;
       realtime_real_command_.header.stamp = node_->get_clock()->now();
-      realtime_real_command_.name = joint_names_output_drivetrain_;
+      realtime_real_command_.name =  joint_names_output_drivetrain_;
       realtime_real_command_.velocity = hw_command_velocity_output_drivetrain_;
       realtime_real_command_.position = hw_command_position_output_drivetrain_;
       realtime_real_publisher_1_->unlockAndPublish();
+      
     }
     rclcpp::spin_some(node_);
     if (realtime_real_publisher_2_->trylock())
@@ -492,6 +505,10 @@ namespace swerve_hardware
       realtime_real_publisher_2_->unlockAndPublish();
     }
     rclcpp::spin_some(node_);
+    // hw_command_velocity_output_drivetrain_.clear();
+    // hw_command_position_output_drivetrain_.clear();
+    // hw_command_velocity_output_arm_.clear();
+    // hw_command_position_output_arm_.clear();
 
     return hardware_interface::return_type::OK;
   }

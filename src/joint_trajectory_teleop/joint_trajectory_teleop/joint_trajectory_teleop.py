@@ -57,22 +57,14 @@ class PublishTrajectoryMsg(Node):
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
-        self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
+        # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
 
         x_flag = False
         y_flag = False
         y_flag_negative = False
         x_flag_negative = False
 
-        if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
-            y_flag = True
-        elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
-            y_flag_negative = True
-        elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
-            x_flag = True
-        elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
-            x_flag_negative = True
-
+        # c
         if y_flag:
             self.pos = 1.0
         elif y_flag_negative:
@@ -107,6 +99,7 @@ class PublishTrajectoryMsg(Node):
         
         self.publisher_.publish(cmds)
         self.get_logger().info('Publishing...')
+        time.sleep(0.5)
 
 def main(args=None):
     rclpy.init(args=args)
