@@ -108,30 +108,39 @@ def encoderAction(publisher):
     drivet_joint_count = len(drivet.getJointList())
     armc_joint_count = len(armc.getJointList())
     data = {
-        "name": joint_list,
-        "position": [0.0]*joint_count,
-        "velocity": [0.0]*joint_count
+        # "name": joint_list,
+        # "position": [0.0]*joint_count,
+        # "velocity": [[0.0]*joint_count]
+        'name': [],
+        'position': [],
+        'velocity': []
     }
 
     global drive_train
     with drive_train_lock:
         if ENABLE_DRIVE:
             drive_data = drive_train.getEncoderData()
-            for index, name in enumerate(drivet.getJointList()):
-                drive_data_index = drive_data['name'].index(name)
-                data['name'][index] = drive_data['name'][drive_data_index]
-                data["position"][index] = drive_data["position"][drive_data_index],
-                data["velocity"][index] = drive_data["velocity"][drive_data_index],
+            data['name'] += drive_data['name']
+            data['position'] += drive_data['position']
+            data['velocity'] += drive_data['velocity']
+            # for index, name in enumerate(drivet.getJointList()):
+            #     drive_data_index = drive_data['name'].index(name)
+            #     data['name'][index] = drive_data['name'][drive_data_index]
+            #     data["position"][index] = drive_data["position"][drive_data_index],
+            #     data["velocity"][index] = drive_data["velocity"][drive_data_index],
     
     global arm_controller
     with arm_controller_lock:
         if ENABLE_ARM:
             arm_data = arm_controller.getEncoderData()
-            for index, name in enumerate(armc.getJointList()):
-                arm_data_index = arm_data['name'].index(name)
-                data['name'][index] = drive_data['name'][arm_data_index]
-                data["position"][index] = arm_data["position"][arm_data_index],
-                data["velocity"][index] = arm_data["velocity"][arm_data_index],
+            data['name'] += arm_data['name']
+            data['position'] += arm_data['position']
+            data['velocity'] += arm_data['velocity']
+            # for index, name in enumerate(armc.getJointList()):
+            #     arm_data_index = arm_data['name'].index(name)
+            #     data['name'][index] = drive_data['name'][arm_data_index]
+            #     data["position"][index] = arm_data["position"][arm_data_index],
+            #     data["velocity"][index] = arm_data["velocity"][arm_data_index],
 
     publisher.write(data)
 
