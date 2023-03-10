@@ -17,20 +17,31 @@ WARN_TOLERANCE = 1
 
 TESTS = [
     # Here's where you define your tests, in the same style as this one.
-    {"positions": [0.0]*6, "time": 10.0},
+    # {"positions": [0.0]*6, "time": 3.0},
 
     # Toggle pistons one at a time (to true)
-    {"positions": [1.0]*1 + [0.0]*5, "time": 10.0},
-    {"positions": [1.0]*2 + [0.0]*4, "time": 10.0},
-    {"positions": [1.0]*3 + [0.0]*3, "time": 10.0},
-    {"positions": [1.0]*4 + [0.0]*2, "time": 10.0},
+    {"positions": [0.0]*4 + [0.0] + [0.0], "time": 3.0},
+    {"positions": [0.0]*4 + [0.5] + [0.0], "time": 3.0},
+    {"positions": [0.0]*4 + [1.0] + [0.0], "time": 3.0},
+    {"positions": [0.0]*4 + [1.5] + [0.0], "time": 3.0},
+    {"positions": [0.0]*4 + [2.0] + [0.0], "time": 3.0},
+    
+    {"positions": [0.0]*4 + [0.0] + [0.0], "time": 6.0},
+    
+    {"positions": [0.0]*4 + [0.0] + [0.5], "time": 3.0},
+    {"positions": [0.0]*4 + [0.0] + [1.0], "time": 3.0},
+    
+    {"positions": [0.0]*4 + [0.0] + [0.0], "time": 3.0},
+    # {"positions": [1.0]*2 + [0.0]*4, "time": 3.0},
+    # {"positions": [1.0]*3 + [0.0]*3, "time": 3.0},
+    # {"positions": [1.0]*4 + [0.0]*2, "time": 3.0},
 
-    # Toggle pistons one at a time (to false)
-    {"positions": [1.0]*4 + [0.0]*2, "time": 10.0},
-    {"positions": [1.0]*3 + [0.0]*3, "time": 10.0},
-    {"positions": [1.0]*2 + [0.0]*4, "time": 10.0},
-    {"positions": [1.0]*1 + [0.0]*5, "time": 10.0},
-    {"positions": [0.0]*6, "time": 10.0},
+    # # Toggle pistons one at a time (to false)
+    # {"positions": [1.0]*4 + [0.0]*2, "time": 3.0},
+    # {"positions": [1.0]*3 + [0.0]*3, "time": 3.0},
+    # {"positions": [1.0]*2 + [0.0]*4, "time": 3.0},
+    # {"positions": [1.0]*1 + [0.0]*5, "time": 3.0},
+    {"positions": [0.0]*6, "time": 3.0},
 
 ]
 

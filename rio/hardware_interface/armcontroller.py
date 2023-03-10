@@ -114,6 +114,11 @@ class TalonWheel(ctre.TalonFX):
 
     def __init__(self, port : int, totalRevolutions : int):
         super().__init__(port)
+        self.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.setSensorPhase(False)
+        self.setInverted(False)
+
+        self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
         self.totalRevolutions = totalRevolutions
     
     def getPosition(self) -> float:
@@ -133,11 +138,6 @@ class ElevatorWheel(TalonWheel):
     def __init__(self, port : int):
         super().__init__(port, TOTAL_ELEVATOR_REVOLUTIONS)
 
-        self.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
-        self.setSensorPhase(False)
-        self.setInverted(False)
-
-        self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
         self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, WHEEL_TIMEOUT_MILLISECONDS)
         self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, WHEEL_TIMEOUT_MILLISECONDS)
         self.configNominalOutputForward(0, WHEEL_TIMEOUT_MILLISECONDS)
