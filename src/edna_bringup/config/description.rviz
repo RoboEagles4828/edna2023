@@ -61,7 +61,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /Nitin/robot_description
+      Value: /gage/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -217,7 +217,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: Nitin
+    TF Prefix: gage
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -226,65 +226,65 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      Nitin/arm_back_leg_link:
+      gage/arm_back_leg_link:
         Value: false
-      Nitin/arm_elevator_leg_link:
+      gage/arm_elevator_leg_link:
         Value: false
-      Nitin/arm_roller_bar_link:
+      gage/arm_roller_bar_link:
         Value: false
-      Nitin/base_link:
+      gage/base_link:
         Value: false
-      Nitin/bottom_gripper_bar_link:
+      gage/bottom_gripper_bar_link:
         Value: false
-      Nitin/bottom_gripper_left_arm_link:
+      gage/bottom_gripper_left_arm_link:
         Value: false
-      Nitin/bottom_gripper_right_arm_link:
+      gage/bottom_gripper_right_arm_link:
         Value: false
-      Nitin/bottom_intake_link:
+      gage/bottom_intake_link:
         Value: true
-      Nitin/elevator_center_link:
+      gage/elevator_center_link:
         Value: false
-      Nitin/elevator_outer_1_link:
+      gage/elevator_outer_1_link:
         Value: false
-      Nitin/elevator_outer_2_link:
+      gage/elevator_outer_2_link:
         Value: false
-      Nitin/front_left_axle_link:
+      gage/front_left_axle_link:
         Value: false
-      Nitin/front_left_wheel_link:
+      gage/front_left_wheel_link:
         Value: false
-      Nitin/front_right_axle_link:
+      gage/front_right_axle_link:
         Value: false
-      Nitin/front_right_wheel_link:
+      gage/front_right_wheel_link:
         Value: false
-      Nitin/rear_left_axle_link:
+      gage/rear_left_axle_link:
         Value: false
-      Nitin/rear_left_wheel_link:
+      gage/rear_left_wheel_link:
         Value: false
-      Nitin/rear_right_axle_link:
+      gage/rear_right_axle_link:
         Value: false
-      Nitin/rear_right_wheel_link:
+      gage/rear_right_wheel_link:
         Value: false
-      Nitin/swerve_chassis_link:
+      gage/swerve_chassis_link:
         Value: false
-      Nitin/top_gripper_bar_link:
+      gage/top_gripper_bar_link:
         Value: false
-      Nitin/top_gripper_left_arm_link:
+      gage/top_gripper_left_arm_link:
         Value: false
-      Nitin/top_gripper_right_arm_link:
+      gage/top_gripper_right_arm_link:
         Value: false
-      Nitin/top_slider_link:
+      gage/top_slider_link:
         Value: false
-      Nitin/zed_base_link:
+      gage/zed_base_link:
         Value: false
-      Nitin/zed_camera_center:
+      gage/zed_camera_center:
         Value: false
-      Nitin/zed_left_camera_frame:
+      gage/zed_left_camera_frame:
         Value: false
-      Nitin/zed_left_camera_optical_frame:
+      gage/zed_left_camera_optical_frame:
         Value: false
-      Nitin/zed_right_camera_frame:
+      gage/zed_right_camera_frame:
         Value: false
-      Nitin/zed_right_camera_optical_frame:
+      gage/zed_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -292,42 +292,42 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      Nitin/base_link:
-        Nitin/swerve_chassis_link:
-          Nitin/arm_back_leg_link:
-            Nitin/elevator_outer_1_link:
-              Nitin/elevator_center_link:
-                Nitin/elevator_outer_2_link:
-                  Nitin/top_slider_link:
-                    Nitin/top_gripper_bar_link:
-                      Nitin/top_gripper_left_arm_link: {}
-                      Nitin/top_gripper_right_arm_link: {}
-          Nitin/arm_elevator_leg_link:
-            Nitin/arm_roller_bar_link: {}
-            Nitin/bottom_intake_link:
-              Nitin/bottom_gripper_bar_link:
-                Nitin/bottom_gripper_left_arm_link: {}
-                Nitin/bottom_gripper_right_arm_link: {}
-          Nitin/front_left_axle_link:
-            Nitin/front_left_wheel_link: {}
-          Nitin/front_right_axle_link:
-            Nitin/front_right_wheel_link: {}
-          Nitin/rear_left_axle_link:
-            Nitin/rear_left_wheel_link: {}
-          Nitin/rear_right_axle_link:
-            Nitin/rear_right_wheel_link: {}
-          Nitin/zed_base_link:
-            Nitin/zed_camera_center:
-              Nitin/zed_left_camera_frame:
-                Nitin/zed_left_camera_optical_frame: {}
-              Nitin/zed_right_camera_frame:
-                Nitin/zed_right_camera_optical_frame: {}
+      gage/base_link:
+        gage/swerve_chassis_link:
+          gage/arm_back_leg_link:
+            gage/elevator_outer_1_link:
+              gage/elevator_center_link:
+                gage/elevator_outer_2_link:
+                  gage/top_slider_link:
+                    gage/top_gripper_bar_link:
+                      gage/top_gripper_left_arm_link: {}
+                      gage/top_gripper_right_arm_link: {}
+          gage/arm_elevator_leg_link:
+            gage/arm_roller_bar_link: {}
+            gage/bottom_intake_link:
+              gage/bottom_gripper_bar_link:
+                gage/bottom_gripper_left_arm_link: {}
+                gage/bottom_gripper_right_arm_link: {}
+          gage/front_left_axle_link:
+            gage/front_left_wheel_link: {}
+          gage/front_right_axle_link:
+            gage/front_right_wheel_link: {}
+          gage/rear_left_axle_link:
+            gage/rear_left_wheel_link: {}
+          gage/rear_right_axle_link:
+            gage/rear_right_wheel_link: {}
+          gage/zed_base_link:
+            gage/zed_camera_center:
+              gage/zed_left_camera_frame:
+                gage/zed_left_camera_optical_frame: {}
+              gage/zed_right_camera_frame:
+                gage/zed_right_camera_optical_frame: {}
     Update Interval: 0
     Value: true
   Enabled: true
   Global Options:
     Background Color: 116; 116; 116
-    Fixed Frame: Nitin/base_link
+    Fixed Frame: gage/base_link
     Frame Rate: 30
   Name: root
   Tools:

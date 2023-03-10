@@ -9,6 +9,11 @@ from hardware_interface.joystick import Joystick
 from hardware_interface.armcontroller import ArmController
 from dds.dds import DDS_Publisher, DDS_Subscriber
 
+EMABLE_ENCODER = True
+ENABLE_JOY = True
+ENABLE_DRIVE =  True
+ENABLE_ARM = True
+
 # Locks
 FRC_STAGE = "DISABLED"
 STOP_THREADS = False
@@ -94,23 +99,29 @@ def encoderThread():
     threadLoop('encoder', encoder_publisher, encoderAction)
 
 def encoderAction(publisher):
-    data = None
+    data = {
+        "name": [],
+        "position": [],
+        "velocity": []
+    }
 
-    drive_data = None
     global drive_train
     with drive_train_lock:
-        drive_data = drive_train.getEncoderData()
+        if ENABLE_DRIVE:
+            drive_data = drive_train.getEncoderData()
+            data["name"] += drive_data["name"],
+            data["position"] += drive_data["position"],
+            data["velocity"] += drive_data["velocity"],
     
     arm_data = None
     global arm_controller
     with arm_controller_lock:
-        arm_data = arm_controller.getEncoderData()
+        if ENABLE_ARM:
+            arm_data = arm_controller.getEncoderData()
+            data["name"] += arm_data["name"],
+            data["position"] += arm_data["position"],
+            data["velocity"] += arm_data["velocity"],
 
-    data = {
-        "name": drive_data["name"] + arm_data["name"],
-        "position": drive_data["position"] + arm_data["position"],
-        "velocity": drive_data["velocity"] + arm_data["velocity"]
-    }
     publisher.write(data)
 
 
@@ -181,21 +192,20 @@ class edna_robot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
-        initDriveTrain()
-        initJoystick()
-        initArmController()
+        if ENABLE_DRIVE: initDriveTrain()
+        if ENABLE_JOY: initJoystick()
+        if ENABLE_ARM: initArmController()
 
         self.threads = []
         if self.use_threading:
             logging.info("Initializing Threads")
             global STOP_THREADS
             STOP_THREADS = False
-            self.threads = [
-                {"name": "encoder", "thread": startThread("encoder") },
-                {"name": "command", "thread": startThread("command") },
-                {"name": "arm-command", "thread": startThread("arm-command")},
-                {"name": "joystick", "thread": startThread("joystick") },
-            ]
+            if ENABLE_DRIVE: self.threads.append({"name": "command", "thread": startThread("command") })
+            if ENABLE_ARM: self.threads.append({"name": "arm-command", "thread": startThread("arm-command")})
+            if ENABLE_JOY: self.threads.append({"name": "joystick", "thread": startThread("joystick") })
+            if EMABLE_ENCODER: self.threads.append({"name": "encoder", "thread": startThread("encoder") })
+
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
             self.joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)

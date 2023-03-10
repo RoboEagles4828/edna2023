@@ -174,7 +174,7 @@ class SwerveModule():
     
     def setupWheelMotor(self):
         self.wheel_motor.configFactoryDefault()
-        self.wheel_motor.configNeutralDeadband(0.03, timeout_ms)
+        self.wheel_motor.configNeutralDeadband(0.01, timeout_ms)
 
         # Direction and Sensors
         self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
@@ -362,7 +362,8 @@ class DriveTrain():
 
                     module = self.module_lookup[axle_name]
                     module.set(wheel_velocity, axle_position)
-                    # logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
+                    if axle_name == "front_left_axle_joint":
+                        logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
         else:
             current_time = time.time()
             if current_time - self.last_cmds_time > CMD_TIMEOUT_SECONDS:
