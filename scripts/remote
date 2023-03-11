@@ -2,7 +2,6 @@
 
 # Check /scripts/config/remote-config for script configuration
 source /workspaces/edna2023/scripts/config/remote-config
-PORT=5800
 
 deploy-git() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via git..."
@@ -18,7 +17,7 @@ deploy-git() {
 
 deploy-rsync() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
-    rsync -azP -e "ssh -p $PORT" --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    rsync -azP -e "ssh -p $PORT" --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude *.rviz --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
 }
 
 rebuild() {
@@ -48,16 +47,20 @@ help() {
     echo "  config  -- Opens the config file in nano"
     echo "  setup   -- Copies your ssh-key to the remote device"
     echo "  ssh     -- Connects to the robot via ssh"
-    echo "  connect -- alias for \"remote ssh\""
     echo "  service"
     echo "      log     -- Outputs the systemctl log for edna.service"
     echo "      restart -- Restarts the systemctl edna.service"
     echo "  deploy"
     echo "      rsync   -- Deploys to the remote device using rsync (default)"
     echo "      git     -- Deploys to the remote device using Git"
+    echo "  rebuild [packages] -- Rebuilds packages with colcon (all packages if not specified)"
+    echo "  run  [command]  -- Runs an arbitrary command on the remote device "
+    echo ""
+    echo "Aliases:"
+    echo "  connect -- alias for \"remote ssh\""
     echo "  log     -- alias for \"remote service log\""
-    echo "  rebuild -- Rebuilds the project with colcon"
-    echo "Usage: remote (config | setup | deploy | log | rebuild)"
+    echo "  restart -- alias for \"remote service restart\""
+    echo "Usage: remote (config | setup | ssh | service | deploy | rebuild | run)"
 }
 
 case $1 in 
@@ -106,13 +109,22 @@ case $1 in
         esac
         ;;
 
+    "run")
+        ssh -t $USERNAME@$IP_ADDRESS -p $PORT "${@:2}";
+        ;;
+
+    "log")
+        edna-log
+        ;;
+        
+    "restart")
+        edna-restart
+        ;;
+
     "rebuild")
         rebuild $@
         ;;
     
-    "log")
-        edna-log
-        ;;
     
     *)
         echo "Unknown option: $1"
