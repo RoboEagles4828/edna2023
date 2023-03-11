@@ -85,8 +85,8 @@ slot_idx = 0
 pid_loop_idx = 0
 timeout_ms = 30
 
-velocityConstant = 0.5
-accelerationConstant = 0.25
+velocityConstant = 0.2
+accelerationConstant = 0.01
 # Conversion Functions
 positionCoefficient = 2.0 * math.pi / TICKS_PER_REV / AXLE_JOINT_GEAR_RATIO
 velocityCoefficient = positionCoefficient * 10.0
@@ -174,50 +174,67 @@ class SwerveModule():
     
     def setupWheelMotor(self):
         self.wheel_motor.configFactoryDefault()
-        self.wheel_motor.configNeutralDeadband(0.01)
+        self.wheel_motor.configNeutralDeadband(0.01, timeout_ms)
+
+        # Direction and Sensors
+        self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
+        self.wheel_motor.setInverted(WHEEL_DIRECTION)
+        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
         self.wheel_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, timeout_ms)
+        
+        # Peak and Nominal Outputs
         self.wheel_motor.configNominalOutputForward(0, timeout_ms)
         self.wheel_motor.configNominalOutputReverse(0, timeout_ms)
         self.wheel_motor.configPeakOutputForward(1, timeout_ms)
         self.wheel_motor.configPeakOutputReverse(-1, timeout_ms)
-        self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
-        self.wheel_motor.setInverted(WHEEL_DIRECTION)
+
+        # Voltage Comp
+        self.wheel_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)
+        self.axle_motor.enableVoltageCompensation(True)
+
+        # Tuning
         self.wheel_motor.config_kF(0, wheel_pid_constants["kF"], timeout_ms)
         self.wheel_motor.config_kP(0, wheel_pid_constants["kP"], timeout_ms)
         self.wheel_motor.config_kI(0, wheel_pid_constants["kI"], timeout_ms)
         self.wheel_motor.config_kD(0, wheel_pid_constants["kD"], timeout_ms)
-        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
-        # self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+        
+        # Brake
+        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
-        self.axle_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
         self.axle_motor.configNeutralDeadband(0.01, timeout_ms)
+        
+        # Direction and Sensors
         self.axle_motor.setSensorPhase(AXLE_DIRECTION)
         self.axle_motor.setInverted(AXLE_DIRECTION)
+        self.axle_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
         self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, timeout_ms)
+        self.axle_motor.setSelectedSensorPosition(getShaftTicks(self.getEncoderPosition(), "position"), pid_loop_idx, timeout_ms)
+
+        # Peak and Nominal Outputs
         self.axle_motor.configNominalOutputForward(0, timeout_ms)
         self.axle_motor.configNominalOutputReverse(0, timeout_ms)
         self.axle_motor.configPeakOutputForward(1, timeout_ms)
         self.axle_motor.configPeakOutputReverse(-1, timeout_ms)
+
+        # Tuning
         self.axle_motor.selectProfileSlot(slot_idx, pid_loop_idx)
         self.axle_motor.config_kP(slot_idx, axle_pid_constants["kP"], timeout_ms)
         self.axle_motor.config_kI(slot_idx, axle_pid_constants["kI"], timeout_ms)
         self.axle_motor.config_kD(slot_idx, axle_pid_constants["kD"], timeout_ms)
-        # TODO: Figure out Magic Numbers and Calculations Below
         self.axle_motor.config_kF(slot_idx, (1023.0 *  velocityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
         self.axle_motor.configMotionCruiseVelocity(2.0 / velocityConstant / velocityCoefficient, timeout_ms)
         self.axle_motor.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / velocityCoefficient, timeout_ms)
         self.axle_motor.configMotionSCurveStrength(1)
-        self.axle_motor.setSelectedSensorPosition(getShaftTicks(self.getEncoderPosition(), "position"), pid_loop_idx, timeout_ms)
+
+        # Voltage Comp
         self.axle_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)
-        currentLimit = ctre.SupplyCurrentLimitConfiguration()
-        currentLimit.enable = True
-        currentLimit.currentLimit = steer_current_limit
-        self.axle_motor.configSupplyCurrentLimit(currentLimit, timeout_ms)
         self.axle_motor.enableVoltageCompensation(True)
-        # self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
+
+        # Braking
+        self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
 
     def set(self, wheel_motor_vel, axle_position):
@@ -345,7 +362,9 @@ class DriveTrain():
 
                     module = self.module_lookup[axle_name]
                     module.set(wheel_velocity, axle_position)
-                    # logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
+                    if axle_name == "front_left_axle_joint":
+                        # logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
+                        pass
         else:
             current_time = time.time()
             if current_time - self.last_cmds_time > CMD_TIMEOUT_SECONDS:

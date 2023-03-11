@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSDurabilityPolicy, QoSReliabilityPolicy
 import math
 
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
@@ -44,33 +45,32 @@ class PublishTrajectoryMsg(Node):
             'RT': 5,
         }
 
-        self.NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
-
         self.pos = 0.0
         self.rot = 0.0
 
-        self.publisher_ = self.create_publisher(JointTrajectory, f'/{self.NAMESPACE}/joint_trajectory_controller/joint_trajectory', 10)
-        self.subscriber = self.create_subscription(Joy, f'/{self.NAMESPACE}/joy', self.controller_callback, 10)
+        # qos = QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, durability=QoSDurabilityPolicy.VOLATILE, history=QoSHistoryPolicy.KEEP_LAST, depth=10)
+        self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)
+        self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)
         self.timer_period = 0.5  # seconds
 
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
-        self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
+        # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
 
         x_flag = False
         y_flag = False
         y_flag_negative = False
         x_flag_negative = False
 
-        if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
-            y_flag = True
-        elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
-            y_flag_negative = True
-        elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
-            x_flag = True
-        elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
-            x_flag_negative = True
+        # if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
+        #     y_flag = True
+        # elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
+        #     y_flag_negative = True
+        # elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
+        #     x_flag = True
+        # elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
+        #     x_flag_negative = True
 
         if y_flag:
             self.pos = 1.0
@@ -105,7 +105,7 @@ class PublishTrajectoryMsg(Node):
         cmds.points = [position_cmds]
         
         self.publisher_.publish(cmds)
-        self.get_logger().info('Publishing...')
+        # self.get_logger().info('Publishing...')
 
 def main(args=None):
     rclpy.init(args=args)
