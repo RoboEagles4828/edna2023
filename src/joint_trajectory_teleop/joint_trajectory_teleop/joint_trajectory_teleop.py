@@ -14,6 +14,18 @@ class PublishTrajectoryMsg(Node):
     def __init__(self):
         super().__init__('publish_trajectory_msg')
 
+        # flags
+        self.a = False
+        self.b = False
+        self.x = False
+        self.y = False
+        self.lb = False
+        self.rb = False
+        self.menu = False
+        self.squares = False
+        self.rin = False
+
+
         self.joints = [
             'arm_roller_bar_joint',
             'elevator_center_joint',
@@ -38,11 +50,35 @@ class PublishTrajectoryMsg(Node):
             'SQUARES': 6,
             'RIN': 10
         }
+        self.flipped_button_dict = {
+            0: 'A',
+            1: 'B',
+            2: 'X',
+            3: 'Y',
+            4: 'LB',
+            5: 'RB',
+            7: 'MENU',
+            6: 'SQAURES',
+            10: 'RIN'
+
+        }
         self.axis_dict = {
             'DPAD_Y': 7,
             'DPAD_X': 6,
             'LT': 2,
             'RT': 5,
+        }
+
+        self.flag_dict = {
+            'A': self.a,
+            'B': self.b,
+            'X': self.x,
+            'Y': self.y,
+            'LB': self.lb,
+            'RB': self.rb,
+            'MENU': self.menu,
+            'SQUARES': self.squares,
+            'RIN': self.rin
         }
 
         self.pos = 0.0
@@ -58,47 +94,52 @@ class PublishTrajectoryMsg(Node):
         position_cmds = JointTrajectoryPoint()
         # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
 
-        x_flag = False
-        y_flag = False
-        y_flag_negative = False
-        x_flag_negative = False
+        for i in range(len(joystick.buttons)):
+            if joystick.buttons[i] == 1.0:
+                self.flag_dict[self.flipped_button_dict[i]] = not self.flag_dict[self.flipped_button_dict[i]]
 
-        # if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
-        #     y_flag = True
-        # elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
-        #     y_flag_negative = True
-        # elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
-        #     x_flag = True
-        # elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
-        #     x_flag_negative = True
-
-        if y_flag:
+        if self.flag_dict['LB']:     
+            self.pos = 0.5
+        elif self.flag_dict['RB']:
             self.pos = 1.0
-        elif y_flag_negative:
-            self.pos = 0.0
-        elif x_flag:
+        elif self.flag_dict['RIN']:
             self.pos = 0.2
-        elif x_flag_negative:
-            self.pos = 0.4
+        elif self.flag_dict['LB'] == False:
+            self.pos = 0.0
+        elif self.flag_dict['RB'] == False:
+            self.pos = 0.0
+        elif self.flag_dict['RIN'] == False:
+            self.pos = 0.0
 
-        if joystick.buttons[self.button_dict['RB']] == 1.0:
+        if self.flag_dict['Y']:
             self.rot = 0.1
         else:
             self.rot = 0.0
 
-        
+        # self.joints = [
+        #     'arm_roller_bar_joint',
+        #     'elevator_center_joint',
+        #     'elevator_outer_1_joint',
+        #     'elevator_outer_2_joint',
+        #     'top_gripper_right_arm_joint',
+        #     'top_gripper_left_arm_joint',
+        #     'top_slider_joint',
+        #     'bottom_intake_joint',
+        #     'bottom_gripper_right_arm_joint',
+        #     'bottom_gripper_left_arm_joint',
+        # ]
 
         position_cmds.positions = [
-            float(joystick.buttons[self.button_dict['RB']]),
+            1.0 if self.flag_dict['Y'] else 0.0,
             self.pos,
             self.rot,
             self.pos,
-            float(joystick.buttons[self.button_dict['X']]),
-            float(joystick.buttons[self.button_dict['X']]),
+            1.0 if self.flag_dict['A'] else 0.0,
+            1.0 if self.flag_dict['A'] else 0.0,
             float(joystick.buttons[self.button_dict['B']]),
-            float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['Y']]),
-            float(joystick.buttons[self.button_dict['Y']]),
+            0.0,
+            0.0,
+            0.0
         ]
         
         cmds.joint_names = self.joints
