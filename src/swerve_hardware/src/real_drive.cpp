@@ -383,13 +383,7 @@ namespace swerve_hardware
   
     if (realtime_real_publisher_->trylock())
     {
-      // auto &realtime_real_command_ = realtime_real_publisher_1_->msg_;
-      // realtime_real_command_.header.stamp = node_->get_clock()->now();
-      // realtime_real_command_.name = joint_names_output_drivetrain_;
-      // realtime_real_command_.velocity = hw_command_velocity_output_drivetrain_;
-      // realtime_real_command_.position = hw_command_position_output_drivetrain_;
-      // realtime_real_publisher_1_->unlockAndPublish();
-      auto &realtime_real_command_ = realtime_real_publisher_1_->msg_;
+      auto &realtime_real_command_ = realtime_real_publisher_->msg_;
       realtime_real_command_.header.stamp = node_->get_clock()->now();
       realtime_real_command_.name = drive_names_output_;
       realtime_real_command_.velocity = hw_command_drive_velocity_output_;
@@ -407,20 +401,6 @@ namespace swerve_hardware
       realtime_real_arm_publisher_->unlockAndPublish();
     }
     rclcpp::spin_some(node_);
-    if (realtime_real_publisher_2_->trylock())
-    {
-      auto &realtime_real_command_ = realtime_real_publisher_2_->msg_;
-      realtime_real_command_.header.stamp = node_->get_clock()->now();
-      realtime_real_command_.name = joint_names_output_arm_;
-      realtime_real_command_.velocity = hw_command_velocity_output_arm_;
-      realtime_real_command_.position = hw_command_position_output_arm_ ;
-      realtime_real_publisher_2_->unlockAndPublish();
-    }
-    rclcpp::spin_some(node_);
-    // hw_command_velocity_output_drivetrain_.clear();
-    // hw_command_position_output_drivetrain_.clear();
-    // hw_command_velocity_output_arm_.clear();
-    // hw_command_position_output_arm_.clear();
 
     return hardware_interface::return_type::OK;
   }

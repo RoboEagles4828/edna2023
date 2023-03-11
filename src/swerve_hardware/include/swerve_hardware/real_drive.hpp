@@ -115,8 +115,7 @@ private:
   std::string joint_command_topic_ = "real_joint_commands";
   std::string joint_arm_command_topic_ = "real_arm_commands";
   rclcpp::Node::SharedPtr node_;
-  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_drivetrain_ = nullptr;
-  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_arm_ = nullptr;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_publisher_ = nullptr;
   std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
     realtime_real_publisher_ = nullptr;
   std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> real_arm_publisher_ = nullptr;
