@@ -62,7 +62,7 @@ AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048.0
 CMD_TIMEOUT_SECONDS = 1
 
-nominal_voltage = 12.0
+nominal_voltage = 9.0
 steer_current_limit = 20.0
 
 # This is needed to fix bad float values being published by RTI from the RIO.
