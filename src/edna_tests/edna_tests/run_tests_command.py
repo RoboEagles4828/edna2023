@@ -8,8 +8,8 @@ from sensor_msgs.msg import JointState
 import logging
 vel_cmds = JointState() 
 rad = math.pi
-vel_cmds.velocity = [0.0, 0.0, 0.0, 0.0, rad, rad, rad, rad]
-vel_cmds.position = [0.0, 0.0, 0.0, 0.0, rad, rad, rad, rad]
+vel_cmds.velocity = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+vel_cmds.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 vel_cmds.name = [
         'front_left_wheel_joint',
         'front_left_axle_joint',
@@ -25,7 +25,6 @@ test_return = JointState()
 class RunTests(Node):
     def __init__(self):
         super().__init__('run_tests')
-        # publisb the test commands
         self.publisher_ = self.create_publisher(
             JointState, 
             'real_joint_commands', 
@@ -52,48 +51,69 @@ def check(msg, test, test_fail):
         count = 0
         working = True
         for x in msg.velocity:
-            if (abs(msg.velocity[count] / 10000 - vel_cmds.velocity[count]) > 0.1 or abs(msg.position[count] / 10000 - vel_cmds.position[count]) > 0.1):
+            if (abs(msg.velocity[count] / 1000 - vel_cmds.velocity[count]) > 0.001 or abs(msg.position[count] / 1000 - vel_cmds.position[count]) > 0.001):
                 working = False
                 count+=1
         if not working:
-            print(test)
-        else:
             print(test_fail)
-def timeLoop(time):
-    
+        else:
+            print(test)
 def test1(node):
-    vel_cmds.velocity=[2.0, 0.0, 0.0, 0.0, rad, rad, rad, rad]
-    t_end = time.time() + 10
+    vel_cmds.velocity=[rad, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    t_end = time.time() + 3
     while time.time() < t_end:
         rclpy.spin_once(node)
         time.sleep(1)
     check(test_return, 'Test Passed: Front Left Wheel is Spinning!', 'ERROR: Front Left Wheel is NOT spinning, something is wrong!')
 def test2(node):
-    vel_cmds.velocity=[0.0, 2.0, 0.0, 0.0, rad, rad, rad, rad]
-    t_end = time.time() + 10
+    vel_cmds.position=[0.0, rad, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    t_end = time.time() + 3
     while time.time() < t_end:
         rclpy.spin_once(node)
         time.sleep(1)
     check(test_return, 'Test Passed: Front Left Axle is Spinning!', 'ERROR: Front Left Axle is NOT spinning, something is wrong!')
 def test3(node):
-    vel_cmds.velocity=[0.0, 0.0, 2.0, 0.0, rad, rad, rad, rad]
-    t_end = time.time() + 10
+    vel_cmds.velocity=[0.0, 0.0, rad, 0.0, 0.0, 0.0, 0.0, 0.0]
+    t_end = time.time() + 3
     while time.time() < t_end:
         rclpy.spin_once(node)
         time.sleep(1)
     check(test_return, 'Test Passed: Front Right Wheel is Spinning!', 'ERROR: Front Right Wheel is NOT spinning, something is wrong!')
 def test4(node):
-    vel_cmds.velocity=[0.0, 0.0, 0.0, 2.0, rad, rad, rad, rad]
-    t_end = time.time() + 10
+    vel_cmds.position=[0.0, 0.0, 0.0, rad, 0.0, 0.0, 0.0, 0.0]
+    t_end = time.time() + 3
     while time.time() < t_end:
         rclpy.spin_once(node)
         time.sleep(1)
     check(test_return, 'Test Passed: Front Right Axle is Spinning!', 'ERROR: Front Right Axle is NOT spinning, something is wrong!')
-def testAll(node):
-    # setup tests commands
-    # go into while loop that will track the time 
-    # spin and sleep inside the while loop
-    # 
+def test5(node):
+    vel_cmds.position=[0.0, 0.0, 0.0, 0.0, rad, 0.0, 0.0, 0.0]
+    t_end = time.time() + 3
+    while time.time() < t_end:
+        rclpy.spin_once(node)
+        time.sleep(1)
+    check(test_return, 'Test Passed: Rear Left Wheel is Spinning!', 'ERROR: Rear Left Wheel is NOT spinning, something is wrong!')
+def test6(node):
+    vel_cmds.position=[0.0, 0.0, 0.0, 0.0, 0.0, rad, 0.0, 0.0]
+    t_end = time.time() + 3
+    while time.time() < t_end:
+        rclpy.spin_once(node)
+        time.sleep(1)
+    check(test_return, 'Test Passed: Rear Left Axle is Spinning!', 'ERROR: Rear Left Axle is NOT spinning, something is wrong!')
+def test7(node):
+    vel_cmds.position=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, rad, 0.0]
+    t_end = time.time() + 3
+    while time.time() < t_end:
+        rclpy.spin_once(node)
+        time.sleep(1)
+    check(test_return, 'Test Passed: Rear Right Wheel is Spinning!', 'ERROR: Rear Right Wheel is NOT spinning, something is wrong!')
+def test8(node):
+    vel_cmds.position=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, rad]
+    t_end = time.time() + 3
+    while time.time() < t_end:
+        rclpy.spin_once(node)
+        time.sleep(1)
+    check(test_return, 'Test Passed: Rear Right Axle is Spinning!', 'ERROR: Rear Right Axle is NOT spinning, something is wrong!')
 def main(args=None):
     rclpy.init(args=args)
 
@@ -108,6 +128,14 @@ def main(args=None):
     test3(node)
 
     test4(node)
+
+    test5(node)
+
+    test6(node)
+
+    test7(node)
+
+    test8(node)
 
     node.destroy_node()
 
