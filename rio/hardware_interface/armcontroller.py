@@ -163,7 +163,7 @@ class TalonWheel(ctre.TalonFX):
             self.set(ctre.TalonFXControlMode.Position, position * (TICKS_PER_REVOLUTION * self.totalRevolutions))
 
 
-class IntakeWheel(TalonWheel):
+class IntakeWheel():
     def __init__(self, port : int):
         return
         super().__init__(port, TOTAL_GRIPPER_REVOLUTIONS)
@@ -215,7 +215,7 @@ class ElevatorWheel(TalonWheel):
 
 
     def setPosition(self, position : float): # Position should be between 0.0 and 2.0
-        print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
+        # print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
         if wpilib.RobotBase.isSimulation():
             self.setSelectedSensorPosition((position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
         else:
