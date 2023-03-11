@@ -6,10 +6,12 @@ ReloadPropagatedFrom=docker.service
 
 [Service]
 Type=simple
-User=sorineagle
+User=roboeagles
 RemainAfterExit=yes
-# ExecStart=/usr/bin/bash /home/sorineagle/startup.sh
-# ExecStop=/usr/bin/bash /home/sorineagle/onexit.sh
+ExecStart=/bin/bash /home/roboeagles/edna2023/startup.sh
+ExecStop=/bin/bash /home/roboeagles/edna023/onexit.sh
+Restart=on-failure
+RestartSec=3s
 
 [Install]
 WantedBy=multi-user.target

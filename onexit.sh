@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /home/sorineagle/edna2023/
-docker compose down
+cd /home/roboeagles/edna2023/
+docker-compose down
