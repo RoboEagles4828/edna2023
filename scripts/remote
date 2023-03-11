@@ -2,7 +2,7 @@
 
 # Check /scripts/config/remote-config for script configuration
 source /workspaces/edna2023/scripts/config/remote-config
-
+PORT=5800
 
 deploy-git() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via git..."
@@ -18,25 +18,25 @@ deploy-git() {
 
 deploy-rsync() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via rsync..."
-    rsync -azP  --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    rsync -azP -e "ssh -p $PORT" --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
 }
 
 rebuild() {
     echo "Disabling edna.service for speed..."
-    ssh $USERNAME@$IP_ADDRESS "sudo systemctl stop edna.service"
+    ssh $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
     echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH and building..."
-    ssh $USERNAME@$IP_ADDRESS "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
+    ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
     edna-restart
 }
 
 edna-restart() {
     echo "Restarting edna.service on $USERNAME@$IP_ADDRESS..."
-    ssh $USERNAME@$IP_ADDRESS "sudo systemctl restart edna.service"
+    ssh $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl restart edna.service"
 }
 
 edna-log() {
     echo "Checking edna.service status..."
-    ssh $USERNAME@$IP_ADDRESS 'sudo systemctl status edna.service'
+    ssh $USERNAME@$IP_ADDRESS -p $PORT 'sudo systemctl status edna.service'
 }
 
 help() {
