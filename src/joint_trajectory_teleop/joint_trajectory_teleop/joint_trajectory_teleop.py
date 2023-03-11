@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSDurabilityPolicy, QoSReliabilityPolicy
 import math
 
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
@@ -45,13 +46,12 @@ class PublishTrajectoryMsg(Node):
             'RT': 5,
         }
 
-        self.NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
-
         self.pos = 0.0
         self.rot = 0.0
-        # qos = QoSProfile(durability=QoSDurabilityPolicy.VOLATILE, reliability=QoSReliabilityPolicy.BEST_EFFORT, history=QoSHistoryPolicy.KEEP_LAST, depth=10)
-        self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)#qos_profile=qos)
-        self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)#qos_profile=qos)
+
+        # qos = QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, durability=QoSDurabilityPolicy.VOLATILE, history=QoSHistoryPolicy.KEEP_LAST, depth=10)
+        self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)
+        self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)
         self.timer_period = 0.5  # seconds
 
     def controller_callback(self, joystick: Joy):
@@ -64,7 +64,15 @@ class PublishTrajectoryMsg(Node):
         y_flag_negative = False
         x_flag_negative = False
 
-        # c
+        # if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
+        #     y_flag = True
+        # elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
+        #     y_flag_negative = True
+        # elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
+        #     x_flag = True
+        # elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
+        #     x_flag_negative = True
+
         if y_flag:
             self.pos = 1.0
         elif y_flag_negative:
@@ -98,8 +106,7 @@ class PublishTrajectoryMsg(Node):
         cmds.points = [position_cmds]
         
         self.publisher_.publish(cmds)
-        self.get_logger().info('Publishing...')
-        time.sleep(0.5)
+        # self.get_logger().info('Publishing...')
 
 def main(args=None):
     rclpy.init(args=args)

@@ -12,6 +12,8 @@ TICKS_PER_REVOLUTION = 2048.0
 TOTAL_ELEVATOR_REVOLUTIONS = 10 # UNKNOWN
 TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
 
+SCALING_FACTOR_FIX = 10000
+
 # Port Numbers for all of the Solenoids and other connected things
 # The numbers below will **need** to be changed to fit the robot wiring
 PORTS = {
@@ -65,18 +67,6 @@ class ArmController():
             'bottom_intake_joint': self.bottom_gripper_lift
         }
 
-        self.LAST_COMMANDS = {
-            # Pneumatics
-            'arm_roller_bar_joint':     None,
-            'top_slider_joint': None,
-            'top_gripper_left_arm_joint':        None,
-            'bottom_gripper_left_arm_joint':     None,
-            # Wheels
-            'elevator_center_joint': None,
-            'bottom_intake_joint': None
-        }
-        
-
     def getEncoderData(self):
         names = [""]*6
         positions = [0]*6
@@ -85,8 +75,8 @@ class ArmController():
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):
             names[index] = joint_name
-            positions[index] = self.JOINT_MAP[joint_name].getPosition()
-            velocities[index] = self.JOINT_MAP[joint_name].getVelocity()
+            positions[index] = int(self.JOINT_MAP[joint_name].getPosition() * SCALING_FACTOR_FIX)
+            velocities[index] = int(self.JOINT_MAP[joint_name].getVelocity() * SCALING_FACTOR_FIX)
         return { "name" : names, "position": positions, "velocity": velocities}
 
     # TODO: Add this later!!!
@@ -97,9 +87,6 @@ class ArmController():
             self.last_cmds_time = time.time()
             self.warn_timeout = True
             for i in range(len(commands["name"])):
-                if self.LAST_COMMANDS[commands["name"][i]] != commands['position'][i]:
-                    print(f"Updating {commands['name'][i]} to {commands['position'][i]}!")
-                    self.LAST_COMMANDS[commands["name"][i]] = commands['position'][i]
                 self.JOINT_MAP[commands["name"][i]].setPosition(commands['position'][i])
         
         elif (time.time() - self.last_cmds_time > CMD_TIMEOUT_SECONDS):

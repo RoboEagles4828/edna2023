@@ -60,6 +60,7 @@ install_debian_packages() {
         strace \
         manpages \
         manpages-dev \
+        libnss3 \
         init-system-helpers"
 
     # Include libssl1.1 if available

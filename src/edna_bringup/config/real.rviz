@@ -5,12 +5,10 @@ Panels:
   Property Tree Widget:
     Expanded:
     - /Global Options1
-    - /RobotModel1
-    - /RobotModel1/Description Topic1
+    - /Status1
     - /TF1
     - /TF1/Frames1
-    - /TF1/Tree1
-    Splitter Ratio: 0.6963788270950317
+    Splitter Ratio: 0.5
   Tree Height: 725
 - Class: rviz_common/Selection
   Name: Selection
@@ -53,7 +51,7 @@ Visualization Manager:
     Value: true
   - Alpha: 1
     Class: rviz_default_plugins/RobotModel
-    Collision Enabled: true
+    Collision Enabled: false
     Description File: ''
     Description Source: Topic
     Description Topic:
@@ -61,7 +59,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /gage/robot_description
+      Value: /real/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -217,7 +215,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: gage
+    TF Prefix: real
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -226,65 +224,65 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      gage/arm_back_leg_link:
+      real/arm_back_leg_link:
         Value: false
-      gage/arm_elevator_leg_link:
+      real/arm_elevator_leg_link:
         Value: false
-      gage/arm_roller_bar_link:
+      real/arm_roller_bar_link:
         Value: false
-      gage/base_link:
-        Value: false
-      gage/bottom_gripper_bar_link:
-        Value: false
-      gage/bottom_gripper_left_arm_link:
-        Value: false
-      gage/bottom_gripper_right_arm_link:
-        Value: false
-      gage/bottom_intake_link:
+      real/base_link:
         Value: true
-      gage/elevator_center_link:
+      real/bottom_gripper_bar_link:
         Value: false
-      gage/elevator_outer_1_link:
+      real/bottom_gripper_left_arm_link:
         Value: false
-      gage/elevator_outer_2_link:
+      real/bottom_gripper_right_arm_link:
         Value: false
-      gage/front_left_axle_link:
+      real/bottom_intake_link:
         Value: false
-      gage/front_left_wheel_link:
+      real/elevator_center_link:
         Value: false
-      gage/front_right_axle_link:
+      real/elevator_outer_1_link:
         Value: false
-      gage/front_right_wheel_link:
+      real/elevator_outer_2_link:
         Value: false
-      gage/rear_left_axle_link:
+      real/front_left_axle_link:
+        Value: true
+      real/front_left_wheel_link:
         Value: false
-      gage/rear_left_wheel_link:
+      real/front_right_axle_link:
+        Value: true
+      real/front_right_wheel_link:
         Value: false
-      gage/rear_right_axle_link:
+      real/rear_left_axle_link:
+        Value: true
+      real/rear_left_wheel_link:
         Value: false
-      gage/rear_right_wheel_link:
+      real/rear_right_axle_link:
+        Value: true
+      real/rear_right_wheel_link:
         Value: false
-      gage/swerve_chassis_link:
+      real/swerve_chassis_link:
         Value: false
-      gage/top_gripper_bar_link:
+      real/top_gripper_bar_link:
         Value: false
-      gage/top_gripper_left_arm_link:
+      real/top_gripper_left_arm_link:
         Value: false
-      gage/top_gripper_right_arm_link:
+      real/top_gripper_right_arm_link:
         Value: false
-      gage/top_slider_link:
+      real/top_slider_link:
         Value: false
-      gage/zed_base_link:
+      real/zed_base_link:
         Value: false
-      gage/zed_camera_center:
+      real/zed_camera_center:
         Value: false
-      gage/zed_left_camera_frame:
+      real/zed_left_camera_frame:
         Value: false
-      gage/zed_left_camera_optical_frame:
+      real/zed_left_camera_optical_frame:
         Value: false
-      gage/zed_right_camera_frame:
+      real/zed_right_camera_frame:
         Value: false
-      gage/zed_right_camera_optical_frame:
+      real/zed_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -292,42 +290,42 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      gage/base_link:
-        gage/swerve_chassis_link:
-          gage/arm_back_leg_link:
-            gage/elevator_outer_1_link:
-              gage/elevator_center_link:
-                gage/elevator_outer_2_link:
-                  gage/top_slider_link:
-                    gage/top_gripper_bar_link:
-                      gage/top_gripper_left_arm_link: {}
-                      gage/top_gripper_right_arm_link: {}
-          gage/arm_elevator_leg_link:
-            gage/arm_roller_bar_link: {}
-            gage/bottom_intake_link:
-              gage/bottom_gripper_bar_link:
-                gage/bottom_gripper_left_arm_link: {}
-                gage/bottom_gripper_right_arm_link: {}
-          gage/front_left_axle_link:
-            gage/front_left_wheel_link: {}
-          gage/front_right_axle_link:
-            gage/front_right_wheel_link: {}
-          gage/rear_left_axle_link:
-            gage/rear_left_wheel_link: {}
-          gage/rear_right_axle_link:
-            gage/rear_right_wheel_link: {}
-          gage/zed_base_link:
-            gage/zed_camera_center:
-              gage/zed_left_camera_frame:
-                gage/zed_left_camera_optical_frame: {}
-              gage/zed_right_camera_frame:
-                gage/zed_right_camera_optical_frame: {}
+      real/base_link:
+        real/swerve_chassis_link:
+          real/arm_back_leg_link:
+            real/elevator_outer_1_link:
+              real/elevator_center_link:
+                real/elevator_outer_2_link:
+                  real/top_slider_link:
+                    real/top_gripper_bar_link:
+                      real/top_gripper_left_arm_link: {}
+                      real/top_gripper_right_arm_link: {}
+          real/arm_elevator_leg_link:
+            real/arm_roller_bar_link: {}
+            real/bottom_intake_link:
+              real/bottom_gripper_bar_link:
+                real/bottom_gripper_left_arm_link: {}
+                real/bottom_gripper_right_arm_link: {}
+          real/front_left_axle_link:
+            real/front_left_wheel_link: {}
+          real/front_right_axle_link:
+            real/front_right_wheel_link: {}
+          real/rear_left_axle_link:
+            real/rear_left_wheel_link: {}
+          real/rear_right_axle_link:
+            real/rear_right_wheel_link: {}
+          real/zed_base_link:
+            real/zed_camera_center:
+              real/zed_left_camera_frame:
+                real/zed_left_camera_optical_frame: {}
+              real/zed_right_camera_frame:
+                real/zed_right_camera_optical_frame: {}
     Update Interval: 0
     Value: true
   Enabled: true
   Global Options:
-    Background Color: 116; 116; 116
-    Fixed Frame: gage/base_link
+    Background Color: 48; 48; 48
+    Fixed Frame: real/base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -369,26 +367,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/Orbit
-      Distance: 2.3943190574645996
+      Class: rviz_default_plugins/ThirdPersonFollower
+      Distance: 2.1470446586608887
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.033792316913604736
-        Y: -0.24759666621685028
-        Z: 0.5461775064468384
-      Focal Shape Fixed Size: true
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8203982710838318
+      Pitch: 0.5102026462554932
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz_default_plugins)
-      Yaw: 0.09040485322475433
+      Value: ThirdPersonFollower (rviz_default_plugins)
+      Yaw: 3.5954172611236572
     Saved: null
 Window Geometry:
   Displays:
@@ -396,7 +394,7 @@ Window Geometry:
   Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001690000035efc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b0000035e000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000035efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003b0000035e000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007360000003efc0100000002fb0000000800540069006d00650100000000000007360000025300fffffffb0000000800540069006d00650100000000000004500000000000000000000004b20000035e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001560000035efc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b0000035e000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000035efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003b0000035e000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007360000003efc0100000002fb0000000800540069006d00650100000000000007360000025300fffffffb0000000800540069006d00650100000000000004500000000000000000000004c50000035e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:

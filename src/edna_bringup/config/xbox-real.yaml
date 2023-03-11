@@ -6,8 +6,8 @@
         x: 1
         y: 0
       scale_linear: #1/10000 to offset shifted 0 in /joystick-data
-        x: 3.0
-        y: 3.0
+        x: 0.0003
+        y: 0.0003
       scale_linear_turbo:
         x: 0.0008
         y: 0.0008

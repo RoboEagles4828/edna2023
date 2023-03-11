@@ -8,6 +8,7 @@
         }		
     ],
     "ros.distro": "humble",
+    "ros.rosSetupScript": "${workspaceFolder}/install/setup.bash",
     "files.associations": {
         "string": "cpp",
         "typeindex": "cpp",
