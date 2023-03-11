@@ -1,0 +1,15 @@
+[Unit]
+Description=edna docker service
+After=docker.service
+BindsTo=docker.service
+ReloadPropagatedFrom=docker.service
+
+[Service]
+Type=simple
+User=sorineagle
+RemainAfterExit=yes
+# ExecStart=/usr/bin/bash /home/sorineagle/startup.sh
+# ExecStop=/usr/bin/bash /home/sorineagle/onexit.sh
+
+[Install]
+WantedBy=multi-user.target
