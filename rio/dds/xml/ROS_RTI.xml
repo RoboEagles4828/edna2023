@@ -57,6 +57,10 @@ This code contains trade secrets of Real-Time Innovations, Inc.
           <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
           <topic name="rt/real/real_joint_states" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
         </domain>
+        <doamin name="ROS2_DOMAIN_STAGE" domain_id="0">
+          <register_type name="string" type_ref="string" />
+          <topic name="rt/real/frc_stage" register_type_ref="string"/>
+        </domain>
     </domain_library>
 
     <!-- Participant library -->
@@ -93,5 +97,10 @@ This code contains trade secrets of Real-Time Innovations, Inc.
             <data_writer name="encoder_info_writer" topic_ref="rt/real/real_joint_states" />
           </publisher>
       </domain_participant>
+
+      <domain_participant name="stage" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_STAGE">
+          <publisher name="stage_publisher">
+            <data_writer name="stage_writer" topic_ref="rt/real/frc_stage" />
+          </publisher>
     </domain_participant_library>
 </dds>

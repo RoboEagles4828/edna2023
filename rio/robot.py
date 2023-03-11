@@ -170,6 +170,20 @@ def joystickAction(publisher : DDS_Publisher):
         initJoystick()
     publisher.write(data)
 
+######### STAGE THREAD and ACTION #########
+STAGE_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::stage"
+STAGE_WRITER_NAME = "stage_publisher::stage_writer"
+
+def stageThread():
+    stage_publisher = None
+    with rti_init_lock:
+        stage_publisher = DDS_Publisher(xml_path, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
+    threadLoop('stage', stage_publisher, stageAction)
+
+def stageAction(publisher : DDS_Publisher):
+    global FRC_STAGE
+    publisher.write(FRC_STAGE)
+
 
 ######### Robot Class #########
 class edna_robot(wpilib.TimedRobot):
