@@ -59,47 +59,48 @@ class PublishTrajectoryMsg(Node):
         position_cmds = JointTrajectoryPoint()
         # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
 
-        x_flag = False
-        y_flag = False
-        y_flag_negative = False
-        x_flag_negative = False
-
-        # if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
-        #     y_flag = True
-        # elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
-        #     y_flag_negative = True
-        # elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
-        #     x_flag = True
-        # elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
-        #     x_flag_negative = True
-
-        if y_flag:
-            self.pos = 1.0
-        elif y_flag_negative:
-            self.pos = 0.0
-        elif x_flag:
+        if joystick.buttons[self.button_dict['LB']] == 1.0:
+            self.pos = 1.1
+        elif joystick.buttons[self.button_dict['RB']] == 1.0:
+            self.pos = 1.5
+        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.2
-        elif x_flag_negative:
-            self.pos = 0.4
+        elif joystick.buttons[self.button_dict['LB']] == 0.0:
+            self.pos = 0.0
+        elif joystick.buttons[self.button_dict['RB']] == 0.0:
+            self.pos = 0.0
+        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
+            self.pos
 
-        if joystick.buttons[self.button_dict['RB']] == 1.0:
+        if joystick.buttons[self.button_dict['Y']] == 1.0:
             self.rot = 0.1
         else:
             self.rot = 0.0
 
-        
+        # self.joints = [
+        #     'arm_roller_bar_joint',
+        #     'elevator_center_joint',
+        #     'elevator_outer_1_joint',
+        #     'elevator_outer_2_joint',
+        #     'top_gripper_right_arm_joint',
+        #     'top_gripper_left_arm_joint',
+        #     'top_slider_joint',
+        #     'bottom_intake_joint',
+        #     'bottom_gripper_right_arm_joint',
+        #     'bottom_gripper_left_arm_joint',
+        # ]
 
         position_cmds.positions = [
-            float(joystick.buttons[self.button_dict['RB']]),
+            float(joystick.buttons[self.button_dict['Y']]),
             self.pos,
             self.rot,
             self.pos,
-            float(joystick.buttons[self.button_dict['X']]),
-            float(joystick.buttons[self.button_dict['X']]),
+            float(joystick.buttons[self.button_dict['A']]),
+            float(joystick.buttons[self.button_dict['A']]),
             float(joystick.buttons[self.button_dict['B']]),
             float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['Y']]),
-            float(joystick.buttons[self.button_dict['Y']]),
+            float(joystick.axes[self.axis_dict['RT']]),
+            float(joystick.axes[self.axis_dict['RT']]),
         ]
         
         cmds.joint_names = self.joints
