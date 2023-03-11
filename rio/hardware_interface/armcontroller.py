@@ -54,6 +54,7 @@ def getJointList():
 class ArmController():
     def __init__(self, use_mocks):
         self.last_cmds_time = time.time()
+        self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
         self.use_mocks = use_mocks
         self.warn_timeout = True
         self.hub = wpilib.PneumaticHub(PORTS['HUB'])
@@ -82,6 +83,10 @@ class ArmController():
         names = [""]*6
         positions = [0]*6
         velocities = [0]*6
+
+        if self.use_mocks:
+            if self.last_cmds:
+                return self.last_cmds
 
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):

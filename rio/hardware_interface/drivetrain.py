@@ -317,6 +317,7 @@ class SwerveModule():
 class DriveTrain():
     def __init__(self, use_mocks):
         self.use_mocks = use_mocks
+        self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
         self.last_cmds_time = time.time()
         self.warn_timeout = True
         self.front_left = SwerveModule(MODULE_CONFIG["front_left"])
@@ -336,6 +337,11 @@ class DriveTrain():
         names = [""]*8
         positions = [0]*8
         velocities = [0]*8
+
+        if self.use_mocks:
+            if self.last_cmds:
+                return self.last_cmds
+
         encoderInfo = []
         encoderInfo += self.front_left.getEncoderData() 
         encoderInfo += self.front_right.getEncoderData()
