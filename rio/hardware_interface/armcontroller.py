@@ -22,7 +22,7 @@ PORTS = {
     # Pistons
     'ARM_ROLLER_BAR': [14, 15],
     'TOP_GRIPPER_SLIDER': [10, 11],
-    'TOP_GRIPPER': [12, 13],
+    'TOP_GRIPPER': [13, 12],
     'BOTTOM_GRIPPER': [8, 9],
     # Wheels
     'ELEVATOR': 13,
