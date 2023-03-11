@@ -208,6 +208,10 @@ class SwerveModule():
         
         # Brake
         self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+
+        # Velocity Ramp
+        # TODO: Tweak this value
+        self.wheel_motor.configClosedloopRamp(1)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
