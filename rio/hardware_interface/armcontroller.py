@@ -92,10 +92,6 @@ class ArmController():
         positions = [0]*6
         velocities = [0]*6
 
-        if self.use_mocks:
-            if self.current_cmds:
-                return self.current_cmds
-
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):
             names[index] = joint_name
@@ -122,26 +118,31 @@ class ArmController():
 
 class Piston():
 
-    def __init__(self, hub : wpilib.PneumaticHub, ports : list[int]):
+    def __init__(self, hub : wpilib.PneumaticHub, ports : list[int], use_mocks : bool):
         self.solenoid = hub.makeDoubleSolenoid(ports[0], ports[1])
+        self.use_mocks = use_mocks
+        self.current_cmd_velocity = 0.0
 
     def getPosition(self) -> int:
+        if self.use_mocks:
+            return self.current_cmd_velocity
         return 1 if self.solenoid.get().value == wpilib.DoubleSolenoid.Value.kForward else 0
     
     # The Solenoids don't have a velocity value, so we set it to zero here
     def getVelocity(self) -> int: return 0
 
     def setPosition(self, position : int):
+        self.current_cmd_velocity = position
         self.solenoid.set(wpilib.DoubleSolenoid.Value.kReverse if position == 0 else wpilib.DoubleSolenoid.Value.kForward)
 
 
 class TalonWheel(ctre.TalonFX):
 
-    def __init__(self, port : int, totalRevolutions : int):
+    def __init__(self, port : int, totalRevolutions : int, use_mocks : bool):
         super().__init__(port)
         self.totalRevolutions = totalRevolutions
-
         self.configFactoryDefault(WHEEL_TIMEOUT_MILLISECONDS)
+        self.use_mocks = use_mocks
 
         # Voltage
         self.configVoltageCompSaturation(12, WHEEL_TIMEOUT_MILLISECONDS)
@@ -158,23 +159,29 @@ class TalonWheel(ctre.TalonFX):
         self.configNominalOutputReverse(0, WHEEL_TIMEOUT_MILLISECONDS)
         self.configPeakOutputForward(1, WHEEL_TIMEOUT_MILLISECONDS)
         self.configPeakOutputReverse(-1, WHEEL_TIMEOUT_MILLISECONDS)
+
+        self.last_position = 0.0
     
     def getPosition(self) -> float:
-        return (self.getSelectedSensorPosition() / (TICKS_PER_REVOLUTION * self.totalRevolutions))
+        self.last_position = self.getSelectedSensorPosition()
+        return (self.last_position / (TICKS_PER_REVOLUTION * self.totalRevolutions))
     
     def getVelocity(self) -> float:
         return (self.getSelectedSensorVelocity() * 10) / (TICKS_PER_REVOLUTION * self.totalRevolutions)
     
     def setPosition(self, position : float): # Position should be between 0.0 and 1.0
-        if wpilib.RobotBase.isSimulation():
-            self.setSelectedSensorPosition(position * TICKS_PER_REVOLUTION * self.totalRevolutions)
+        if self.use_mocks:
+            mock_position = position * TICKS_PER_REVOLUTION * self.totalRevolutions
+            mock_velocity = (mock_position - self.last_position) / 0.02
+            self.setSelectedSensorPosition(mock_position)
+            self.setSelectedSensorVelocity(mock_velocity)
         else:
             self.set(ctre.TalonFXControlMode.Position, position * (TICKS_PER_REVOLUTION * self.totalRevolutions))
 
 
 class IntakeWheel(TalonWheel):
-    def __init__(self, port : int):
-        super().__init__(port, TOTAL_GRIPPER_REVOLUTIONS)
+    def __init__(self, port : int, use_mocks : bool):
+        super().__init__(port, TOTAL_GRIPPER_REVOLUTIONS, use_mocks)
 
         self.setSensorPhase(False)
         self.setInverted(False)
@@ -190,8 +197,8 @@ class IntakeWheel(TalonWheel):
 
 
 class ElevatorWheel(TalonWheel):
-    def __init__(self, port : int):
-        super().__init__(port, TOTAL_ELEVATOR_REVOLUTIONS)
+    def __init__(self, port : int, use_mocks : bool):
+        super().__init__(port, TOTAL_ELEVATOR_REVOLUTIONS, use_mocks)
 
         self.setSensorPhase(False)
         self.setInverted(False)
