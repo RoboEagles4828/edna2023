@@ -1,0 +1,5 @@
+USERNAME=${2:-"ubuntu"}
+IP_ADDRESS=${3:-"10.48.28.22"}
+REMOTE_PATH=${4:-"/home/$USERNAME/edna2023"}
+
+MACHINE_NAME=${5:-"pi"}

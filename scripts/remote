@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Check /scripts/config/remote-config for script configuration
+source /workspaces/edna2023/scripts/config/remote-config
+
+
+deploy() {
+    echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH..."
+    if [[ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]]; then # Add it as a remote
+            if [ $(git remote | grep "$MACHINE_NAME") ]; then # Remove the old jetson remote
+                    git remote remove $MACHINE_NAME
+            fi
+            git remote add $MACHINE_NAME "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
+    fi
+
+    git push $MACHINE_NAME main
+}
+
+log() {
+    echo "Checking edna.service status..."
+    ssh $USERNAME@$IP_ADDRESS 'sudo systemctl status edna.service'
+}
+
+case $1 in 
+    "config")
+        nano /workspaces/edna2023/scripts/config/pi-config
+        ;;
+
+    "setup")
+        echo "Copying public key to $USERNAME@$IP_ADDRESS..."
+        ssh-copy-id -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS
+        ;;
+
+    "deploy")
+        deploy
+        ;;
+    
+    "log")
+        log
+        ;;
+    
+    *)
+        echo "Unknown option: $1"
+        echo "Usage: remote (config | setup | deploy | log) [remote-username] [ip-address] [remote-path] [machine-name]"
+        ;;
+esac
