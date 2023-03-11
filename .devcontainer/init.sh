@@ -1,12 +1,16 @@
 #!/bin/bash
+# Pull the actual image so it is saved locally
+docker pull ghcr.io/roboeagles4828/developer-environment:6
+
 # Create the directory where isaac sim will save to.
 mkdir -p ~/docker/isaac-sim
+mkdir -p ~/docker/vscode
 
 # Find nvidia and vulkan driver config files
 nvidia_driver_config_path="scripts/config/nvidia_driver_config"
 nvidia_layers=""
 nvidia_icd=""
-_10_nvidia=""
+_10_nvidia=""ghcr.io/roboeagles4828/developer-environment:6
 
 nvidia_layer_loc1=$(find /etc/vulkan -name nvidia_layers.json)
 nvidia_layer_loc2=$(find /usr/share/vulkan -name nvidia_layers.json)
