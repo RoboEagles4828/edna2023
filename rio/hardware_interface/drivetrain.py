@@ -62,6 +62,10 @@ AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048.0
 CMD_TIMEOUT_SECONDS = 1
 
+VELOCITY_RAMP = 0.25
+
+TOLERANCE = 0.05
+
 nominal_voltage = 9.0
 steer_current_limit = 20.0
 
@@ -247,7 +251,16 @@ class SwerveModule():
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
+        current_vel = self.wheel_motor.getSelectedSensorVelocity()
+        
+        difference = wheel_vel - current_vel
+        motor_set_vel = current_vel + difference*VELOCITY_RAMP
+        
+        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, motor_set_vel)
+
+        if abs(wheel_vel - motor_set_vel) <= TOLERANCE:
+            motor_set_vel = wheel_vel
+
         self.last_wheel_vel_cmd = wheel_vel
 
         # MOTION MAGIC CONTROL FOR AXLE POSITION
