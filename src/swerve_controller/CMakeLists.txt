@@ -20,6 +20,7 @@ find_package(tf2_msgs REQUIRED)
 
 add_library(swerve_controller SHARED
   src/swerve_controller.cpp
+  src/speed_limiter.cpp
 )
 
 target_include_directories(swerve_controller PRIVATE include)
