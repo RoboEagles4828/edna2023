@@ -35,12 +35,12 @@ rebuild() {
 
 edna-restart() {
     echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
-    ssh $USERNAME@$IP_ADDRESS -p $PORT "systemctl restart edna.service"
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl restart edna.service"
 }
 
 edna-log() {
     echo "Checking edna.service status..."
-    ssh $USERNAME@$IP_ADDRESS -p $PORT 'sudo systemctl status edna.service'
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT 'sudo systemctl status edna.service'
 }
 
 help() {
@@ -67,7 +67,7 @@ case $1 in
 
     "setup")
         echo "Copying public key to $USERNAME@$IP_ADDRESS:$PORT..."
-        ssh-copy-id -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS -p $PORT
+        ssh-copy-id -p $PORT -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS 
     ;;
         
     "connect") ;&
