@@ -2,7 +2,7 @@
 
 # Check /scripts/config/remote-config for script configuration
 source /workspaces/edna2023/scripts/config/remote-config
-
+PORT=5800
 
 deploy-git() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via git..."
@@ -23,24 +23,24 @@ deploy-rsync() {
 
 rebuild() {
     echo "Disabling edna.service for speed..."
-    ssh $USERNAME@$IP_ADDRESS "sudo systemctl stop edna.service"
+    ssh $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
     echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) and building..."
     if [ -z "$2" ] then
-        ssh $USERNAME@$IP_ADDRESS:$PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
+        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
     else
-        ssh $USERNAME@$IP_ADDRESS:$PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}"
+        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}"
     fi
     edna-restart
 }
 
 edna-restart() {
     echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
-    ssh $USERNAME@$IP_ADDRESS:$PORT "sudo systemctl restart edna.service"
+    ssh $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl restart edna.service"
 }
 
 edna-log() {
     echo "Checking edna.service status..."
-    ssh $USERNAME@$IP_ADDRESS:$PORT 'sudo systemctl status edna.service'
+    ssh $USERNAME@$IP_ADDRESS -p $PORT 'sudo systemctl status edna.service'
 }
 
 help() {
@@ -67,13 +67,13 @@ case $1 in
 
     "setup")
         echo "Copying public key to $USERNAME@$IP_ADDRESS:$PORT..."
-        ssh-copy-id -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS:$PORT
+        ssh-copy-id -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS -p $PORT
     ;;
         
     "connect") ;&
     "ssh")
         echo "Connecting to $USERNAME@$IP_ADDRESS:$PORT"
-        ssh $USERNAME@$IP_ADDRESS:$PORT
+        ssh $USERNAME@$IP_ADDRESS -p $PORT
     ;;
 
     "deploy")

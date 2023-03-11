@@ -296,7 +296,10 @@ class SwerveModule():
 
         # Last, add the current existing loops that the motor has gone through.
         newAxlePosition += axle_motorPosition - axle_absoluteMotorPosition
-        self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
+        if wpilib.RobotBase.isSimulation():
+            self.axle_motor.setSelectedSensorPosition(getShaftTicks(newAxlePosition, "position"))
+        else:
+            self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
 
 
     def stop(self):

@@ -14,18 +14,6 @@ class PublishTrajectoryMsg(Node):
     def __init__(self):
         super().__init__('publish_trajectory_msg')
 
-        # flags
-        self.a = False
-        self.b = False
-        self.x = False
-        self.y = False
-        self.lb = False
-        self.rb = False
-        self.menu = False
-        self.squares = False
-        self.rin = False
-
-
         self.joints = [
             'arm_roller_bar_joint',
             'elevator_center_joint',
@@ -50,35 +38,11 @@ class PublishTrajectoryMsg(Node):
             'SQUARES': 6,
             'RIN': 10
         }
-        self.flipped_button_dict = {
-            0: 'A',
-            1: 'B',
-            2: 'X',
-            3: 'Y',
-            4: 'LB',
-            5: 'RB',
-            7: 'MENU',
-            6: 'SQAURES',
-            10: 'RIN'
-
-        }
         self.axis_dict = {
             'DPAD_Y': 7,
             'DPAD_X': 6,
             'LT': 2,
             'RT': 5,
-        }
-
-        self.flag_dict = {
-            'A': self.a,
-            'B': self.b,
-            'X': self.x,
-            'Y': self.y,
-            'LB': self.lb,
-            'RB': self.rb,
-            'MENU': self.menu,
-            'SQUARES': self.squares,
-            'RIN': self.rin
         }
 
         self.pos = 0.0
@@ -94,24 +58,20 @@ class PublishTrajectoryMsg(Node):
         position_cmds = JointTrajectoryPoint()
         # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
 
-        for i in range(len(joystick.buttons)):
-            if joystick.buttons[i] == 1.0:
-                self.flag_dict[self.flipped_button_dict[i]] = not self.flag_dict[self.flipped_button_dict[i]]
-
-        if self.flag_dict['LB']:     
+        if joystick.buttons[self.button_dict['LB']] == 1.0:
             self.pos = 0.5
-        elif self.flag_dict['RB']:
+        elif joystick.buttons[self.button_dict['RB']] == 1.0:
             self.pos = 1.0
-        elif self.flag_dict['RIN']:
+        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.2
-        elif self.flag_dict['LB'] == False:
+        elif joystick.buttons[self.button_dict['LB']] == 0.0:
             self.pos = 0.0
-        elif self.flag_dict['RB'] == False:
+        elif joystick.buttons[self.button_dict['RB']] == 1.0:
             self.pos = 0.0
-        elif self.flag_dict['RIN'] == False:
-            self.pos = 0.0
+        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
+            self.pos
 
-        if self.flag_dict['Y']:
+        if joystick.buttons[self.button_dict['Y']] == 1.0:
             self.rot = 0.1
         else:
             self.rot = 0.0
@@ -130,16 +90,16 @@ class PublishTrajectoryMsg(Node):
         # ]
 
         position_cmds.positions = [
-            1.0 if self.flag_dict['Y'] else 0.0,
+            float(joystick.buttons[self.button_dict['Y']]),
             self.pos,
             self.rot,
             self.pos,
-            1.0 if self.flag_dict['A'] else 0.0,
-            1.0 if self.flag_dict['A'] else 0.0,
+            float(joystick.buttons[self.button_dict['A']]),
+            float(joystick.buttons[self.button_dict['A']]),
             float(joystick.buttons[self.button_dict['B']]),
-            0.0,
-            0.0,
-            0.0
+            float(joystick.buttons[self.button_dict['A']]),
+            float(joystick.axes[self.axis_dict['RT']]),
+            float(joystick.axes[self.axis_dict['RT']]),
         ]
         
         cmds.joint_names = self.joints
