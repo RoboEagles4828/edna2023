@@ -59,14 +59,14 @@ class PublishTrajectoryMsg(Node):
         # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
 
         if joystick.buttons[self.button_dict['LB']] == 1.0:
-            self.pos = 0.5
+            self.pos = 1.1
         elif joystick.buttons[self.button_dict['RB']] == 1.0:
-            self.pos = 1.0
+            self.pos = 1.5
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.2
         elif joystick.buttons[self.button_dict['LB']] == 0.0:
             self.pos = 0.0
-        elif joystick.buttons[self.button_dict['RB']] == 1.0:
+        elif joystick.buttons[self.button_dict['RB']] == 0.0:
             self.pos = 0.0
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos

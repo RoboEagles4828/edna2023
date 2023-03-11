@@ -182,7 +182,7 @@ class SwerveModule():
     
     def setupWheelMotor(self):
         self.wheel_motor.configFactoryDefault()
-        self.wheel_motor.configNeutralDeadband(0.01, timeout_ms)
+        self.wheel_motor.configNeutralDeadband(0.05, timeout_ms)
 
         # Direction and Sensors
         self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
@@ -211,7 +211,7 @@ class SwerveModule():
 
         # Velocity Ramp
         # TODO: Tweak this value
-        self.wheel_motor.configClosedloopRamp(1)
+        self.wheel_motor.configClosedloopRamp(0.3)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()

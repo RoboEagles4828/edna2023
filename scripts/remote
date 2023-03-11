@@ -25,17 +25,17 @@ rebuild() {
     echo "Disabling edna.service for speed..."
     ssh $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
     echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) and building..."
-    if [ -z "$2" ] then
-        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
+    if [ -z "$2" ]; then
+        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*";
     else
-        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}"
+        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}";
     fi
     edna-restart
 }
 
 edna-restart() {
     echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
-    ssh $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl restart edna.service"
+    ssh $USERNAME@$IP_ADDRESS -p $PORT "systemctl restart edna.service"
 }
 
 edna-log() {
@@ -107,7 +107,7 @@ case $1 in
         ;;
 
     "rebuild")
-        rebuild
+        rebuild $@
         ;;
     
     "log")
