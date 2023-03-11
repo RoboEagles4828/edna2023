@@ -315,7 +315,8 @@ class SwerveModule():
         return output
 
 class DriveTrain():
-    def __init__(self):
+    def __init__(self, use_mocks):
+        self.use_mocks = use_mocks
         self.last_cmds_time = time.time()
         self.warn_timeout = True
         self.front_left = SwerveModule(MODULE_CONFIG["front_left"])

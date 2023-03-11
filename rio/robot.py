@@ -34,9 +34,9 @@ xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
 ## Hardware
 drive_train : DriveTrain = None
-def initDriveTrain():
+def initDriveTrain(use_mocks):
     global drive_train
-    drive_train = DriveTrain()
+    drive_train = DriveTrain(use_mocks)
     logging.info("Success: DriveTrain created")
 
 joystick : Joystick = None
@@ -51,9 +51,9 @@ def initJoystick():
         return False
 
 arm_controller : ArmController = None
-def initArmController():
+def initArmController(use_mocks):
     global arm_controller
-    arm_controller = ArmController()
+    arm_controller = ArmController(use_mocks)
     logging.info("Success: ArmController created")
 
 ## Generic Loop that is used for all threads
@@ -205,16 +205,17 @@ def joystickAction(publisher : DDS_Publisher):
 ######### Robot Class #########
 class edna_robot(wpilib.TimedRobot):
 
-    def __init__(self, period = 0.2, use_threading = True) -> None:
+    def __init__(self, period = 0.2, use_threading = True, use_mocks = False) -> None:
         super().__init__(period)
         self.use_threading = use_threading
+        self.use_mocks = use_mocks
 
     def robotInit(self) -> None:
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
-        if ENABLE_DRIVE: initDriveTrain()
+        if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
         if ENABLE_JOY: initJoystick()
-        if ENABLE_ARM: initArmController()
+        if ENABLE_ARM: initArmController(self.use_mocks)
 
         self.threads = []
         if self.use_threading:

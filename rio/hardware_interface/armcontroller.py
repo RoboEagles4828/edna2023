@@ -52,28 +52,27 @@ def getJointList():
     return JOINT_LIST
 
 class ArmController():
-
-    def __init__(self):
+    def __init__(self, use_mocks):
         self.last_cmds_time = time.time()
+        self.use_mocks = use_mocks
         self.warn_timeout = True
         self.hub = wpilib.PneumaticHub(PORTS['HUB'])
         self.compressor = self.hub.makeCompressor()
 
         # Even though these two are technically two pistons, we're only using one solenoid to handle both
-        self.arm_roller_bar =       Piston(self.hub, PORTS['ARM_ROLLER_BAR']) 
-        self.top_gripper_slider =   Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
-        
-        self.top_gripper =          Piston(self.hub, PORTS['TOP_GRIPPER'])
-        self.bottom_gripper =       Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
-        self.elevator =             ElevatorWheel(PORTS['ELEVATOR'])
-        self.bottom_gripper_lift =  IntakeWheel(PORTS['BOTTOM_GRIPPER_LIFT'])
+        self.arm_roller_bar = Piston(self.hub, PORTS['ARM_ROLLER_BAR']) 
+        self.top_gripper_slider = Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
+        self.top_gripper = Piston(self.hub, PORTS['TOP_GRIPPER'])
+        self.bottom_gripper = Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
+        self.elevator = ElevatorWheel(PORTS['ELEVATOR'])
+        self.bottom_gripper_lift = IntakeWheel(PORTS['BOTTOM_GRIPPER_LIFT'])
 
         self.JOINT_MAP : dict[str, Piston | ElevatorWheel] = {
             # Pneumatics
-            'arm_roller_bar_joint':     self.arm_roller_bar,
+            'arm_roller_bar_joint': self.arm_roller_bar,
             'top_slider_joint': self.top_gripper_slider,
-            'top_gripper_left_arm_joint':        self.top_gripper,
-            'bottom_gripper_left_arm_joint':     self.bottom_gripper,
+            'top_gripper_left_arm_joint': self.top_gripper,
+            'bottom_gripper_left_arm_joint': self.bottom_gripper,
             # Wheels
             'elevator_center_joint': self.elevator,
             'bottom_intake_joint': self.bottom_gripper_lift
