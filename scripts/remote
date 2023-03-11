@@ -18,7 +18,7 @@ deploy-git() {
 
 deploy-rsync() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via rsync..."
-    rsync -azP  --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    rsync -azP  --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
     rebuild
 }
 
