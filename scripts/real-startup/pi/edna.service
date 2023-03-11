@@ -6,6 +6,8 @@ Type=simple
 User=ubuntu
 RemainAfterExit=yes
 ExecStart=/usr/bin/bash /home/ubuntu/edna2023/scripts/real-startup/pi/startup.sh
+Restart=always
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target
