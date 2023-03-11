@@ -34,7 +34,7 @@ xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
 ## Hardware
 drive_train : DriveTrain = None
-def initDriveTrain(use_mocks):
+def initDriveTrain(use_mocks : bool):
     global drive_train
     drive_train = DriveTrain(use_mocks)
     logging.info("Success: DriveTrain created")
@@ -51,7 +51,7 @@ def initJoystick():
         return False
 
 arm_controller : ArmController = None
-def initArmController(use_mocks):
+def initArmController(use_mocks : bool):
     global arm_controller
     arm_controller = ArmController(use_mocks)
     logging.info("Success: ArmController created")
@@ -205,14 +205,19 @@ def joystickAction(publisher : DDS_Publisher):
 ######### Robot Class #########
 class edna_robot(wpilib.TimedRobot):
 
-    def __init__(self, period = 0.2, use_threading = True, use_mocks = False) -> None:
+    def __init__(self, period = 0.2, use_threading = True) -> None:
         super().__init__(period)
         self.use_threading = use_threading
-        self.use_mocks = use_mocks
 
     def robotInit(self) -> None:
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
-
+        
+        if wpilib.RobotBase.isSimulation():
+            self.use_mocks = True
+            logging.info(f"SETTING MOCKS TO TRUE")
+        else:
+            self.use_mocks = False
+        
         if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
         if ENABLE_JOY: initJoystick()
         if ENABLE_ARM: initArmController(self.use_mocks)

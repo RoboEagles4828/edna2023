@@ -54,6 +54,14 @@ def getJointList():
         joint_list.append(module['axle_joint_name'])
     return joint_list
 
+def getEmptyDDS():
+    joint_count = len(getJointList())
+    return {
+        "name": getJointList(),
+        "position": [0.0]*joint_count,
+        "velocity": [0.0]*joint_count
+    }
+
 AXLE_DIRECTION = False
 WHEEL_DIRECTION = False
 ENCODER_DIRECTION = True
@@ -315,9 +323,9 @@ class SwerveModule():
         return output
 
 class DriveTrain():
-    def __init__(self, use_mocks):
+    def __init__(self, use_mocks : bool):
         self.use_mocks = use_mocks
-        self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
+        self.current_cmds = getEmptyDDS()
         self.last_cmds_time = time.time()
         self.warn_timeout = True
         self.front_left = SwerveModule(MODULE_CONFIG["front_left"])
@@ -339,8 +347,8 @@ class DriveTrain():
         velocities = [0]*8
 
         if self.use_mocks:
-            if self.last_cmds:
-                return self.last_cmds
+            if self.current_cmds:
+                return self.current_cmds
 
         encoderInfo = []
         encoderInfo += self.front_left.getEncoderData() 
@@ -364,6 +372,7 @@ class DriveTrain():
     def sendCommands(self, commands):
         if commands:
             self.last_cmds = commands
+            self.current_cmds = commands
             self.last_cmds_time = time.time()
             self.warn_timeout = True
             for i in range(len(commands['name'])):
