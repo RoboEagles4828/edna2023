@@ -209,12 +209,14 @@ class edna_robot(wpilib.TimedRobot):
                 {"name": "command", "thread": startThread("command") },
                 {"name": "arm-command", "thread": startThread("arm-command")},
                 {"name": "joystick", "thread": startThread("joystick") },
+                {"name": "stage", "thread": startThread("stage")}
             ]
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
             self.joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
             self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+            self.stage_publisher = DDS_Publisher(xml_path, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
 
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")
@@ -255,6 +257,7 @@ class edna_robot(wpilib.TimedRobot):
         commandAction(self.command_subscriber)
         armAction(self.arm_command_subscriber)
         joystickAction(self.joystick_publisher)
+        stageAction(self.stage_publisher)
         return
 
     def disabledInit(self) -> None:
