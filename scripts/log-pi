@@ -1,5 +1,0 @@
-#!/bin/bash
-USERNAME=${1:-"ubuntu"}
-IP_ADDRESS=${2:-"10.48.28.22"}
-
-ssh $USERNAME@$IP_ADDRESS 'sudo systemctl status edna.service'

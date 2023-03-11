@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ..
-rosdep install --from-paths src --ignore-src -r -y
-colcon build --symlink-install
+cd /home/ubuntu/edna2023
+source /opt/ros/humble/setup.bash
+colcon build --symlink-install --paths src/*
 sudo systemctl restart edna.service
