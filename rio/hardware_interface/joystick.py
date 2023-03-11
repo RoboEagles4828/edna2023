@@ -41,6 +41,8 @@ class Joystick:
             self.joystick.getLeftStickButton(),
             self.joystick.getRightStickButton()
         ]
+
+        buttons = [ToggledButton(button).get() for button in buttons]
         print(buttons)
 
         def scale(a):
@@ -60,4 +62,16 @@ class Joystick:
             return 0.0
         else:
             return 1.0 if self.joystick.getPOV() == DPAD_REF(dir) else 0.0
+        
 
+    
+
+class ToggledButton():
+    def __init__(self,isButtonPressed: float):
+        self.isButtonPressed = isButtonPressed
+        self.enable = False
+
+    def get(self):
+        if self.isButtonPressed == 1.0 and not self.enable:
+            self.enable = not self.enable
+        return 1.0 if self.enable else 0.0
