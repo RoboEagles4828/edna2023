@@ -17,26 +17,30 @@ deploy-git() {
 }
 
 deploy-rsync() {
-    echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via rsync..."
-    rsync -azP  --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
+    rsync -azP -e "ssh -p $PORT" --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
 }
 
 rebuild() {
     echo "Disabling edna.service for speed..."
     ssh $USERNAME@$IP_ADDRESS "sudo systemctl stop edna.service"
-    echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH and building..."
-    ssh $USERNAME@$IP_ADDRESS "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
+    echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) and building..."
+    if [ -z "$2" ] then
+        ssh $USERNAME@$IP_ADDRESS:$PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
+    else
+        ssh $USERNAME@$IP_ADDRESS:$PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}"
+    fi
     edna-restart
 }
 
 edna-restart() {
-    echo "Restarting edna.service on $USERNAME@$IP_ADDRESS..."
-    ssh $USERNAME@$IP_ADDRESS "sudo systemctl restart edna.service"
+    echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
+    ssh $USERNAME@$IP_ADDRESS:$PORT "sudo systemctl restart edna.service"
 }
 
 edna-log() {
     echo "Checking edna.service status..."
-    ssh $USERNAME@$IP_ADDRESS 'sudo systemctl status edna.service'
+    ssh $USERNAME@$IP_ADDRESS:$PORT 'sudo systemctl status edna.service'
 }
 
 help() {
@@ -62,14 +66,14 @@ case $1 in
     ;;
 
     "setup")
-        echo "Copying public key to $USERNAME@$IP_ADDRESS..."
-        ssh-copy-id -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS
+        echo "Copying public key to $USERNAME@$IP_ADDRESS:$PORT..."
+        ssh-copy-id -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS:$PORT
     ;;
         
     "connect") ;&
     "ssh")
-        echo "Connecting to $USERNAME@$IP_ADDRESS"
-        ssh $USERNAME@$IP_ADDRESS
+        echo "Connecting to $USERNAME@$IP_ADDRESS:$PORT"
+        ssh $USERNAME@$IP_ADDRESS:$PORT
     ;;
 
     "deploy")
