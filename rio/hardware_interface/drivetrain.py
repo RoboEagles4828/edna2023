@@ -46,6 +46,14 @@ MODULE_CONFIG = {
         "encoder_offset": 69.785 #201.094,
     }
 }
+
+def getJointList():
+    joint_list = []
+    for module in MODULE_CONFIG.values():
+        joint_list.append(module['wheel_joint_name'])
+        joint_list.append(module['axle_joint_name'])
+    return joint_list
+
 AXLE_DIRECTION = False
 WHEEL_DIRECTION = False
 ENCODER_DIRECTION = True
@@ -54,7 +62,7 @@ AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048.0
 CMD_TIMEOUT_SECONDS = 1
 
-nominal_voltage = 12.0
+nominal_voltage = 9.0
 steer_current_limit = 20.0
 
 # This is needed to fix bad float values being published by RTI from the RIO.
@@ -85,8 +93,8 @@ slot_idx = 0
 pid_loop_idx = 0
 timeout_ms = 30
 
-velocityConstant = 0.2
-accelerationConstant = 0.01
+velocityConstant = 0.5
+accelerationConstant = 0.25
 # Conversion Functions
 positionCoefficient = 2.0 * math.pi / TICKS_PER_REV / AXLE_JOINT_GEAR_RATIO
 velocityCoefficient = positionCoefficient * 10.0
@@ -200,6 +208,10 @@ class SwerveModule():
         
         # Brake
         self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+
+        # Velocity Ramp
+        # TODO: Tweak this value
+        self.wheel_motor.configClosedloopRamp(1)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -227,7 +239,7 @@ class SwerveModule():
         self.axle_motor.config_kF(slot_idx, (1023.0 *  velocityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
         self.axle_motor.configMotionCruiseVelocity(2.0 / velocityConstant / velocityCoefficient, timeout_ms)
         self.axle_motor.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / velocityCoefficient, timeout_ms)
-        self.axle_motor.configMotionSCurveStrength(1)
+        self.axle_motor.configMotionSCurveStrength(4)
 
         # Voltage Comp
         self.axle_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)
@@ -307,7 +319,9 @@ class SwerveModule():
         return output
 
 class DriveTrain():
-    def __init__(self):
+    def __init__(self, use_mocks):
+        self.use_mocks = use_mocks
+        self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
         self.last_cmds_time = time.time()
         self.warn_timeout = True
         self.front_left = SwerveModule(MODULE_CONFIG["front_left"])
@@ -327,6 +341,11 @@ class DriveTrain():
         names = [""]*8
         positions = [0]*8
         velocities = [0]*8
+
+        if self.use_mocks:
+            if self.last_cmds:
+                return self.last_cmds
+
         encoderInfo = []
         encoderInfo += self.front_left.getEncoderData() 
         encoderInfo += self.front_right.getEncoderData()

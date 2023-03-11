@@ -4,6 +4,9 @@ import threading
 import traceback
 import time
 import os, inspect
+# TODO Reuse this
+import hardware_interface.drivetrain as drivet
+import hardware_interface.armcontroller as armc
 from hardware_interface.drivetrain import DriveTrain
 from hardware_interface.joystick import Joystick
 from hardware_interface.armcontroller import ArmController
@@ -31,9 +34,9 @@ xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
 ## Hardware
 drive_train : DriveTrain = None
-def initDriveTrain():
+def initDriveTrain(use_mocks):
     global drive_train
-    drive_train = DriveTrain()
+    drive_train = DriveTrain(use_mocks)
     logging.info("Success: DriveTrain created")
 
 joystick : Joystick = None
@@ -48,9 +51,9 @@ def initJoystick():
         return False
 
 arm_controller : ArmController = None
-def initArmController():
+def initArmController(use_mocks):
     global arm_controller
-    arm_controller = ArmController()
+    arm_controller = ArmController(use_mocks)
     logging.info("Success: ArmController created")
 
 ## Generic Loop that is used for all threads
@@ -99,28 +102,45 @@ def encoderThread():
     threadLoop('encoder', encoder_publisher, encoderAction)
 
 def encoderAction(publisher):
+    # TODO: Make these some sort of null value to identify lost data
+    joint_list = drivet.getJointList() + armc.getJointList()
+    joint_count = len(joint_list)
+    drivet_joint_count = len(drivet.getJointList())
+    armc_joint_count = len(armc.getJointList())
     data = {
-        "name": [],
-        "position": [],
-        "velocity": []
+        # "name": joint_list,
+        # "position": [0.0]*joint_count,
+        # "velocity": [[0.0]*joint_count]
+        'name': [],
+        'position': [],
+        'velocity': []
     }
 
     global drive_train
     with drive_train_lock:
         if ENABLE_DRIVE:
             drive_data = drive_train.getEncoderData()
-            data["name"] += drive_data["name"],
-            data["position"] += drive_data["position"],
-            data["velocity"] += drive_data["velocity"],
+            data['name'] += drive_data['name']
+            data['position'] += drive_data['position']
+            data['velocity'] += drive_data['velocity']
+            # for index, name in enumerate(drivet.getJointList()):
+            #     drive_data_index = drive_data['name'].index(name)
+            #     data['name'][index] = drive_data['name'][drive_data_index]
+            #     data["position"][index] = drive_data["position"][drive_data_index],
+            #     data["velocity"][index] = drive_data["velocity"][drive_data_index],
     
-    arm_data = None
     global arm_controller
     with arm_controller_lock:
         if ENABLE_ARM:
             arm_data = arm_controller.getEncoderData()
-            data["name"] += arm_data["name"],
-            data["position"] += arm_data["position"],
-            data["velocity"] += arm_data["velocity"],
+            data['name'] += arm_data['name']
+            data['position'] += arm_data['position']
+            data['velocity'] += arm_data['velocity']
+            # for index, name in enumerate(armc.getJointList()):
+            #     arm_data_index = arm_data['name'].index(name)
+            #     data['name'][index] = drive_data['name'][arm_data_index]
+            #     data["position"][index] = arm_data["position"][arm_data_index],
+            #     data["velocity"][index] = arm_data["velocity"][arm_data_index],
 
     publisher.write(data)
 
@@ -185,16 +205,17 @@ def joystickAction(publisher : DDS_Publisher):
 ######### Robot Class #########
 class edna_robot(wpilib.TimedRobot):
 
-    def __init__(self, period = 0.2, use_threading = True) -> None:
+    def __init__(self, period = 0.2, use_threading = True, use_mocks = False) -> None:
         super().__init__(period)
         self.use_threading = use_threading
+        self.use_mocks = use_mocks
 
     def robotInit(self) -> None:
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
-        if ENABLE_DRIVE: initDriveTrain()
+        if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
         if ENABLE_JOY: initJoystick()
-        if ENABLE_ARM: initArmController()
+        if ENABLE_ARM: initArmController(self.use_mocks)
 
         self.threads = []
         if self.use_threading:
