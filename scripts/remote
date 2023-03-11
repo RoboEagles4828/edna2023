@@ -18,12 +18,22 @@ deploy-git() {
 
 deploy-rsync() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via rsync..."
-    rsync -azP --exclude build/ install/ log/ isaac/ .devcontainer/ docker/ /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
-    echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH and building..."
-    ssh $USERNAME@$IP_ADDRESS "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* && sudo systemctl restart edna.service"
+    rsync -azP  --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    rebuild
 }
 
-log() {
+rebuild() {
+    echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH and building..."
+    ssh $USERNAME@$IP_ADDRESS "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*"
+    edna-restart
+}
+
+edna-restart() {
+    echo "Restarting edna.service on $USERNAME@$IP_ADDRESS..."
+    ssh $USERNAME@$IP_ADDRESS "sudo systemctl restart edna.service"
+}
+
+edna-log() {
     echo "Checking edna.service status..."
     ssh $USERNAME@$IP_ADDRESS 'sudo systemctl status edna.service'
 }
@@ -33,16 +43,21 @@ help() {
     echo "  config  -- Opens the config file in nano"
     echo "  setup   -- Copies your ssh-key to the remote device"
     echo "  ssh     -- Connects to the robot via ssh"
-    echo "  connect -- alias for ssh"
+    echo "  connect -- alias for \"remote ssh\""
+    echo "  service"
+    echo "      log     -- Outputs the systemctl log for edna.service"
+    echo "      restart -- Restarts the systemctl edna.service"
     echo "  deploy"
     echo "      rsync   -- Deploys to the remote device using rsync (default)"
     echo "      git     -- Deploys to the remote device using Git"
-    echo "Usage: remote (config | setup | deploy | log) [remote-username] [ip-address] [remote-path] [machine-name]"
+    echo "  log     -- alias for \"remote service log\""
+    echo "  rebuild -- Rebuilds the project with colcon"
+    echo "Usage: remote (config | setup | deploy | log | rebuild)"
 }
 
 case $1 in 
     "config")
-        nano /workspaces/edna2023/scripts/config/pi-config
+        nano /workspaces/edna2023/scripts/config/remote-config
     ;;
 
     "setup")
@@ -74,12 +89,24 @@ case $1 in
         esac
         ;;
 
+    "service")
+        case $2 in
+            "log")
+                edna-log
+                ;;
+            
+            "restart")
+                edna-restart
+                ;;
+        esac
+        ;;
+
     "rebuild")
-        echo "Rebuilding at $USERNAME@$IP_ADDRESS:$REMOTE_PATH..."
+        rebuild
         ;;
     
     "log")
-        log
+        edna-log
         ;;
     
     *)
