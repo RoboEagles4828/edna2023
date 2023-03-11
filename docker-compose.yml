@@ -1,51 +1,51 @@
 version: "3.9"
 services:
-  # humble2204:
-  #   image: "ghcr.io/roboeagles4828/jetson:2023"
-  #   network_mode: "host"
-  #   environment:
-  #     - ROS_DOMAIN_ID=0
-  #   deploy:
-  #     restart_policy:
-  #       condition: on-failure
-  #       delay: 2s
-  #       max_attempts: 3
-  #       window: 120s
-  #   volumes:
-  #   - ./:/opt/workspace
-  #   ports:
-  #   - "1-65535:1-65535"
-  zed_cam:
-    image: ghcr.io/roboeagles4828/jetson-zed:1
+  humble2204:
+    image: "ghcr.io/roboeagles4828/jetson:2023"
     network_mode: "host"
-    privileged: true
-    ports:
-    - "1-65535:1-65535"
     environment:
       - ROS_DOMAIN_ID=0
-      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-      - FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml
-    volumes:
-      - /usr/bin/tegrastats:/usr/bin/tegrastats
-      - /tmp/argus_socket:/tmp/argus_socket
-      - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusolver.so.11:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusolver.so.11
-      - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusparse.so.11:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusparse.so.11
-      - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcurand.so.10:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcurand.so.10
-      - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libnvToolsExt.so:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libnvToolsExt.so
-      - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcupti.so.11.4:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcupti.so.11.4
-      - /usr/local/cuda-11.4/targets/aarch64-linux/include:/usr/local/cuda-11.4/targets/aarch64-linux/include
-      - /usr/lib/aarch64-linux-gnu/tegra:/usr/lib/aarch64-linux-gnu/tegra
-      - /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api
-      - /opt/nvidia/nsight-systems-cli:/opt/nvidia/nsight-systems-cli
-      - /opt/nvidia/vpi2:/opt/nvidia/vpi2
-      - /usr/share/vpi2:/usr/share/vpi2
-      - /run/jtop.sock:/run/jtop.sock:ro
-      - /dev/*:/dev/*
     deploy:
-      resources:
-          reservations:
-            devices:
-              - driver: nvidia
-                count: all
-                capabilities: [gpu]
-    command: ["ros2", "launch", "zed_wrapper", "zed2i.launch.py"]
+      restart_policy:
+        condition: on-failure
+        delay: 2s
+        max_attempts: 3
+        window: 120s
+    volumes:
+    - ./:/opt/workspace
+    ports:
+    - "1-65535:1-65535"
+  # zed_cam:
+  #   image: ghcr.io/roboeagles4828/jetson-zed:1
+  #   network_mode: "host"
+  #   privileged: true
+  #   ports:
+  #   - "1-65535:1-65535"
+  #   environment:
+  #     - ROS_DOMAIN_ID=0
+  #     - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+  #     - FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml
+  #   volumes:
+  #     - /usr/bin/tegrastats:/usr/bin/tegrastats
+  #     - /tmp/argus_socket:/tmp/argus_socket
+  #     - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusolver.so.11:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusolver.so.11
+  #     - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusparse.so.11:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcusparse.so.11
+  #     - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcurand.so.10:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcurand.so.10
+  #     - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libnvToolsExt.so:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libnvToolsExt.so
+  #     - /usr/local/cuda-11.4/targets/aarch64-linux/lib/libcupti.so.11.4:/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcupti.so.11.4
+  #     - /usr/local/cuda-11.4/targets/aarch64-linux/include:/usr/local/cuda-11.4/targets/aarch64-linux/include
+  #     - /usr/lib/aarch64-linux-gnu/tegra:/usr/lib/aarch64-linux-gnu/tegra
+  #     - /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api
+  #     - /opt/nvidia/nsight-systems-cli:/opt/nvidia/nsight-systems-cli
+  #     - /opt/nvidia/vpi2:/opt/nvidia/vpi2
+  #     - /usr/share/vpi2:/usr/share/vpi2
+  #     - /run/jtop.sock:/run/jtop.sock:ro
+  #     - /dev/*:/dev/*
+  #   deploy:
+  #     resources:
+  #         reservations:
+  #           devices:
+  #             - driver: nvidia
+  #               count: all
+  #               capabilities: [gpu]
+  #   command: ["ros2", "launch", "zed_wrapper", "zed2i.launch.py"]
