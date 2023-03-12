@@ -261,9 +261,9 @@ class JointStatePublisherGui(QMainWindow):
     def onButtonClicked(self, name):
         # self.jsp.get_logger().info("button changed")
         joint_info = self.joint_map[name]
-        buttonvalue = 1 if joint_info['button'].isChecked() == True else 0
-        joint_info['joint']['position'] = buttonvalue
-        joint_info['display'].setText(str(buttonvalue))
+        buttonValue = 1 if joint_info['button'].isChecked() == True else 0
+        joint_info['joint']['position'] = buttonValue
+        joint_info['display'].setText(str(buttonValue))
 
     def onSliderValueChangedOne(self, name):
         # A slider value was changed, but we need to change the joint_info metadata.
