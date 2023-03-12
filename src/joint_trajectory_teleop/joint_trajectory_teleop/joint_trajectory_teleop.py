@@ -78,26 +78,30 @@ class PublishTrajectoryMsg(Node):
         self.lbButton = toggleButton(self.button_dict['LB'])
         self.last_controller_callback_time = time.time()
 
+        self.previousBackButtonStates = [False, False]
+
         self.rbButtonToggle = False
 
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
         deltaTime = time.time() - self.last_controller_callback_time
-        
+
         aToggleValue = self.aButton.toggle(joystick.buttons)
         bToggleValue = self.bButton.toggle(joystick.buttons)
         lbToggleValue = self.lbButton.toggle(joystick.buttons)
 
-        if joystick.buttons[self.button_dict['LB']] == 1.0 and not(self.lastPresetPressed):
+        if joystick.buttons[self.button_dict['LB']] == 1.0 and not(self.previousBackButtonStates[0]):
+            self.previousBackButtonStates[0] = True
             self.pos = 1.1
-        elif joystick.buttons[self.button_dict['RB']] == 1.0 and not(self.lastPresetPressed2):
-            self.rbButtonToggle = True
+        elif joystick.buttons[self.button_dict['RB']] == 1.0 and not(self.previousBackButtonStates[1]):
+            self.previousBackButtonStates[1] = True
             self.pos = 1.5
-        elif lbToggleValue:
+        elif lbToggleValue and self.previousBackButtonStates[0]:
+            self.previousBackButtonStates[0] = False
             self.pos = 0.2
-        elif joystick.buttons[self.button_dict['RB']] == 0.0 and not(self.rbButtonToggle):
-            self.rbButtonToggle = False
+        elif joystick.buttons[self.button_dict['RB']] == 0.0 and self.previousBackButtonStates[1]:
+            self.previousBackButtonStates[1] = False
             self.pos = 0.0
 
         if joystick.buttons[self.button_dict['RIN']] == 1.0:
