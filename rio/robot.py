@@ -234,6 +234,23 @@ class edna_robot(wpilib.TimedRobot):
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
             self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
 
+    def autonomousInit(self) -> None:
+        self.start_auton_time = time.time()
+        return super().autonomousInit()
+    
+    def autonomousPeriodic(self) -> None:
+        with drive_train_lock:
+            drive_joints = drivet.getJointList()
+            # drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]})
+            # drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, -4.0, -4.0, -4.0, -4.0]})
+            # time.sleep(1)
+            # drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 2.0, 2.0]})
+            # time.sleep(1)
+            
+
+    def autonomousExit(self):
+        drive_train.stop()  
+
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")
         global FRC_STAGE

@@ -9,6 +9,24 @@ import os
 
 import time
 
+class toggleButton():
+    def __init__(self, button):
+        self.last_button = 0.0
+        self.flag = False
+        self.button = button
+        
+    
+    def toggle(self, buttons_list):
+        currentButton = buttons_list[self.button]
+        if currentButton == 1.0 and self.last_button == 0.0:
+            self.flag = not self.flag
+            self.last_button = currentButton
+            return self.flag
+        else:
+            self.last_button = currentButton
+            return self.flag
+        
+
 class PublishTrajectoryMsg(Node):
 
     def __init__(self):
@@ -52,6 +70,8 @@ class PublishTrajectoryMsg(Node):
         self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)
         self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)
         self.timer_period = 0.5  # seconds
+        self.aButton = toggleButton(self.button_dict['A'])
+        self.bButton = toggleButton(self.button_dict['B'])
 
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
@@ -75,6 +95,11 @@ class PublishTrajectoryMsg(Node):
             self.rot = 0.1
         else:
             self.rot = 0.0
+        
+
+        
+        aToggleValue = self.aButton.toggle(joystick.buttons)
+        bToggleValue = self.bButton.toggle(joystick.buttons)
 
         # self.joints = [
         #     'arm_roller_bar_joint',
@@ -94,9 +119,9 @@ class PublishTrajectoryMsg(Node):
             self.pos,
             self.rot,
             self.pos,
-            float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['B']]),
+            float(aToggleValue),
+            float(aToggleValue),
+            float(bToggleValue),
             float(joystick.buttons[self.button_dict['A']]),
             float(joystick.axes[self.axis_dict['RT']]),
             float(joystick.axes[self.axis_dict['RT']]),
