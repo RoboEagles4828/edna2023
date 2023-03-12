@@ -9,6 +9,8 @@ import os
 
 import time
 
+MANUAL_OVERRIDE_SPEED = 0.1
+
 class toggleButton():
     def __init__(self, button):
         self.last_button = 0.0
@@ -76,8 +78,7 @@ class PublishTrajectoryMsg(Node):
         self.lbButton = toggleButton(self.button_dict['LB'])
         self.last_controller_callback_time = time.time()
 
-        self.lastPresetPressed = False
-        self.lastPresetPressed2 = False
+        self.rbButtonToggle = False
 
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
@@ -89,26 +90,24 @@ class PublishTrajectoryMsg(Node):
         lbToggleValue = self.lbButton.toggle(joystick.buttons)
 
         if joystick.buttons[self.button_dict['LB']] == 1.0 and not(self.lastPresetPressed):
-            self.lastPresetPressed = True
             self.pos = 1.1
         elif joystick.buttons[self.button_dict['RB']] == 1.0 and not(self.lastPresetPressed2):
-            self.lastPresetPressed2 = True
+            self.rbButtonToggle = True
             self.pos = 1.5
-        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
-            self.pos = 0.2
         elif lbToggleValue:
             self.pos = 0.2
-        elif joystick.buttons[self.button_dict['RB']] == 0.0:
+        elif joystick.buttons[self.button_dict['RB']] == 0.0 and not(self.rbButtonToggle):
+            self.rbButtonToggle = False
             self.pos = 0.0
 
         if joystick.buttons[self.button_dict['RIN']] == 1.0:
-            if self.pos < 1.0 - (.1 * deltaTime):
-                self.pos += .1 * deltaTime
+            if self.pos < 1.0 - (MANUAL_OVERRIDE_SPEED * deltaTime):
+                self.pos += MANUAL_OVERRIDE_SPEED * deltaTime
             else:
                 self.pos = 1.0
         elif joystick.buttons[self.button_dict['LIN']] == 1.0:
-            if self.pos > .1 * deltaTime:
-                self.pos -= .1 * deltaTime
+            if self.pos > MANUAL_OVERRIDE_SPEED * deltaTime:
+                self.pos -= MANUAL_OVERRIDE_SPEED * deltaTime
             else:
                 self.pos = 0.0
 
