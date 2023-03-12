@@ -72,11 +72,16 @@ class PublishTrajectoryMsg(Node):
         self.timer_period = 0.5  # seconds
         self.aButton = toggleButton(self.button_dict['A'])
         self.bButton = toggleButton(self.button_dict['B'])
+        self.lbButton = toggleButton(self.button_dict['LB'])
 
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
         # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
+        
+        aToggleValue = self.aButton.toggle(joystick.buttons)
+        bToggleValue = self.bButton.toggle(joystick.buttons)
+        lbToggleValue = self.lbButton.toggle(joystick.buttons)
 
         if joystick.buttons[self.button_dict['LB']] == 1.0:
             self.pos = 1.1
@@ -84,8 +89,8 @@ class PublishTrajectoryMsg(Node):
             self.pos = 1.5
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.2
-        elif joystick.buttons[self.button_dict['LB']] == 0.0:
-            self.pos = 0.0
+        elif lbToggleValue:
+            self.pos = 0.2
         elif joystick.buttons[self.button_dict['RB']] == 0.0:
             self.pos = 0.0
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
@@ -96,10 +101,6 @@ class PublishTrajectoryMsg(Node):
         else:
             self.rot = 0.0
         
-
-        
-        aToggleValue = self.aButton.toggle(joystick.buttons)
-        bToggleValue = self.bButton.toggle(joystick.buttons)
 
         # self.joints = [
         #     'arm_roller_bar_joint',
