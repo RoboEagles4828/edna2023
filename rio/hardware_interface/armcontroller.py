@@ -9,7 +9,7 @@ NAMESPACE = 'real'
 CMD_TIMEOUT_SECONDS = 1
 WHEEL_TIMEOUT_MILLISECONDS = 30 # 0 means do not use the timeout
 TICKS_PER_REVOLUTION = 2048.0
-TOTAL_ELEVATOR_REVOLUTIONS = 130 # UNKNOWN
+TOTAL_ELEVATOR_REVOLUTIONS = 140 # UNKNOWN
 TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
 
 SCALING_FACTOR_FIX = 10000
@@ -21,7 +21,7 @@ PORTS = {
     'HUB': 18,
     # Pistons
     'ARM_ROLLER_BAR': [14, 15],
-    'TOP_GRIPPER_SLIDER': [11, 1],
+    'TOP_GRIPPER_SLIDER': [11, 10],
     'TOP_GRIPPER': [13, 12],
     'BOTTOM_GRIPPER': [8, 9],
     # Wheels
@@ -163,8 +163,9 @@ class TalonWheel(ctre.TalonFX):
             self.set(ctre.TalonFXControlMode.Position, position * (TICKS_PER_REVOLUTION * self.totalRevolutions))
 
 
-class IntakeWheel(TalonWheel):
+class IntakeWheel():
     def __init__(self, port : int):
+        return
         super().__init__(port, TOTAL_GRIPPER_REVOLUTIONS)
 
         self.setSensorPhase(False)
@@ -178,6 +179,16 @@ class IntakeWheel(TalonWheel):
 
         self.configMotionCruiseVelocity(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum speed of motion magic (ticks/100ms)
         self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
+
+    
+    def getPosition(self) -> float:
+        return 0.0
+    
+    def getVelocity(self) -> float:
+        return 0.0
+    
+    def setPosition(self, position : float): # Position should be between 0.0 and 1.0
+        return
 
 
 class ElevatorWheel(TalonWheel):
@@ -204,7 +215,7 @@ class ElevatorWheel(TalonWheel):
 
 
     def setPosition(self, position : float): # Position should be between 0.0 and 2.0
-        print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
+        # print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
         if wpilib.RobotBase.isSimulation():
             self.setSelectedSensorPosition((position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
         else:

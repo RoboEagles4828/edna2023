@@ -211,6 +211,7 @@ class edna_robot(wpilib.TimedRobot):
         self.use_mocks = use_mocks
 
     def robotInit(self) -> None:
+        wpilib.CameraServer.launch()
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
         if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
