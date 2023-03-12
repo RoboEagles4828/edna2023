@@ -41,7 +41,6 @@ class Joystick:
             self.joystick.getLeftStickButton(),
             self.joystick.getRightStickButton()
         ]
-        print(buttons)
 
         def scale(a):
             return int(a * SCALING_FACTOR_FIX * -1)

@@ -9,6 +9,24 @@ import os
 
 import time
 
+class toggleButton():
+    def __init__(self, button):
+        self.last_button = 0.0
+        self.flag = False
+        self.button = button
+        
+    
+    def toggle(self, buttons_list):
+        currentButton = buttons_list[self.button]
+        if currentButton == 1.0 and self.last_button == 0.0:
+            self.flag = not self.flag
+            self.last_button = currentButton
+            return self.flag
+        else:
+            self.last_button = currentButton
+            return self.flag
+        
+
 class PublishTrajectoryMsg(Node):
 
     def __init__(self):
@@ -53,6 +71,9 @@ class PublishTrajectoryMsg(Node):
         self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)
         self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)
         self.timer_period = 0.5  # seconds
+        self.aButton = toggleButton(self.button_dict['A'])
+        self.bButton = toggleButton(self.button_dict['B'])
+        self.lbButton = toggleButton(self.button_dict['LB'])
         self.last_controller_callback_time = time.time()
 
         self.lastPresetPressed = False
@@ -62,6 +83,10 @@ class PublishTrajectoryMsg(Node):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
         deltaTime = time.time() - self.last_controller_callback_time
+        
+        aToggleValue = self.aButton.toggle(joystick.buttons)
+        bToggleValue = self.bButton.toggle(joystick.buttons)
+        lbToggleValue = self.lbButton.toggle(joystick.buttons)
 
         if joystick.buttons[self.button_dict['LB']] == 1.0 and not(self.lastPresetPressed):
             self.lastPresetPressed = True
@@ -69,11 +94,11 @@ class PublishTrajectoryMsg(Node):
         elif joystick.buttons[self.button_dict['RB']] == 1.0 and not(self.lastPresetPressed2):
             self.lastPresetPressed2 = True
             self.pos = 1.5
-        elif joystick.buttons[self.button_dict['LB']] == 0.0 and self.lastPresetPressed:
-            self.lastPresetPressed = False
-            self.pos = 0.0
-        elif joystick.buttons[self.button_dict['RB']] == 0.0 and self.lastPresetPressed2:
-            self.lastPresetPressed2 = False
+        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
+            self.pos = 0.2
+        elif lbToggleValue:
+            self.pos = 0.2
+        elif joystick.buttons[self.button_dict['RB']] == 0.0:
             self.pos = 0.0
 
         if joystick.buttons[self.button_dict['RIN']] == 1.0:
@@ -111,9 +136,9 @@ class PublishTrajectoryMsg(Node):
             self.pos,
             self.rot,
             self.pos,
-            float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['B']]),
+            float(aToggleValue),
+            float(aToggleValue),
+            float(bToggleValue),
             float(joystick.buttons[self.button_dict['A']]),
             float(joystick.axes[self.axis_dict['RT']]),
             float(joystick.axes[self.axis_dict['RT']]),

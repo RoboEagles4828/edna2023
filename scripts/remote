@@ -22,7 +22,7 @@ deploy-rsync() {
 
 rebuild() {
     echo "Disabling edna.service for speed..."
-    ssh $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
     echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) and building..."
     if [ -z "$2" ]; then
         ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*";
