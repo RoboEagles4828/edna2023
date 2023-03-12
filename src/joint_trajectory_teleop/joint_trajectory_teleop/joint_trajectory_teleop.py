@@ -36,6 +36,7 @@ class PublishTrajectoryMsg(Node):
             'RB': 5,
             'MENU': 7,
             'SQUARES': 6,
+            'LIN': 9,
             'RIN': 10
         }
         self.axis_dict = {
@@ -54,21 +55,35 @@ class PublishTrajectoryMsg(Node):
         self.timer_period = 0.5  # seconds
         self.last_controller_callback_time = time.time()
 
+        self.lastPresetPressed = False
+        self.lastPresetPressed2 = False
+
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
-        # self.get_logger().info('\nBUTTNOS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
-
         deltaTime = time.time() - self.last_controller_callback_time
 
-        if joystick.buttons[self.button_dict['LB']] == 1.0:
-            if self.pos < 1.0 - (.5 * deltaTime):
-                self.pos += .5 * deltaTime
+        if joystick.buttons[self.button_dict['LB']] == 1.0 and not(self.lastPresetPressed):
+            self.lastPresetPressed = True
+            self.pos = 1.1
+        elif joystick.buttons[self.button_dict['RB']] == 1.0 and not(self.lastPresetPressed2):
+            self.lastPresetPressed2 = True
+            self.pos = 1.5
+        elif joystick.buttons[self.button_dict['LB']] == 0.0 and self.lastPresetPressed:
+            self.lastPresetPressed = False
+            self.pos = 0.0
+        elif joystick.buttons[self.button_dict['RB']] == 0.0 and self.lastPresetPressed2:
+            self.lastPresetPressed2 = False
+            self.pos = 0.0
+
+        if joystick.buttons[self.button_dict['RIN']] == 1.0:
+            if self.pos < 1.0 - (.1 * deltaTime):
+                self.pos += .1 * deltaTime
             else:
                 self.pos = 1.0
-        elif joystick.buttons[self.button_dict['RB']] == 1.0:
-            if self.pos > .5 * deltaTime:
-                self.pos -= .5 * deltaTime
+        elif joystick.buttons[self.button_dict['LIN']] == 1.0:
+            if self.pos > .1 * deltaTime:
+                self.pos -= .1 * deltaTime
             else:
                 self.pos = 0.0
 
