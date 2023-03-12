@@ -9,8 +9,8 @@
         x: 0.0020
         y: 0.0020
       scale_linear_turbo:
-        x: 0.0030
-        y: 0.0030
+        x: 0.0045
+        y: 0.0045
 
       axis_angular:  # Right thumb stick horizontal
         yaw: 3

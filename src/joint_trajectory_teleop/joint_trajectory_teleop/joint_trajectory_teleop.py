@@ -94,7 +94,7 @@ class PublishTrajectoryMsg(Node):
         elif joystick.buttons[self.button_dict['RB']] == 0.0:
             self.pos = 0.0
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
-            self.pos
+            self.pos = 0.0
 
         if joystick.buttons[self.button_dict['Y']] == 1.0:
             self.rot = 0.1
