@@ -86,7 +86,7 @@ Joy::Joy(const rclcpp::NodeOptions & options)
     autorepeat_interval_ms_ = 200;
   }
 
-  sticky_buttons_ = this->declare_parameter("sticky_buttons", true);
+  sticky_buttons_ = this->declare_parameter("sticky_buttons", false);
 
   coalesce_interval_ms_ = static_cast<int>(this->declare_parameter("coalesce_interval_ms", 1));
   if (coalesce_interval_ms_ < 0) {
