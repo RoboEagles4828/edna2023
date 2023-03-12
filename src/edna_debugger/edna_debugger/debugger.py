@@ -222,8 +222,8 @@ class JointStatePublisherGui(QMainWindow):
 
                 self.scroll_layout.addWidget(button)
                 # Connect to the signal provided by QSignal
-                button.button.clicked.connect(lambda event,name=name: self.onButtonClicked(name))
-                button.button.toggled.connect(lambda event,name=name: self.onButtonClicked(name))
+                button.button.clicked.connect(lambda event,name=name: self.onSliderValueChangedOne(name))
+                button.button.toggled.connect(lambda event,name=name: self.onSliderValueChangedOne(name))
 
                 self.buttons[button] = button
             else:
@@ -258,12 +258,12 @@ class JointStatePublisherGui(QMainWindow):
     def initializeCb(self):
         self.initialize.emit()
 
-    def onButtonClicked(self, name):
-        # self.jsp.get_logger().info("button changed")
-        joint_info = self.joint_map[name]
-        buttonValue = 1 if joint_info['button'].isChecked() == True else 0
-        joint_info['joint']['position'] = buttonValue
-        joint_info['display'].setText(str(buttonValue))
+    # def onButtonClicked(self, name):
+    #     # self.jsp.get_logger().info("button changed")
+    #     joint_info = self.joint_map[name]
+    #     buttonValue = 1 if joint_info['button'].isChecked() == True else 0
+    #     joint_info['joint']['position'] = buttonValue
+    #     joint_info['display'].setText(str(buttonValue))
 
     def onSliderValueChangedOne(self, name):
         # A slider value was changed, but we need to change the joint_info metadata.
@@ -278,17 +278,24 @@ class JointStatePublisherGui(QMainWindow):
             else:
                 joint['position'] = self.sliderToValue(slidervalue, joint)
                 joint_info['display'].setText("%.3f" % joint['position'])
+        else:
+            buttonValue = 1 if joint_info['button'].isChecked() == True else 0
+            joint_info['joint']['position'] = buttonValue
+            joint_info['display'].setText(str(buttonValue))
             
     @pyqtSlot()
     def updateSliders(self):
         for name, joint_info in self.joint_map.items():
+            joint = joint_info['joint']
             if('slider' in joint_info):
-                joint = joint_info['joint']
                 if 'wheel' in name:
                     slidervalue = self.valueToSlider(joint['velocity'], joint)
                 else:
                     slidervalue = self.valueToSlider(joint['position'], joint)
                 joint_info['slider'].setValue(slidervalue)
+            else:
+                buttonvalue = True if joint['position'] == 1 else False
+                joint_info['button'].setChecked(buttonvalue)
 
     
     def resetButtons(self, event):
