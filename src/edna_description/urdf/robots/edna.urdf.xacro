@@ -15,6 +15,9 @@
   <xacro:include filename="$(find edna_description)/urdf/parts/back_leg.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/lidar.xacro" />
   <xacro:include filename="$(find edna_description)/urdf/parts/elevator.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/gripper.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/slider.xacro" />
+  <xacro:include filename="$(find edna_description)/urdf/parts/intake.xacro" />
 
   <!-- Axle Position Variables -->
   <xacro:property name="axle_pos" value="${301.625 / 1000}" />
@@ -24,7 +27,6 @@
 
   <!-- Camera Position Variables -->
   <xacro:property name="cam_pos" value="0.2 0 0.3"/> <!-- Made up values, replace with real ones later. -->
-  <xacro:property name="lidar_pos" value="0 0 0.035"/>
 
   <!-- X IS FORWARD -->
   <!-- Y IS LEFT -->
@@ -57,9 +59,9 @@
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera>
 
-  <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
+  <!-- <xacro:lidar prefix="lidar" parent="swerve_chassis_link" radius="0.035" length="0.025">
     <origin xyz="${lidar_pos}" rpy="0 0 0" />
-  </xacro:lidar>
+  </xacro:lidar> -->
 
 
   <!-- Arm -->
@@ -72,15 +74,22 @@
     <origin xyz = "-${chassis_length/2 - each_leg_width * 2} 0 ${chassis_height}" rpy = "0 0 0" />
   </xacro:back_leg>
 
-  <!--Right Elevator-->
-  <xacro:elevator prefix="elevator_right" parent="arm_back_leg_link" suffix="right">
+  <!--Elevator-->
+  <xacro:elevator prefix="elevator" parent="arm_back_leg_link">
     <origin xyz = "-.03 -${elevator_middle_distance / 2} ${back_leg_height - .0215}" rpy = "0 0 0" />
   </xacro:elevator>
 
-  <!--Left Elevator-->
-  <xacro:elevator prefix="elevator_left" parent="arm_back_leg_link" suffix="left">
-    <origin xyz = "-.03 ${elevator_middle_distance / 2} ${back_leg_height - .0215}" rpy = "0 0 0" />
-  </xacro:elevator>
+  <!-- Top Slider + Gripper -->
+  <xacro:property name= "slider_pos" value = "0.330 ${elevator_middle_distance / 2} ${slider_block_height/2}" />
+  <xacro:slider prefix="top" parent="elevator_outer_2_link">
+    <origin xyz = "${slider_pos}" rpy = "0 0 0" />
+  </xacro:slider>
+
+  <!-- Bottom Intake + Gripper -->
+  <xacro:property name= "intake_pos" value = "0 0 -${elevator_leg_height/4 + 0.01}" />
+  <xacro:intake prefix="bottom" parent="arm_elevator_leg_link">
+    <origin xyz = "${intake_pos}" rpy = "0 0 0" />
+  </xacro:intake>
 
   <!-- Control -->
   <xacro:swerve_drive_control plugin="$(arg hw_interface_plugin)"/>

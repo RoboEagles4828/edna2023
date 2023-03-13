@@ -14,38 +14,46 @@ NAMESPACE = 'real'
 # All Cancoders should be direction false
 MODULE_CONFIG = {
     "front_left": {
-        "wheel_joint_name": f"{NAMESPACE}_front_left_wheel_joint",
+        "wheel_joint_name": "front_left_wheel_joint",
         "wheel_motor_port": 3, #9
-        "axle_joint_name": f"{NAMESPACE}_front_left_axle_joint",
+        "axle_joint_name": "front_left_axle_joint",
         "axle_motor_port": 1, #7
         "axle_encoder_port": 2, #8
         "encoder_offset": 18.984 # 248.203,
     },
     "front_right": {
-        "wheel_joint_name": f"{NAMESPACE}_front_right_wheel_joint",
+        "wheel_joint_name": "front_right_wheel_joint",
         "wheel_motor_port": 6, #12
-        "axle_joint_name": f"{NAMESPACE}_front_right_axle_joint",
+        "axle_joint_name": "front_right_axle_joint",
         "axle_motor_port": 4, #10
         "axle_encoder_port": 5, #11
         "encoder_offset": 145.723 #15.908,
     },
     "rear_left": {
-        "wheel_joint_name": f"{NAMESPACE}_rear_left_wheel_joint",
+        "wheel_joint_name": "rear_left_wheel_joint",
         "wheel_motor_port": 12, #6
-        "axle_joint_name": f"{NAMESPACE}_rear_left_axle_joint",
+        "axle_joint_name": "rear_left_axle_joint",
         "axle_motor_port": 10, #4
         "axle_encoder_port": 11, #5
         "encoder_offset": 194.678 #327.393,
     },
     "rear_right": {
-        "wheel_joint_name": f"{NAMESPACE}_rear_right_wheel_joint",
+        "wheel_joint_name": "rear_right_wheel_joint",
         "wheel_motor_port": 9, #3
-        "axle_joint_name": f"{NAMESPACE}_rear_right_axle_joint",
+        "axle_joint_name": "rear_right_axle_joint",
         "axle_motor_port": 7, #1
         "axle_encoder_port": 8, #2
         "encoder_offset": 69.785 #201.094,
     }
 }
+
+def getJointList():
+    joint_list = []
+    for module in MODULE_CONFIG.values():
+        joint_list.append(module['wheel_joint_name'])
+        joint_list.append(module['axle_joint_name'])
+    return joint_list
+
 AXLE_DIRECTION = False
 WHEEL_DIRECTION = False
 ENCODER_DIRECTION = True
@@ -54,7 +62,7 @@ AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048.0
 CMD_TIMEOUT_SECONDS = 1
 
-nominal_voltage = 12.0
+nominal_voltage = 9.0
 steer_current_limit = 20.0
 
 # This is needed to fix bad float values being published by RTI from the RIO.
@@ -174,50 +182,71 @@ class SwerveModule():
     
     def setupWheelMotor(self):
         self.wheel_motor.configFactoryDefault()
-        self.wheel_motor.configNeutralDeadband(0.01)
+        self.wheel_motor.configNeutralDeadband(0.05, timeout_ms)
+
+        # Direction and Sensors
+        self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
+        self.wheel_motor.setInverted(WHEEL_DIRECTION)
+        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
         self.wheel_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, timeout_ms)
+        
+        # Peak and Nominal Outputs
         self.wheel_motor.configNominalOutputForward(0, timeout_ms)
         self.wheel_motor.configNominalOutputReverse(0, timeout_ms)
         self.wheel_motor.configPeakOutputForward(1, timeout_ms)
         self.wheel_motor.configPeakOutputReverse(-1, timeout_ms)
-        self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
-        self.wheel_motor.setInverted(WHEEL_DIRECTION)
+
+        # Voltage Comp
+        self.wheel_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)
+        self.axle_motor.enableVoltageCompensation(True)
+
+        # Tuning
         self.wheel_motor.config_kF(0, wheel_pid_constants["kF"], timeout_ms)
         self.wheel_motor.config_kP(0, wheel_pid_constants["kP"], timeout_ms)
         self.wheel_motor.config_kI(0, wheel_pid_constants["kI"], timeout_ms)
         self.wheel_motor.config_kD(0, wheel_pid_constants["kD"], timeout_ms)
-        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
-        # self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+        
+        # Brake
+        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+
+        # Velocity Ramp
+        # TODO: Tweak this value
+        self.wheel_motor.configClosedloopRamp(0.3)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
-        self.axle_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
         self.axle_motor.configNeutralDeadband(0.01, timeout_ms)
+        
+        # Direction and Sensors
         self.axle_motor.setSensorPhase(AXLE_DIRECTION)
         self.axle_motor.setInverted(AXLE_DIRECTION)
+        self.axle_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
         self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, timeout_ms)
+        self.axle_motor.setSelectedSensorPosition(getShaftTicks(self.getEncoderPosition(), "position"), pid_loop_idx, timeout_ms)
+
+        # Peak and Nominal Outputs
         self.axle_motor.configNominalOutputForward(0, timeout_ms)
         self.axle_motor.configNominalOutputReverse(0, timeout_ms)
         self.axle_motor.configPeakOutputForward(1, timeout_ms)
         self.axle_motor.configPeakOutputReverse(-1, timeout_ms)
+
+        # Tuning
         self.axle_motor.selectProfileSlot(slot_idx, pid_loop_idx)
         self.axle_motor.config_kP(slot_idx, axle_pid_constants["kP"], timeout_ms)
         self.axle_motor.config_kI(slot_idx, axle_pid_constants["kI"], timeout_ms)
         self.axle_motor.config_kD(slot_idx, axle_pid_constants["kD"], timeout_ms)
-        # TODO: Figure out Magic Numbers and Calculations Below
         self.axle_motor.config_kF(slot_idx, (1023.0 *  velocityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
         self.axle_motor.configMotionCruiseVelocity(2.0 / velocityConstant / velocityCoefficient, timeout_ms)
         self.axle_motor.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / velocityCoefficient, timeout_ms)
-        self.axle_motor.configMotionSCurveStrength(1)
-        self.axle_motor.setSelectedSensorPosition(getShaftTicks(self.getEncoderPosition(), "position"), pid_loop_idx, timeout_ms)
+        self.axle_motor.configMotionSCurveStrength(2)
+
+        # Voltage Comp
         self.axle_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)
-        currentLimit = ctre.SupplyCurrentLimitConfiguration()
-        currentLimit.enable = True
-        currentLimit.currentLimit = steer_current_limit
-        self.axle_motor.configSupplyCurrentLimit(currentLimit, timeout_ms)
         self.axle_motor.enableVoltageCompensation(True)
-        # self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
+
+        # Braking
+        self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
 
     def set(self, wheel_motor_vel, axle_position):
@@ -267,7 +296,12 @@ class SwerveModule():
 
         # Last, add the current existing loops that the motor has gone through.
         newAxlePosition += axle_motorPosition - axle_absoluteMotorPosition
-        self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
+        if wpilib.RobotBase.isSimulation():
+            self.axle_motor.setSelectedSensorPosition(getShaftTicks(newAxlePosition, "position"))
+        else:
+            self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
+        logging.info('AXLE MOTOR POS: ', newAxlePosition)
+        logging.info('WHEEL MOTOR VEL: ', wheel_vel)
 
 
     def stop(self):
@@ -290,7 +324,9 @@ class SwerveModule():
         return output
 
 class DriveTrain():
-    def __init__(self):
+    def __init__(self, use_mocks):
+        self.use_mocks = use_mocks
+        self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
         self.last_cmds_time = time.time()
         self.warn_timeout = True
         self.front_left = SwerveModule(MODULE_CONFIG["front_left"])
@@ -299,10 +335,10 @@ class DriveTrain():
         self.back_right = SwerveModule(MODULE_CONFIG["rear_right"])
         self.module_lookup = \
         {
-            f'{NAMESPACE}_front_left_axle_joint': self.front_left,
-            f'{NAMESPACE}_front_right_axle_joint': self.front_right,
-            f'{NAMESPACE}_rear_left_axle_joint': self.back_left,
-            f'{NAMESPACE}_rear_right_axle_joint': self.back_right,
+            'front_left_axle_joint': self.front_left,
+            'front_right_axle_joint': self.front_right,
+            'rear_left_axle_joint': self.back_left,
+            'rear_right_axle_joint': self.back_right,
 
         }
 
@@ -310,6 +346,11 @@ class DriveTrain():
         names = [""]*8
         positions = [0]*8
         velocities = [0]*8
+
+        if self.use_mocks:
+            if self.last_cmds:
+                return self.last_cmds
+
         encoderInfo = []
         encoderInfo += self.front_left.getEncoderData() 
         encoderInfo += self.front_right.getEncoderData()
@@ -345,7 +386,9 @@ class DriveTrain():
 
                     module = self.module_lookup[axle_name]
                     module.set(wheel_velocity, axle_position)
-                    # logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
+                    if axle_name == "front_left_axle_joint":
+                        # logging.info(f"{wheel_name}: {wheel_velocity}\n{axle_name}: {axle_position}")
+                        pass
         else:
             current_time = time.time()
             if current_time - self.last_cmds_time > CMD_TIMEOUT_SECONDS:

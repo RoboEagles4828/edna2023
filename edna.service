@@ -1,0 +1,17 @@
+[Unit]
+Description=edna docker service
+After=docker.service
+BindsTo=docker.service
+ReloadPropagatedFrom=docker.service
+
+[Service]
+Type=simple
+User=roboeagles
+RemainAfterExit=yes
+ExecStart=/bin/bash /home/roboeagles/edna2023/startup.sh
+ExecStop=/bin/bash /home/roboeagles/edna023/onexit.sh
+Restart=on-failure
+RestartSec=3s
+
+[Install]
+WantedBy=multi-user.target

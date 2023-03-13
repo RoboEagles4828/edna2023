@@ -9,8 +9,8 @@ devenv_path="$SCRIPT_PATH/../.devcontainer/.env"
 # Graphics Driver Check
 hasDriver=$(nvidia-smi | grep "Version: 525")
 if [[ -z "$hasDriver" ]]; then
-  echo -e "${RED}Please install nvidia driver 525 before this install script${NC}"
-  exit 1
+ echo -e "${RED}Please install nvidia driver 525 before this install script${NC}"
+ exit 1
 fi
 
 echo -e "${ORANGE}INSTALLING APT PACKAGES${NC}"
@@ -60,4 +60,12 @@ if ! dpkg -s nvidia-docker2 > /dev/null; then
   sudo systemctl restart docker
 else
   echo -e "${GREEN}NVIDIA DOCKER ALREADY INSTALLED${NC}"
+fi
+
+# Deployment Keys
+if [ ! -f ~/.ssh/robot_deploy ]; then
+  echo -e "${ORANGE}SETTING UP DEPLOY KEYS${NC}"
+  ssh-keygen -b 2048 -t rsa -f ~/.ssh/robot_deploy -q -N ""
+else
+  echo -e "${GREEN}DEPLOY KEYS ALREADY SET${NC}"
 fi

@@ -14,8 +14,10 @@ echo 'alias python="python3"' >> ~/.zshrc
 
 
 # Update apt list and rosdep
-sudo apt-get update
-rosdep update --rosdistro=humble
-rosdep install --from-paths src --ignore-src -r -y
-isaac rm
-isaac-ros rm
+# Skipping since this will be done recently in docker file
+# sudo apt-get update
+# rosdep update --rosdistro=humble
+rosdep install --from-paths src --ignore-src -r -y 
+isaac rm &
+isaac-ros rm &
+rm -rf /workspaces/edna2023/install /workspaces/edna2023/build /workspaces/edna2023/log

@@ -29,278 +29,384 @@ using std::placeholders::_1;
 namespace swerve_hardware
 {
 
-hardware_interface::CallbackReturn RealDriveHardware::on_init(const hardware_interface::HardwareInfo & info)
-{
+  double RealDriveHardware::parse_double(const std::string & text)
+  {
+    return std::atof(text.c_str());
+  }
 
-  node_ = rclcpp::Node::make_shared("RealDriveHardware");
+  hardware_interface::CallbackReturn RealDriveHardware::on_init(const hardware_interface::HardwareInfo & info)
+  {
 
-  // PUBLISHER SETUP
-  real_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(joint_command_topic_, rclcpp::SystemDefaultsQoS());
-  realtime_real_publisher_ = std::make_shared<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>(
-      real_publisher_);
+    node_ = rclcpp::Node::make_shared("isaac_hardware_interface");
+
+    // PUBLISHER SETUP
+    real_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(joint_command_topic_, rclcpp::SystemDefaultsQoS());
+    realtime_real_publisher_ = std::make_shared<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>(
+        real_publisher_);
+    
+    real_arm_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(joint_arm_command_topic_, rclcpp::SystemDefaultsQoS());
+    realtime_real_arm_publisher_ = std::make_shared<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>(
+        real_arm_publisher_);
 
 
-  // SUBSCRIBER SETUP
-  const sensor_msgs::msg::JointState empty_joint_state;
-  auto qos = rclcpp::QoS(1);
-  qos.best_effort();
-  received_joint_msg_ptr_.set(std::make_shared<sensor_msgs::msg::JointState>(empty_joint_state));
-  real_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(joint_state_topic_, qos,
-    [this](const std::shared_ptr<sensor_msgs::msg::JointState> msg) -> void
+    // SUBSCRIBER SETUP
+    const sensor_msgs::msg::JointState empty_joint_state;
+    auto qos = rclcpp::QoS(1);
+    qos.best_effort();
+    received_joint_msg_ptr_.set(std::make_shared<sensor_msgs::msg::JointState>(empty_joint_state));
+    real_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(joint_state_topic_, qos,
+      [this](const std::shared_ptr<sensor_msgs::msg::JointState> msg) -> void
+      {
+        if (!subscriber_is_active_) {
+          RCLCPP_WARN( rclcpp::get_logger("isaac_hardware_interface"), "Can't accept new commands. subscriber is inactive");
+          return;
+        }
+        received_joint_msg_ptr_.set(std::move(msg));
+      });
+    
+    // COMMON INTERFACE SETUP
+    if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
     {
-      if (!subscriber_is_active_) {
-        RCLCPP_WARN( rclcpp::get_logger("RealDriveHardware"), "Can't accept new commands. subscriber is inactive");
-        return;
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+
+    // GLOBAL VECTOR SETUP
+    hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    
+    hw_command_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_command_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    joint_types_.resize(info_.joints.size(), "");
+
+  
+    // JOINT GROUPS
+    for (auto i = 0u; i < info_.joints.size(); ++i)
+    {
+      const auto & joint = info_.joints.at(i);
+      
+      // Mimics
+      if (joint.parameters.find("mimic") != joint.parameters.cend())
+      {
+        const auto mimicked_joint_it = std::find_if(
+          info_.joints.begin(), info_.joints.end(),
+          [&mimicked_joint =
+            joint.parameters.at("mimic")](const hardware_interface::ComponentInfo & joint_info)
+          { return joint_info.name == mimicked_joint; });
+        if (mimicked_joint_it == info_.joints.cend())
+        {
+          throw std::runtime_error(
+            std::string("Mimicked joint '") + joint.parameters.at("mimic") + "' not found");
+        }
+        MimicJoint mimic_joint;
+        mimic_joint.joint_index = i;
+        mimic_joint.mimicked_joint_index = std::distance(info_.joints.begin(), mimicked_joint_it);
+        
+        // Multiplier and offset
+        auto param_mult_it = joint.parameters.find("multiplier");
+        if (param_mult_it != joint.parameters.end()) {
+          mimic_joint.multiplier = parse_double(joint.parameters.at("multiplier"));
+        }
+        
+        auto param_off_it = joint.parameters.find("offset");
+        if (param_off_it != joint.parameters.end()) {
+          mimic_joint.offset = parse_double(joint.parameters.at("offset"));
+        }
+        mimic_joints_.push_back(mimic_joint);
       }
-      received_joint_msg_ptr_.set(std::move(msg));
-    });
-  
-  // COMMON INTERFACE SETUP
-  if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
-  {
-    return hardware_interface::CallbackReturn::ERROR;
+
+      // 
+      else if (joint.parameters.find("arm_group") != joint.parameters.cend())
+      {
+        JointGroupMember member;
+        member.joint_index = i;
+        member.joint_name = joint.name;
+
+        arm_names_output_.push_back(joint.name);
+
+        arm_joints_.push_back(member);
+      } else {
+        JointGroupMember member;
+        member.joint_index = i;
+        member.joint_name = joint.name;
+
+        drive_names_output_.push_back(joint.name);
+
+        drive_joints_.push_back(member);
+      }
+    }
+
+    hw_command_arm_velocity_output_.resize(arm_joints_.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_command_arm_position_output_.resize(arm_joints_.size(), std::numeric_limits<double>::quiet_NaN());
+    
+    hw_command_drive_velocity_output_.resize(drive_joints_.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_command_drive_position_output_.resize(drive_joints_.size(), std::numeric_limits<double>::quiet_NaN());
+
+    // Check that the info we were passed makes sense   
+    for (const hardware_interface::ComponentInfo & joint : info_.joints)
+    {
+      joint_names_.push_back(joint.name);
+      if (joint.command_interfaces.size() != 1)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("RealDriveHardware"),
+          "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
+          joint.command_interfaces.size());
+        return hardware_interface::CallbackReturn::ERROR;
+      }
+
+      if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY && joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("RealDriveHardware"),
+          "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
+          joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
+        return hardware_interface::CallbackReturn::ERROR;
+      }
+
+      if (joint.state_interfaces.size() != 2)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("RealDriveHardware"),
+          "Joint '%s' has %zu state interface. 2 expected.", joint.name.c_str(),
+          joint.state_interfaces.size());
+        return hardware_interface::CallbackReturn::ERROR;
+      }
+
+      if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("RealDriveHardware"),
+          "Joint '%s' have '%s' as first state interface. '%s' expected.", joint.name.c_str(),
+          joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
+        return hardware_interface::CallbackReturn::ERROR;
+      }
+
+      if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("RealDriveHardware"),
+          "Joint '%s' have '%s' as second state interface. '%s' expected.", joint.name.c_str(),
+          joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
+        return hardware_interface::CallbackReturn::ERROR;
+      }
+    }
+
+    return hardware_interface::CallbackReturn::SUCCESS;
   }
 
-  // 8 positions states, 4 axle positions 4 wheel positions
-  hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  // 8 velocity states, 4 axle velocity 4 wheel velocity
-  hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  
-  // 4 wheel velocity commands
-  // We will keep this at 8 and make the other 4 zero to keep indexing consistent
-  hw_command_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  // 4 axle position commands
-  // We will keep this at 8 and make the other 4 zero to keep indexing consistent
-  hw_command_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  hw_command_position_converted_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  joint_types_.resize(info_.joints.size(), "");
 
-  for (const hardware_interface::ComponentInfo & joint : info_.joints)
+
+  std::vector<hardware_interface::StateInterface> RealDriveHardware::export_state_interfaces()
   {
-    joint_names_.push_back(joint.name);
-    if (joint.command_interfaces.size() != 1)
+    // Each joint has 2 state interfaces: position and velocity
+    std::vector<hardware_interface::StateInterface> state_interfaces;
+    for (auto i = 0u; i < info_.joints.size(); i++)
     {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("RealDriveHardware"),
-        "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
-        joint.command_interfaces.size());
-      return hardware_interface::CallbackReturn::ERROR;
+      state_interfaces.emplace_back(hardware_interface::StateInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_positions_[i]));
+      state_interfaces.emplace_back(hardware_interface::StateInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_[i]));
     }
 
-    if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY && joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("RealDriveHardware"),
-        "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
-        joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-
-    if (joint.state_interfaces.size() != 2)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("RealDriveHardware"),
-        "Joint '%s' has %zu state interface. 2 expected.", joint.name.c_str(),
-        joint.state_interfaces.size());
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-
-    if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("RealDriveHardware"),
-        "Joint '%s' have '%s' as first state interface. '%s' expected.", joint.name.c_str(),
-        joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-
-    if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("RealDriveHardware"),
-        "Joint '%s' have '%s' as second state interface. '%s' expected.", joint.name.c_str(),
-        joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-      return hardware_interface::CallbackReturn::ERROR;
-    }
+    return state_interfaces;
   }
 
-  return hardware_interface::CallbackReturn::SUCCESS;
-}
 
 
-
-std::vector<hardware_interface::StateInterface> RealDriveHardware::export_state_interfaces()
-{
-  // Each joint has 2 state interfaces: position and velocity
-  std::vector<hardware_interface::StateInterface> state_interfaces;
-  for (auto i = 0u; i < info_.joints.size(); i++)
+  std::vector<hardware_interface::CommandInterface> RealDriveHardware::export_command_interfaces()
   {
-    state_interfaces.emplace_back(hardware_interface::StateInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_positions_[i]));
-    state_interfaces.emplace_back(hardware_interface::StateInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_[i]));
+    std::vector<hardware_interface::CommandInterface> command_interfaces;
+    for (auto i = 0u; i < info_.joints.size(); i++)
+    {
+      auto joint = info_.joints[i];
+      RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Joint Name %s", joint.name.c_str());
+      if (joint.command_interfaces[0].name == hardware_interface::HW_IF_VELOCITY) {
+        RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Added Velocity Joint: %s", joint.name.c_str() );
+        joint_types_[i] = hardware_interface::HW_IF_VELOCITY;
+
+        // Add the command interface with a pointer to i of vel commands
+        command_interfaces.emplace_back(hardware_interface::CommandInterface(
+          joint.name, hardware_interface::HW_IF_VELOCITY, &hw_command_velocity_[i]));
+
+        // Make i of the pos command interface 0.0
+        hw_command_position_[i] = 0.0;
+
+      } else {
+        RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Added Position Joint: %s", joint.name.c_str() );
+        joint_types_[i] = hardware_interface::HW_IF_POSITION;
+
+        // Add the command interface with a pointer to i of pos commands
+        command_interfaces.emplace_back(hardware_interface::CommandInterface(
+          joint.name, hardware_interface::HW_IF_POSITION, &hw_command_position_[i]));
+
+        // Make i of the pos command interface 0.0
+        hw_command_velocity_[i] = 0.0;
+      }
+    }
+
+    return command_interfaces;
   }
 
-  return state_interfaces;
-}
 
 
-
-std::vector<hardware_interface::CommandInterface> RealDriveHardware::export_command_interfaces()
-{
-  std::vector<hardware_interface::CommandInterface> command_interfaces;
-  for (auto i = 0u; i < info_.joints.size(); i++)
+  hardware_interface::CallbackReturn RealDriveHardware::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
   {
-    auto joint = info_.joints[i];
-    RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Joint Name %s", joint.name.c_str());
-
-    if (joint.command_interfaces[0].name == hardware_interface::HW_IF_VELOCITY) {
-      RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Added Velocity Joint: %s", joint.name.c_str() );
-      joint_types_[i] = hardware_interface::HW_IF_VELOCITY;
-
-      // Add the command interface with a pointer to i of vel commands
-      command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        joint.name, hardware_interface::HW_IF_VELOCITY, &hw_command_velocity_[i]));
-
-      // Make i of the pos command interface 0.0
-      hw_command_position_[i] = 0.0;
-
-    } else {
-      RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Added Position Joint: %s", joint.name.c_str() );
-      joint_types_[i] = hardware_interface::HW_IF_POSITION;
-
-      // Add the command interface with a pointer to i of pos commands
-      command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        joint.name, hardware_interface::HW_IF_POSITION, &hw_command_position_[i]));
-
-      // Make i of the pos command interface 0.0
+    RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Activating ...please wait...");
+    // Set Default Values for State Interface Arrays
+    for (auto i = 0u; i < hw_positions_.size(); i++)
+    {
+      hw_positions_[i] = 0.0;
+      hw_velocities_[i] = 0.0;
       hw_command_velocity_[i] = 0.0;
+      hw_command_position_[i] = 0.0;
     }
+    subscriber_is_active_ = true;
+    RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Successfully activated!");
+
+    return hardware_interface::CallbackReturn::SUCCESS;
   }
 
-  return command_interfaces;
-}
 
 
-
-hardware_interface::CallbackReturn RealDriveHardware::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
-{
-  RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Activating ...please wait...");
-  // Set Default Values for State Interface Arrays
-  for (auto i = 0u; i < hw_positions_.size(); i++)
+  hardware_interface::CallbackReturn RealDriveHardware::on_deactivate(
+    const rclcpp_lifecycle::State & /*previous_state*/)
   {
-    hw_positions_[i] = 0.0;
-    hw_velocities_[i] = 0.0;
-    hw_command_velocity_[i] = 0.0;
-    hw_command_position_[i] = 0.0;
+    RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Deactivating ...please wait...");
+    subscriber_is_active_ = false;
+    RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Successfully deactivated!");
+
+    return hardware_interface::CallbackReturn::SUCCESS;
   }
-  subscriber_is_active_ = true;
-  RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Successfully activated!");
 
-  return hardware_interface::CallbackReturn::SUCCESS;
-}
+  // ||                        ||
+  // \/ THE STUFF THAT MATTERS \/
 
-
-
-hardware_interface::CallbackReturn RealDriveHardware::on_deactivate(
-  const rclcpp_lifecycle::State & /*previous_state*/)
-{
-  RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Deactivating ...please wait...");
-  subscriber_is_active_ = false;
-  RCLCPP_INFO(rclcpp::get_logger("RealDriveHardware"), "Successfully deactivated!");
-
-  return hardware_interface::CallbackReturn::SUCCESS;
-}
-
-
-// ||                        ||
-// \/ THE STUFF THAT MATTERS \/
-
-double RealDriveHardware::convertToRosPosition(double real_position)
-{
-  // Convert the rio integer that has been scaled
-  real_position /= RIO_CONVERSION_FACTOR;
-  // Just in case we get values we are not expecting
-  real_position = std::fmod(real_position, 2.0 * M_PI);
-
-  // Real goes from -2pi to 2pi, we want -pi to pi
-  if (real_position > M_PI) {
-    real_position -= 2.0 * M_PI;
-  }
-  return real_position;
-}
-
-double RealDriveHardware::convertToRosVelocity(double real_velocity)
-{
-  // Convert the rio integer that has been scaled
-  return real_velocity / RIO_CONVERSION_FACTOR;
-}
-
-void RealDriveHardware::convertToRealPositions(std::vector<double> ros_positions)
-{
-  for (auto i = 0u; i < ros_positions.size(); i++)
+  double RealDriveHardware::convertToRosPosition(double real_position)
   {
-    // Try not to modify the original vector
-    auto pos = ros_positions[i];
-    if (pos < 0.0) {
-      pos += 2.0 * M_PI;
+    // Convert the rio integer that has been scaled
+    real_position /= RIO_CONVERSION_FACTOR;
+    // Just in case we get values we are not expecting
+    real_position = std::fmod(real_position, 2.0 * M_PI);
+
+    // Real goes from -2pi to 2pi, we want -pi to pi
+    if (real_position > M_PI)
+    {
+      real_position -= 2.0 * M_PI;
     }
-    hw_command_position_converted_[i] = pos;
+    return real_position;
   }
-}
 
-hardware_interface::return_type RealDriveHardware::read(const rclcpp::Time & time, const rclcpp::Duration & /*period*/)
-{
-  rclcpp::spin_some(node_);
-  std::shared_ptr<sensor_msgs::msg::JointState> last_command_msg;
-  received_joint_msg_ptr_.get(last_command_msg);
-
-  if (last_command_msg == nullptr)
+  double RealDriveHardware::convertToRosVelocity(double real_velocity)
   {
-    RCLCPP_WARN(rclcpp::get_logger("RealDriveHardware"), "[%f] Velocity message received was a nullptr.", time.seconds());
-    return hardware_interface::return_type::ERROR;
+    // Convert the rio integer that has been scaled
+    return real_velocity / RIO_CONVERSION_FACTOR;
   }
 
-  auto names = last_command_msg->name;
-  auto positions = last_command_msg->position;
-  auto velocities = last_command_msg->velocity;
+  // void RealDriveHardware::convertToRealPositions(std::vector<double> ros_positions)
+  // {
+  //   for (auto i = 0u; i < ros_positions.size(); i++)
+  //   {
+  //     // Try not to modify the original vector
+  //     auto pos = ros_positions[i];
+  //     if (pos < 0.0)
+  //     {
+  //       pos += 2.0 * M_PI;
+  //     }
+  //     hw_command_position_converted_[i] = pos;
+  //   }
+  // }
 
-  for (auto i = 0u; i < joint_names_.size(); i++) {
-    for (auto j = 0u; j < names.size(); j++) {
-      if (strcmp(names[j].c_str(), info_.joints[i].name.c_str()) == 0) {
-        hw_positions_[i] = convertToRosPosition(positions[j]);
-        hw_velocities_[i] = convertToRosVelocity((double)velocities[j]);
-        break;
+  hardware_interface::return_type RealDriveHardware::read(const rclcpp::Time &time, const rclcpp::Duration & /*period*/)
+  {
+    rclcpp::spin_some(node_);
+    std::shared_ptr<sensor_msgs::msg::JointState> last_command_msg;
+    received_joint_msg_ptr_.get(last_command_msg);
+
+    if (last_command_msg == nullptr)
+    {
+      RCLCPP_WARN(rclcpp::get_logger("IsaacDriveHardware"), "[%f] Velocity message received was a nullptr.", time.seconds());
+      return hardware_interface::return_type::ERROR;
+    }
+
+    auto names = last_command_msg->name;
+    auto positions = last_command_msg->position;
+    auto velocities = last_command_msg->velocity;
+
+    // Match Arm and Drive Joints
+    for (auto i = 0u; i < names.size(); i++) {
+      for (const auto & arm_joint : arm_joints_)
+      {
+        if (strcmp(names[i].c_str(), arm_joint.joint_name.c_str()) == 0) {
+          hw_positions_[arm_joint.joint_index] = convertToRosPosition(positions[i]);
+          hw_velocities_[arm_joint.joint_index] = convertToRosVelocity((float)velocities[i]);
+          break;
+        }
+      }
+
+      for (const auto & drive_joint : drive_joints_)
+      {
+        if (strcmp(names[i].c_str(), drive_joint.joint_name.c_str()) == 0) {
+          hw_positions_[drive_joint.joint_index] = convertToRosPosition(positions[i]);
+          hw_velocities_[drive_joint.joint_index] = convertToRosVelocity((float)velocities[i]);
+          break;
+        }
       }
     }
+
+    // Apply Mimic Joints
+    for (const auto & mimic_joint : mimic_joints_)
+    {
+      hw_positions_[mimic_joint.joint_index] = hw_positions_[mimic_joint.mimicked_joint_index] * mimic_joint.multiplier + mimic_joint.offset;
+      hw_velocities_[mimic_joint.joint_index] = hw_velocities_[mimic_joint.mimicked_joint_index] * mimic_joint.multiplier;
+    }
+    
+    return hardware_interface::return_type::OK;
   }
+
+  hardware_interface::return_type swerve_hardware::RealDriveHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
+  {
+    // convertToRealPositions(hw_command_position_);
+    // convertToRealElevatorPosition();
+    // Publish to Real
+
+    for (auto i = 0u; i < drive_joints_.size(); ++i)
+    {
+      hw_command_drive_velocity_output_[i] = hw_command_velocity_[drive_joints_[i].joint_index];
+      hw_command_drive_position_output_[i] = hw_command_position_[drive_joints_[i].joint_index];
+    }
+
+    for (auto i = 0u; i < arm_joints_.size(); ++i)
+    {
+      hw_command_arm_velocity_output_[i] = hw_command_velocity_[arm_joints_[i].joint_index];
+      hw_command_arm_position_output_[i] = hw_command_position_[arm_joints_[i].joint_index];
+    }
   
-  return hardware_interface::return_type::OK;
-}
+    if (realtime_real_publisher_->trylock())
+    {
+      auto &realtime_real_command_ = realtime_real_publisher_->msg_;
+      realtime_real_command_.header.stamp = node_->get_clock()->now();
+      realtime_real_command_.name = drive_names_output_;
+      realtime_real_command_.velocity = hw_command_drive_velocity_output_;
+      realtime_real_command_.position = hw_command_drive_position_output_;
+      realtime_real_publisher_->unlockAndPublish();
+    }
 
+    if (realtime_real_arm_publisher_->trylock())
+    {
+      auto &realtime_real_arm_command_ = realtime_real_arm_publisher_->msg_;
+      realtime_real_arm_command_.header.stamp = node_->get_clock()->now();
+      realtime_real_arm_command_.name = arm_names_output_;
+      realtime_real_arm_command_.velocity = hw_command_arm_velocity_output_;
+      realtime_real_arm_command_.position = hw_command_arm_position_output_;
+      realtime_real_arm_publisher_->unlockAndPublish();
+    }
+    rclcpp::spin_some(node_);
 
-
-hardware_interface::return_type swerve_hardware::RealDriveHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
-{
-  convertToRealPositions(hw_command_position_);
-  // Publish to Real
-  if (realtime_real_publisher_->trylock()) {
-    auto & realtime_real_command_ = realtime_real_publisher_->msg_;
-    realtime_real_command_.header.stamp = node_->get_clock()->now();
-    realtime_real_command_.name = joint_names_;
-    realtime_real_command_.velocity = hw_command_velocity_;
-    realtime_real_command_.position = hw_command_position_converted_;
-    realtime_real_publisher_->unlockAndPublish();
+    return hardware_interface::return_type::OK;
   }
-  rclcpp::spin_some(node_);
 
-  return hardware_interface::return_type::OK;
-}
-
-}  // namespace swerve_hardware
-
-
+} // namespace swerve_hardware
 
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(
-  swerve_hardware::RealDriveHardware, hardware_interface::SystemInterface)
+    swerve_hardware::RealDriveHardware, hardware_interface::SystemInterface)

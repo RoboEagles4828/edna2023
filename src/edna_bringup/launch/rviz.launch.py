@@ -14,6 +14,7 @@ def generate_launch_description():
     
     control_launch_args = common | {
         'use_ros2_control': 'false',
+        'load_controllers': 'false'
     }
     
     debug_launch_args = common | {

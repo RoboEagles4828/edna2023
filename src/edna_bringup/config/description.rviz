@@ -53,7 +53,7 @@ Visualization Manager:
     Value: true
   - Alpha: 1
     Class: rviz_default_plugins/RobotModel
-    Collision Enabled: false
+    Collision Enabled: true
     Description File: ''
     Description Source: Topic
     Description Topic:
@@ -88,32 +88,37 @@ Visualization Manager:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      elevator_left_elevator_center_link:
+      bottom_gripper_bar_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_left_elevator_outer_1_link:
+      bottom_gripper_left_arm_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_left_elevator_outer_2_link:
+      bottom_gripper_right_arm_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_right_elevator_center_link:
+      bottom_intake_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_right_elevator_outer_1_link:
+      elevator_center_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      elevator_right_elevator_outer_2_link:
+      elevator_outer_1_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      elevator_outer_2_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -134,11 +139,6 @@ Visualization Manager:
         Show Trail: false
         Value: true
       front_right_wheel_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      lidar_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -164,6 +164,26 @@ Visualization Manager:
         Show Trail: false
         Value: true
       swerve_chassis_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_gripper_bar_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_gripper_left_arm_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_gripper_right_arm_link:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+        Value: true
+      top_slider_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -202,18 +222,108 @@ Visualization Manager:
     Value: true
     Visual Enabled: true
   - Class: rviz_default_plugins/TF
-    Enabled: false
+    Enabled: true
     Frame Timeout: 15
     Frames:
       All Enabled: false
+      gage/arm_back_leg_link:
+        Value: false
+      gage/arm_elevator_leg_link:
+        Value: false
+      gage/arm_roller_bar_link:
+        Value: false
+      gage/base_link:
+        Value: false
+      gage/bottom_gripper_bar_link:
+        Value: false
+      gage/bottom_gripper_left_arm_link:
+        Value: false
+      gage/bottom_gripper_right_arm_link:
+        Value: false
+      gage/bottom_intake_link:
+        Value: true
+      gage/elevator_center_link:
+        Value: false
+      gage/elevator_outer_1_link:
+        Value: false
+      gage/elevator_outer_2_link:
+        Value: false
+      gage/front_left_axle_link:
+        Value: false
+      gage/front_left_wheel_link:
+        Value: false
+      gage/front_right_axle_link:
+        Value: false
+      gage/front_right_wheel_link:
+        Value: false
+      gage/rear_left_axle_link:
+        Value: false
+      gage/rear_left_wheel_link:
+        Value: false
+      gage/rear_right_axle_link:
+        Value: false
+      gage/rear_right_wheel_link:
+        Value: false
+      gage/swerve_chassis_link:
+        Value: false
+      gage/top_gripper_bar_link:
+        Value: false
+      gage/top_gripper_left_arm_link:
+        Value: false
+      gage/top_gripper_right_arm_link:
+        Value: false
+      gage/top_slider_link:
+        Value: false
+      gage/zed_base_link:
+        Value: false
+      gage/zed_camera_center:
+        Value: false
+      gage/zed_left_camera_frame:
+        Value: false
+      gage/zed_left_camera_optical_frame:
+        Value: false
+      gage/zed_right_camera_frame:
+        Value: false
+      gage/zed_right_camera_optical_frame:
+        Value: false
     Marker Scale: 1
     Name: TF
     Show Arrows: true
     Show Axes: true
     Show Names: false
-    Tree: {}
+    Tree:
+      gage/base_link:
+        gage/swerve_chassis_link:
+          gage/arm_back_leg_link:
+            gage/elevator_outer_1_link:
+              gage/elevator_center_link:
+                gage/elevator_outer_2_link:
+                  gage/top_slider_link:
+                    gage/top_gripper_bar_link:
+                      gage/top_gripper_left_arm_link: {}
+                      gage/top_gripper_right_arm_link: {}
+          gage/arm_elevator_leg_link:
+            gage/arm_roller_bar_link: {}
+            gage/bottom_intake_link:
+              gage/bottom_gripper_bar_link:
+                gage/bottom_gripper_left_arm_link: {}
+                gage/bottom_gripper_right_arm_link: {}
+          gage/front_left_axle_link:
+            gage/front_left_wheel_link: {}
+          gage/front_right_axle_link:
+            gage/front_right_wheel_link: {}
+          gage/rear_left_axle_link:
+            gage/rear_left_wheel_link: {}
+          gage/rear_right_axle_link:
+            gage/rear_right_wheel_link: {}
+          gage/zed_base_link:
+            gage/zed_camera_center:
+              gage/zed_left_camera_frame:
+                gage/zed_left_camera_optical_frame: {}
+              gage/zed_right_camera_frame:
+                gage/zed_right_camera_optical_frame: {}
     Update Interval: 0
-    Value: false
+    Value: true
   Enabled: true
   Global Options:
     Background Color: 116; 116; 116
@@ -260,7 +370,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.990233898162842
+      Distance: 2.3943190574645996
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -275,10 +385,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3803986608982086
+      Pitch: 0.8203982710838318
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 5.673586368560791
+      Yaw: 0.09040485322475433
     Saved: null
 Window Geometry:
   Displays:
@@ -296,5 +406,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1846
-  X: 714
-  Y: 238
+  X: 74
+  Y: 27

@@ -4,10 +4,18 @@ import threading
 import traceback
 import time
 import os, inspect
+# TODO Reuse this
+import hardware_interface.drivetrain as drivet
+import hardware_interface.armcontroller as armc
 from hardware_interface.drivetrain import DriveTrain
 from hardware_interface.joystick import Joystick
 from hardware_interface.armcontroller import ArmController
 from dds.dds import DDS_Publisher, DDS_Subscriber
+
+EMABLE_ENCODER = True
+ENABLE_JOY = True
+ENABLE_DRIVE =  True
+ENABLE_ARM = True
 
 # Locks
 FRC_STAGE = "DISABLED"
@@ -26,9 +34,9 @@ xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
 ## Hardware
 drive_train : DriveTrain = None
-def initDriveTrain():
+def initDriveTrain(use_mocks):
     global drive_train
-    drive_train = DriveTrain()
+    drive_train = DriveTrain(use_mocks)
     logging.info("Success: DriveTrain created")
 
 joystick : Joystick = None
@@ -43,9 +51,9 @@ def initJoystick():
         return False
 
 arm_controller : ArmController = None
-def initArmController():
+def initArmController(use_mocks):
     global arm_controller
-    arm_controller = ArmController()
+    arm_controller = ArmController(use_mocks)
     logging.info("Success: ArmController created")
 
 ## Generic Loop that is used for all threads
@@ -55,7 +63,7 @@ def threadLoop(name, dds, action):
     global FRC_STAGE
     try:
         while STOP_THREADS == False:
-            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON" or name == "encoder":
+            if FRC_STAGE == "TELEOP" or name == "encoder":
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
@@ -94,23 +102,46 @@ def encoderThread():
     threadLoop('encoder', encoder_publisher, encoderAction)
 
 def encoderAction(publisher):
-    data = None
+    # TODO: Make these some sort of null value to identify lost data
+    joint_list = drivet.getJointList() + armc.getJointList()
+    joint_count = len(joint_list)
+    drivet_joint_count = len(drivet.getJointList())
+    armc_joint_count = len(armc.getJointList())
+    data = {
+        # "name": joint_list,
+        # "position": [0.0]*joint_count,
+        # "velocity": [[0.0]*joint_count]
+        'name': [],
+        'position': [],
+        'velocity': []
+    }
 
-    drive_data = None
     global drive_train
     with drive_train_lock:
-        drive_data = drive_train.getEncoderData()
+        if ENABLE_DRIVE:
+            drive_data = drive_train.getEncoderData()
+            data['name'] += drive_data['name']
+            data['position'] += drive_data['position']
+            data['velocity'] += drive_data['velocity']
+            # for index, name in enumerate(drivet.getJointList()):
+            #     drive_data_index = drive_data['name'].index(name)
+            #     data['name'][index] = drive_data['name'][drive_data_index]
+            #     data["position"][index] = drive_data["position"][drive_data_index],
+            #     data["velocity"][index] = drive_data["velocity"][drive_data_index],
     
-    arm_data = None
     global arm_controller
     with arm_controller_lock:
-        arm_data = arm_controller.getEncoderData()
+        if ENABLE_ARM:
+            arm_data = arm_controller.getEncoderData()
+            data['name'] += arm_data['name']
+            data['position'] += arm_data['position']
+            data['velocity'] += arm_data['velocity']
+            # for index, name in enumerate(armc.getJointList()):
+            #     arm_data_index = arm_data['name'].index(name)
+            #     data['name'][index] = drive_data['name'][arm_data_index]
+            #     data["position"][index] = arm_data["position"][arm_data_index],
+            #     data["velocity"][index] = arm_data["velocity"][arm_data_index],
 
-    data = {
-        "name": drive_data["name"] + arm_data["name"],
-        "position": drive_data["position"] + arm_data["position"],
-        "velocity": drive_data["velocity"] + arm_data["velocity"]
-    }
     publisher.write(data)
 
 
@@ -174,33 +205,57 @@ def joystickAction(publisher : DDS_Publisher):
 ######### Robot Class #########
 class edna_robot(wpilib.TimedRobot):
 
-    def __init__(self, period = 0.2, use_threading = True) -> None:
+    def __init__(self, period = 0.2, use_threading = True, use_mocks = False) -> None:
         super().__init__(period)
         self.use_threading = use_threading
+        self.use_mocks = use_mocks
 
     def robotInit(self) -> None:
+        wpilib.CameraServer.launch()
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
-        initDriveTrain()
-        # initJoystick()
-        initArmController()
+        if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
+        if ENABLE_JOY: initJoystick()
+        if ENABLE_ARM: initArmController(self.use_mocks)
 
         self.threads = []
         if self.use_threading:
             logging.info("Initializing Threads")
             global STOP_THREADS
             STOP_THREADS = False
-            self.threads = [
-                {"name": "encoder", "thread": startThread("encoder") },
-                {"name": "command", "thread": startThread("command") },
-                {"name": "arm-command", "thread": startThread("arm-command")},
-                # {"name": "joystick", "thread": startThread("joystick") },
-            ]
+            if ENABLE_DRIVE: self.threads.append({"name": "command", "thread": startThread("command") })
+            if ENABLE_ARM: self.threads.append({"name": "arm-command", "thread": startThread("arm-command")})
+            if ENABLE_JOY: self.threads.append({"name": "joystick", "thread": startThread("joystick") })
+            if EMABLE_ENCODER: self.threads.append({"name": "encoder", "thread": startThread("encoder") })
+
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
             self.joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
             self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+
+    def autonomousInit(self) -> None:
+        self.auton_timer = wpilib.Timer()
+        self.auton_timer.start()
+        STOP_THREADS = True
+        return super().autonomousInit()
+    
+    def autonomousPeriodic(self) -> None:
+        with drive_train_lock:
+            drive_joints = drivet.getJointList()
+            drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [-3.0, 0.0, -3.0, 0.0, -3.0, 0.0, -3.0, 0.0]})
+            if self.auton_timer.get() > 5:
+                drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})
+                drive_train.stop()
+            # if 1 > self.auton_timer.get():
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [3.0, 0.0, 3.0, 0.0, 3.0, 0.0, 3.0, 0.0]})
+            # if 2 > self.auton_timer.get() > 1:
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [-4.0, 0.0, -4.0, 0.0, -4.0, 0.0, -4.0, 0.0]})    
+            # if 3 > self.auton_timer.get() > 2:
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})            
+
+    def autonomousExit(self):
+        drive_train.stop()  
 
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")

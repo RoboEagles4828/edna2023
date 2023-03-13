@@ -1,6 +1,6 @@
 {
     "name": "edna",
-    "image": "ghcr.io/roboeagles4828/developer-environment:5",
+    "image": "ghcr.io/roboeagles4828/developer-environment:6",
     "containerEnv": {
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all",
@@ -27,7 +27,8 @@
     "securityOpt": [ "seccomp=unconfined" ],
     "capAdd": ["SYS_PTRACE"],
     "mounts": [
-        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" // docker
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind", // docker
+        "source=${localEnv:HOME}/docker/vscode,target=/home/admin/.vscode-server,type=bind" // vscode
     ],
     "runArgs": [
         "--env-file", "${localWorkspaceFolder}/.devcontainer/.env",
@@ -54,8 +55,6 @@
 				"eamodio.gitlens",
 				"appulate.filewatcher",
 				"formulahendry.code-runner",
-				"ms-python.python",
-				"VisualStudioExptTeam.vscodeintellicode"
 			]
         }
     }

@@ -4,21 +4,24 @@ from launch import LaunchDescription
 from launch.actions import RegisterEventHandler, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration, Command, PythonExpression
 from launch_ros.actions import Node
+from launch.conditions import IfCondition
 
 # Easy use of namespace since args are not strings
-NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
+# NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     namespace = LaunchConfiguration('namespace')
     joystick_file = LaunchConfiguration('joystick_file')
+    enable_joy = LaunchConfiguration('enable_joy')
     
     joy = Node(
             package='joy',
             namespace=namespace,
             executable='joy_node', 
             name='joy_node',
-            parameters=[])
+            condition=IfCondition(enable_joy),
+            parameters=[{'use_sim_time': use_sim_time}])
 
     controller_prefix = 'swerve_controller'
     joy_teleop_twist = Node(
@@ -26,9 +29,16 @@ def generate_launch_description():
         namespace=namespace,
         executable='teleop_node',
         name='teleop_twist_joy_node',
-        parameters=[joystick_file],
-        remappings={(f'/{NAMESPACE}/cmd_vel', f'/{NAMESPACE}/{controller_prefix}/cmd_vel_unstamped')},
-        )
+        parameters=[joystick_file, {'use_sim_time': use_sim_time}],
+        remappings={("cmd_vel", f"{controller_prefix}/cmd_vel_unstamped")},
+    )
+    joint_trajectory_teleop = Node(
+        package='joint_trajectory_teleop',
+        namespace=namespace,
+        executable='joint_trajectory_teleop',
+        name='joint_trajectory_teleop',
+        parameters=[{'use_sim_time': use_sim_time}]
+    )
     
     # Launch!
     return LaunchDescription([
@@ -44,6 +54,11 @@ def generate_launch_description():
             'joystick_file',
             default_value='',
             description='The file with joystick parameters'),
+        DeclareLaunchArgument(
+            'enable_joy',
+            default_value='true',
+            description='Enables joystick teleop'),
         joy,
-        joy_teleop_twist
+        joy_teleop_twist,
+        joint_trajectory_teleop
     ])

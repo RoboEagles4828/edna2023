@@ -1,3 +1,4 @@
 rticonnextdds-connector
 robotpy==2023.4.2.1
 robotpy[ctre]
+wpilib==2023.4.2.0

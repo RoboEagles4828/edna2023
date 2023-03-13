@@ -1,4 +1,11 @@
 #!/bin/bash
+
+INSTALL_RTAB=$1
+if [ "$INSTALL_RTAB" != "true" ]; then
+    echo "Skipping rtab install"
+    exit 0
+fi
+
 mkdir -p ~/workspaces/rtab_ws/src
 
 export MAKEFLAGS="-j6"

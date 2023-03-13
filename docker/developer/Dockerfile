@@ -1,5 +1,9 @@
-FROM osrf/ros:humble-desktop
+ARG BASE_IMAGE=osrf/ros:humble-desktop
+FROM ${BASE_IMAGE}
 RUN mkdir -p /opt/install-scripts
+ARG INSTALL_COMMON="true"
+ARG INSTALL_DOCKER="true"
+ARG INSTALL_RTAB="true"
 
 ######################
 # User configuration #
@@ -45,7 +49,7 @@ COPY config/*_profile.xml /usr/local/share/middleware_profiles/
 # Copy and install common
 COPY install-scripts/install-common /opt/install-scripts/install-common
 RUN chmod +x /opt/install-scripts/install-common
-RUN /opt/install-scripts/install-common
+RUN /opt/install-scripts/install-common ${INSTALL_COMMON}
 
 ##############
 # Docker CLI #
@@ -54,7 +58,7 @@ RUN /opt/install-scripts/install-common
 # Copy and isntall docker
 COPY install-scripts/install-docker /opt/install-scripts/install-docker
 RUN chmod +x /opt/install-scripts/install-docker
-RUN /opt/install-scripts/install-docker
+RUN /opt/install-scripts/install-docker ${INSTALL_DOCKER}
 
 # Add docker group
 RUN groupadd --system docker
@@ -68,8 +72,8 @@ RUN usermod -aG docker ${USERNAME}
 COPY install-scripts/install-rtab /opt/install-scripts/install-rtab
 RUN chmod +x /opt/install-scripts/install-rtab
 USER ${USERNAME}
-RUN sudo apt-get install -y python3-pip
-RUN /opt/install-scripts/install-rtab
+RUN sudo apt update && sudo apt-get install -y python3-pip
+RUN /opt/install-scripts/install-rtab ${INSTALL_RTAB}
 USER root
 
 ####################
@@ -87,15 +91,15 @@ USER root
 ######################
 # Docker Permissions #
 ######################
-RUN echo -e "#!/bin/sh\n\
-    sudoIf() { if [ \"\$(id -u)\" -ne 0 ]; then sudo \"\$@\"; else \"\$@\"; fi }\n\
-    SOCKET_GID=\$(stat -c '%g' /var/run/docker.sock) \n\
-    if [ \"${SOCKET_GID}\" != '0' ]; then\n\
-        if [ \"\$(cat /etc/group | grep :\${SOCKET_GID}:)\" = '' ]; then sudoIf groupadd --gid \${SOCKET_GID} docker-host; fi \n\
-        if [ \"\$(id ${USERNAME} | grep -E \"groups=.*(=|,)\${SOCKET_GID}\(\")\" = '' ]; then sudoIf usermod -aG \${SOCKET_GID} ${USERNAME}; fi\n\
-    fi\n\
-    exec \"\$@\"" > /usr/local/share/docker-init.sh \
-    && chmod +x /usr/local/share/docker-init.sh
+RUN echo "#!/bin/sh\n\
+sudoIf() { if [ \"\$(id -u)\" -ne 0 ]; then sudo \"\$@\"; else \"\$@\"; fi }\n\
+SOCKET_GID=\$(stat -c '%g' /var/run/docker.sock) \n\
+if [ \"${SOCKET_GID}\" != '0' ]; then\n\
+    if [ \"\$(cat /etc/group | grep :\${SOCKET_GID}:)\" = '' ]; then sudoIf groupadd --gid \${SOCKET_GID} docker-host; fi \n\
+    if [ \"\$(id ${USERNAME} | grep -E \"groups=.*(=|,)\${SOCKET_GID}\(\")\" = '' ]; then sudoIf usermod -aG \${SOCKET_GID} ${USERNAME}; fi\n\
+fi\n\
+exec \"\$@\"" > /usr/local/share/docker-init.sh \
+&& chmod +x /usr/local/share/docker-init.sh
 
 # VS Code overrides ENTRYPOINT and CMD when executing `docker run` by default.
 # Setting the ENTRYPOINT to docker-init.sh will configure non-root access to

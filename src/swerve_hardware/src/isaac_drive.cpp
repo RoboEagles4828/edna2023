@@ -264,7 +264,7 @@ hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const
   // Calculate Axle Velocities using motion magic
   double dt = 0.1;
   for (auto i = 0u; i < joint_names_.size(); i++) {
-    if (joint_types_[i] == hardware_interface::HW_IF_POSITION) {
+    if (joint_names_[i].find("axle") != std::string::npos) {
       auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
       // RCLCPP_INFO(rclcpp::get_logger("TestDriveHardware"), "Current: %f, Target: %f Vel: %f", hw_positions_[i], hw_command_position_[i], vel);
       hw_command_velocity_[i] = vel;
@@ -284,6 +284,16 @@ hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const
     realtime_isaac_command_.header.stamp = node_->get_clock()->now();
     realtime_isaac_command_.name = joint_names_;
     realtime_isaac_command_.velocity = hw_command_velocity_;
+    realtime_isaac_command_.position = empty_;
+    realtime_isaac_publisher_->unlockAndPublish();
+  }
+  rclcpp::spin_some(node_);
+  if (realtime_isaac_publisher_->trylock()) {
+    auto & realtime_isaac_command_ = realtime_isaac_publisher_->msg_;
+    realtime_isaac_command_.header.stamp = node_->get_clock()->now();
+    realtime_isaac_command_.name = joint_names_;
+    realtime_isaac_command_.velocity = empty_;
+    realtime_isaac_command_.position = hw_command_position_;
     realtime_isaac_publisher_->unlockAndPublish();
   }
   rclcpp::spin_some(node_);

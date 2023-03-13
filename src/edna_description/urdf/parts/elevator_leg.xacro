@@ -1,12 +1,12 @@
 <?xml version = "1.0"?>
 <robot xmlns:xacro = "http://www.ros.org/wiki/xacro">
 
-    <xacro:property name="elevator_leg_length" value="0.052" />
-    <xacro:property name="elevator_leg_width" value="0.330" />
-    <xacro:property name="elevator_leg_height" value="0.59" />
+    <xacro:property name="elevator_leg_length" value="0.0508" />
+    <xacro:property name="elevator_leg_width" value="0.3302" />
+    <xacro:property name="elevator_leg_height" value="0.5842" />
     
     <xacro:property name="roller_bar_length" value="0.0508" />
-    <xacro:property name="roller_bar_width" value="0.711" />
+    <xacro:property name="roller_bar_width" value="0.7112" />
     <!-- <xacro:property name="roller_bar_height" value="0.527" /> -->
     <xacro:property name="roller_bar_height" value="0.1" />
     <xacro:property name="roller_bar_wheel_radius" value="0.0254"/>
@@ -19,7 +19,7 @@
             <visual>
                 <origin xyz = "0 0 0" rpy = "0 0 0"/>
                 <geometry>
-                    <mesh filename="package://edna_description/meshes/elevator_legs.stl" scale="0.001 0.001 0.001"/>
+                    <mesh filename="package://edna_description/meshes/Front_Legs_V2.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
                 <material name = "red"/>
             </visual>
@@ -42,9 +42,9 @@
                 <origin xyz = "0 0 ${roller_bar_height/2}" rpy = "${pi/2} 0 0"/>
             </xacro:inertial_box>
             <visual>
-                <origin xyz = "0 0 -0.19" rpy = "${pi/2} 0 0"/>
+                <origin xyz = "0 0 -0.24" rpy = "0 0 0"/>
                 <geometry>
-                    <mesh filename="package://edna_description/meshes/Roller_Bar.stl" scale="0.001 0.001 0.001"/>
+                    <mesh filename="package://edna_description/meshes/Roller_Bar_V2.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
                 <material name = "red"/>
             </visual>

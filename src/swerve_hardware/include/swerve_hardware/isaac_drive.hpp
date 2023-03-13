@@ -97,7 +97,7 @@ private:
   bool subscriber_is_active_ = false;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr isaac_subscriber_ = nullptr;
   realtime_tools::RealtimeBox<std::shared_ptr<sensor_msgs::msg::JointState>> received_joint_msg_ptr_{nullptr};
-
+  std::vector<double> empty_;
   // Converts isaac position range -2pi - 2pi into expected ros position range -pi - pi
   double convertToRosPosition(double isaac_position);
   double convertToRosVelocity(double isaac_velocity);

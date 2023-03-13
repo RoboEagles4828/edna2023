@@ -8,7 +8,7 @@ from sensor_msgs.msg import JointState
 class PublishJointCmd(Node):
 
     def __init__(self):
-        super().__init__('publish_joint_commands')
+        super().__init__('publish_arm_joint_commands')
         self.publisher_ = self.create_publisher(JointState, '/real/real_arm_commands', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -21,9 +21,9 @@ class PublishJointCmd(Node):
         position_cmds.name = [
             # Pneumatics
             'arm_roller_bar_joint', 
-            'top_gripper_slider_joint',     # Not in URDF yet
-            'top_gripper_joint',            # Not in URDF yet
-            'bottom_gripper_joint',         # Not in URDF yet
+            'top_gripper_slider_joint',
+            'top_gripper_joint',
+            'bottom_gripper_joint',
             # Wheels
             'elevator_left_elevator_center_joint',
             'bottom_gripper_lift_joint'
@@ -34,7 +34,7 @@ class PublishJointCmd(Node):
         position_cmds.position = [ 
             0.0,      # Either a 0 (down) or a 1 (up) 
             0.0,      # Either a 0 (fully back) or a 1 (fully extended)
-            0.0,      # Either a 0 (open) or a 1 (closed)
+            1.0,      # Either a 0 (open) or a 1 (closed)
             0.0,      # Either a 0 (open) or a 1 (closed)
             0.0,      # Value between 0.0 (fully back) and 2.0 (fully extended) (will be converted on their end, so just take the motor value and multiply it by two)
             0.0       # Value between 0.0 (fully down) and 1.0 (fully up)
@@ -47,14 +47,7 @@ class PublishJointCmd(Node):
         self.i += 1
 
 
-# 'front_left_wheel_joint',
-#             'front_left_axle_joint',
-#             'front_right_wheel_joint',
-#             'front_right_axle_joint',
-#             'rear_left_wheel_joint',
-#             'rear_left_axle_joint',
-#             'rear_right_wheel_joint',
-#             'rear_right_axle_joint']
+
 
 def main(args=None):
     rclpy.init(args=args)

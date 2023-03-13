@@ -129,7 +129,7 @@ class ImportBot(BaseSample):
             return
         
         self._robot_prim = self._world.scene.add(
-            Robot(prim_path=self._robot_prim_path, name=self.robot_name, position=np.array([0.0, 0.0, 0.3]))
+            Robot(prim_path=self._robot_prim_path, name=self.robot_name, position=np.array([0.0, 0.0, 0.3]), orientation=np.array([0.0, 0.0, 0.0, 1.0]))
         )
         
         self.configure_robot(self._robot_prim_path)
@@ -172,6 +172,17 @@ class ImportBot(BaseSample):
         front_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/front_right_axle_link/front_right_wheel_joint"), "angular")
         rear_left_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_left_axle_link/rear_left_wheel_joint"), "angular")
         rear_right_wheel = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/rear_right_axle_link/rear_right_wheel_joint"), "angular")
+        arm_roller_bar_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_elevator_leg_link/arm_roller_bar_joint"), "linear")
+        elevator_center_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_outer_1_link/elevator_center_joint"), "linear")
+        elevator_outer_2_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_center_link/elevator_outer_2_joint"), "linear")
+        elevator_outer_1_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_back_leg_link/elevator_outer_1_joint"), "angular")
+        top_gripper_left_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/top_gripper_bar_link/top_gripper_left_arm_joint"), "angular")
+        top_gripper_right_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/top_gripper_bar_link/top_gripper_right_arm_joint"), "angular")
+        top_slider_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_outer_2_link/top_slider_joint"), "linear")
+        bottom_gripper_left_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/bottom_gripper_bar_link/bottom_gripper_left_arm_joint"), "angular")
+        bottom_gripper_right_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/bottom_gripper_bar_link/bottom_gripper_right_arm_joint"), "angular")
+        bottom_intake_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_elevator_leg_link/bottom_intake_joint"), "angular")
+        
         set_drive_params(front_left_axle, 1, 1000, 98.0)
         set_drive_params(front_right_axle, 1, 1000, 98.0)
         set_drive_params(rear_left_axle, 1, 1000, 98.0)
@@ -180,13 +191,23 @@ class ImportBot(BaseSample):
         set_drive_params(front_right_wheel, 1, 1000, 98.0)
         set_drive_params(rear_left_wheel, 1, 1000, 98.0)
         set_drive_params(rear_right_wheel, 1, 1000, 98.0)
-        # set_drive_params(base,1,1000,98.0)
+        set_drive_params(arm_roller_bar_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_center_joint, 10000000, 100000, 98.0)
+        set_drive_params(elevator_outer_1_joint, 10000000, 100000, 2000.0)
+        set_drive_params(elevator_outer_2_joint, 10000000, 100000, 98.0)
+        set_drive_params(top_gripper_left_arm_joint, 10000000, 100000, 98.0)
+        set_drive_params(top_gripper_right_arm_joint, 10000000, 100000, 98.0)
+        set_drive_params(top_slider_joint, 10000000, 100000, 98.0)
+        set_drive_params(bottom_gripper_left_arm_joint, 10000000, 100000, 98.0)
+        set_drive_params(bottom_gripper_right_arm_joint, 10000000, 100000, 98.0)
+        set_drive_params(bottom_intake_joint, 10000000, 100000, 98.0)
+        
         self.create_lidar(robot_prim_path)
         self.create_imu(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
         self.setup_camera_action_graph(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
-        self.setup_robot_action_graph(robot_prim_path)
+        self.setup_robot_action_graph(robot_prim_path)  
         self.set_friction(robot_prim_path)
         return
 
@@ -482,7 +503,7 @@ class ImportBot(BaseSample):
                     ("Context.outputs:context", "SubscribeJointState.inputs:context"),
                     ("SubscribeJointState.outputs:jointNames", "articulation_controller.inputs:jointNames"),
                     ("SubscribeJointState.outputs:velocityCommand", "articulation_controller.inputs:velocityCommand"),
-                    # ("SubscribeJointState.outputs:positionCommand", "articulation_controller.inputs:positionCommand"),
+                    ("SubscribeJointState.outputs:positionCommand", "articulation_controller.inputs:positionCommand"),
                 ],
             }
         )

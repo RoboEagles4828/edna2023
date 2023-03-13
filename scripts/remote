@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# Check /scripts/config/remote-config for script configuration
+source /workspaces/edna2023/scripts/config/remote-config
+
+deploy-git() {
+    echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via git..."
+    if [[ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]]; then # Add it as a remote
+            if [ $(git remote | grep "$MACHINE_NAME") ]; then # Remove the old jetson remote
+                    git remote remove $MACHINE_NAME
+            fi
+            git remote add $MACHINE_NAME "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
+    fi
+
+    git push $MACHINE_NAME main
+}
+
+deploy-rsync() {
+    echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
+    rsync -azP -e "ssh -p $PORT" --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude *.rviz --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+}
+
+rebuild() {
+    echo "Disabling edna.service for speed..."
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
+    echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) and building..."
+    if [ -z "$2" ]; then
+        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*";
+    else
+        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}";
+    fi
+    edna-restart
+}
+
+edna-restart() {
+    echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl restart edna.service"
+}
+
+edna-log() {
+    echo "Checking edna.service status..."
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT 'sudo systemctl status edna.service'
+}
+
+help() {
+    echo "Usage:"
+    echo "  config  -- Opens the config file in nano"
+    echo "  setup   -- Copies your ssh-key to the remote device"
+    echo "  ssh     -- Connects to the robot via ssh"
+    echo "  service"
+    echo "      log     -- Outputs the systemctl log for edna.service"
+    echo "      restart -- Restarts the systemctl edna.service"
+    echo "  deploy"
+    echo "      rsync   -- Deploys to the remote device using rsync (default)"
+    echo "      git     -- Deploys to the remote device using Git"
+    echo "  rebuild [packages] -- Rebuilds packages with colcon (all packages if not specified)"
+    echo "  run  [command]  -- Runs an arbitrary command on the remote device "
+    echo ""
+    echo "Aliases:"
+    echo "  connect -- alias for \"remote ssh\""
+    echo "  log     -- alias for \"remote service log\""
+    echo "  restart -- alias for \"remote service restart\""
+    echo "Usage: remote (config | setup | ssh | service | deploy | rebuild | run)"
+}
+
+case $1 in 
+    "config")
+        nano /workspaces/edna2023/scripts/config/remote-config
+    ;;
+
+    "setup")
+        echo "Copying public key to $USERNAME@$IP_ADDRESS:$PORT..."
+        ssh-copy-id -p $PORT -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS 
+    ;;
+        
+    "connect") ;&
+    "ssh")
+        echo "Connecting to $USERNAME@$IP_ADDRESS:$PORT"
+        ssh $USERNAME@$IP_ADDRESS -p $PORT
+    ;;
+
+    "deploy")
+        case $2 in
+            "") ;&
+            "rsync")
+                deploy-rsync
+            ;;
+            
+            "git")
+                deploy-git
+            ;;
+
+            *)
+                echo "Unknown option: $2"
+                help
+            ;;
+        esac
+        ;;
+
+    "service")
+        case $2 in
+            "log")
+                edna-log
+                ;;
+            
+            "restart")
+                edna-restart
+                ;;
+        esac
+        ;;
+
+    "run")
+        ssh -t $USERNAME@$IP_ADDRESS -p $PORT "${@:2}";
+        ;;
+
+    "log")
+        edna-log
+        ;;
+        
+    "restart")
+        edna-restart
+        ;;
+
+    "rebuild")
+        rebuild $@
+        ;;
+    
+    
+    *)
+        echo "Unknown option: $1"
+        help
+        ;;
+esac
