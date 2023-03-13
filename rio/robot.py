@@ -63,7 +63,7 @@ def threadLoop(name, dds, action):
     global FRC_STAGE
     try:
         while STOP_THREADS == False:
-            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON" or name == "encoder":
+            if FRC_STAGE == "TELEOP" or name == "encoder":
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
@@ -235,18 +235,24 @@ class edna_robot(wpilib.TimedRobot):
             self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
 
     def autonomousInit(self) -> None:
-        self.start_auton_time = time.time()
+        self.auton_timer = wpilib.Timer()
+        self.auton_timer.start()
+        STOP_THREADS = True
         return super().autonomousInit()
     
     def autonomousPeriodic(self) -> None:
         with drive_train_lock:
             drive_joints = drivet.getJointList()
-            # drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]})
-            # drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, -4.0, -4.0, -4.0, -4.0]})
-            # time.sleep(1)
-            # drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 2.0, 2.0]})
-            # time.sleep(1)
-            
+            drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [-3.0, 0.0, -3.0, 0.0, -3.0, 0.0, -3.0, 0.0]})
+            if self.auton_timer.get() > 5:
+                drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})
+                drive_train.stop()
+            # if 1 > self.auton_timer.get():
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [3.0, 0.0, 3.0, 0.0, 3.0, 0.0, 3.0, 0.0]})
+            # if 2 > self.auton_timer.get() > 1:
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [-4.0, 0.0, -4.0, 0.0, -4.0, 0.0, -4.0, 0.0]})    
+            # if 3 > self.auton_timer.get() > 2:
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})            
 
     def autonomousExit(self):
         drive_train.stop()  

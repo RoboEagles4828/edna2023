@@ -20,7 +20,10 @@
         {
           "height": 332
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }

@@ -300,6 +300,8 @@ class SwerveModule():
             self.axle_motor.setSelectedSensorPosition(getShaftTicks(newAxlePosition, "position"))
         else:
             self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
+        logging.info('AXLE MOTOR POS: ', newAxlePosition)
+        logging.info('WHEEL MOTOR VEL: ', wheel_vel)
 
 
     def stop(self):
