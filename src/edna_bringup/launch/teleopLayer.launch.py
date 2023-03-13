@@ -18,7 +18,7 @@ def generate_launch_description():
     frc_auton = Node(
         package = "frc_auton",
         namespace=namespace,
-        executable= "runner",
+        executable= "reader",
         name = "frc_auton_node"
     )
     joy = Node(

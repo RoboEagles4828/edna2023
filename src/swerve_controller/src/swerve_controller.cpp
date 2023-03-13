@@ -288,7 +288,7 @@ namespace swerve_controller
   //  * \param [in] min_jerk Minimum jerk [m/s^3], usually <= 0
   //  * \param [in] max_jerk Maximum jerk [m/s^3], usually >= 0
   //  **/
-    limiter_wheel_ = SpeedLimiter(true,true,true,-31.4,31.4,-10,10,-1,1);
+    limiter_wheel_ = SpeedLimiter(true,true,true,-31.4,31.4,-15.7,15.7,-7.85,7.85);
 
     // Get Parameters
     front_left_wheel_joint_name_ = get_node()->get_parameter("front_left_wheel_joint").as_string();
