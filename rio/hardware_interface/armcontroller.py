@@ -130,6 +130,9 @@ class TalonWheel(ctre.TalonFX):
 
     def __init__(self, port : int, totalRevolutions : int):
         super().__init__(port)
+        self.wheelPrintTimer = wpilib.Timer()
+        self.wheelPrintTimer.start()
+        self.wheelPrintPeriod = 0.5
         self.totalRevolutions = totalRevolutions
 
         self.configFactoryDefault(WHEEL_TIMEOUT_MILLISECONDS)
@@ -208,15 +211,17 @@ class ElevatorWheel(TalonWheel):
         self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
     
     def getPosition(self) -> float:
-        return super().getPosition() * 2
+        pos = super().getPosition()
+        if self.wheelPrintTimer.hasElapsed(self.wheelPrintPeriod):
+            logging.info(f"Elevator Postition: {pos}")
+        return super().getPosition()
     
     def getVelocity(self) -> float:
-        return super().getVelocity() * 2
+        return super().getVelocity()
 
 
-    def setPosition(self, position : float): # Position should be between 0.0 and 2.0
-        # print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
+    def setPosition(self, position : float):
         if wpilib.RobotBase.isSimulation():
-            self.setSelectedSensorPosition((position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
+            self.setSelectedSensorPosition((position) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
         else:
-            self.set(ctre.TalonFXControlMode.MotionMagic, (position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
+            self.set(ctre.TalonFXControlMode.MotionMagic, (position) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
