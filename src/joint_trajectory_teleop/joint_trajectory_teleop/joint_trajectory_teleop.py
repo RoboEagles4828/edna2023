@@ -9,6 +9,24 @@ import os
 
 import time
 
+class toggleButton():
+    def __init__(self, button):
+        self.last_button = 0.0
+        self.flag = False
+        self.button = button
+        
+    
+    def toggle(self, buttons_list):
+        currentButton = buttons_list[self.button]
+        if currentButton == 1.0 and self.last_button == 0.0:
+            self.flag = not self.flag
+            self.last_button = currentButton
+            return self.flag
+        else:
+            self.last_button = currentButton
+            return self.flag
+        
+
 class PublishTrajectoryMsg(Node):
 
     def __init__(self):
@@ -52,53 +70,62 @@ class PublishTrajectoryMsg(Node):
         self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)
         self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)
         self.timer_period = 0.5  # seconds
+        self.aButton = toggleButton(self.button_dict['A'])
+        self.bButton = toggleButton(self.button_dict['B'])
+        self.lbButton = toggleButton(self.button_dict['LB'])
 
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
         # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
+        
+        aToggleValue = self.aButton.toggle(joystick.buttons)
+        bToggleValue = self.bButton.toggle(joystick.buttons)
+        lbToggleValue = self.lbButton.toggle(joystick.buttons)
 
-        x_flag = False
-        y_flag = False
-        y_flag_negative = False
-        x_flag_negative = False
-
-        # if joystick.axes[self.axis_dict['DPAD_Y']] == 1.0:
-        #     y_flag = True
-        # elif joystick.axes[self.axis_dict['DPAD_Y']] == -1.0:
-        #     y_flag_negative = True
-        # elif joystick.axes[self.axis_dict['DPAD_X']] == 1.0:
-        #     x_flag = True
-        # elif joystick.axes[self.axis_dict['DPAD_X']] == -1.0:
-        #     x_flag_negative = True
-
-        if y_flag:
-            self.pos = 1.0
-        elif y_flag_negative:
-            self.pos = 0.0
-        elif x_flag:
+        if joystick.buttons[self.button_dict['LB']] == 1.0:
+            self.pos = 1.1
+        elif joystick.buttons[self.button_dict['RB']] == 1.0:
+            self.pos = 1.5
+        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.2
-        elif x_flag_negative:
-            self.pos = 0.4
+        elif lbToggleValue:
+            self.pos = 0.2
+        elif joystick.buttons[self.button_dict['RB']] == 0.0:
+            self.pos = 0.0
+        elif joystick.buttons[self.button_dict['RIN']] == 1.0:
+            self.pos = 0.0
 
-        if joystick.buttons[self.button_dict['RB']] == 1.0:
+        if joystick.buttons[self.button_dict['Y']] == 1.0:
             self.rot = 0.1
         else:
             self.rot = 0.0
-
         
 
+        # self.joints = [
+        #     'arm_roller_bar_joint',
+        #     'elevator_center_joint',
+        #     'elevator_outer_1_joint',
+        #     'elevator_outer_2_joint',
+        #     'top_gripper_right_arm_joint',
+        #     'top_gripper_left_arm_joint',
+        #     'top_slider_joint',
+        #     'bottom_intake_joint',
+        #     'bottom_gripper_right_arm_joint',
+        #     'bottom_gripper_left_arm_joint',
+        # ]
+
         position_cmds.positions = [
-            float(joystick.buttons[self.button_dict['RB']]),
+            float(joystick.buttons[self.button_dict['Y']]),
             self.pos,
             self.rot,
             self.pos,
-            float(joystick.buttons[self.button_dict['X']]),
-            float(joystick.buttons[self.button_dict['X']]),
-            float(joystick.buttons[self.button_dict['B']]),
+            float(aToggleValue),
+            float(aToggleValue),
+            float(bToggleValue),
             float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['Y']]),
-            float(joystick.buttons[self.button_dict['Y']]),
+            float(joystick.axes[self.axis_dict['RT']]),
+            float(joystick.axes[self.axis_dict['RT']]),
         ]
         
         cmds.joint_names = self.joints

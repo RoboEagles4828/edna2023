@@ -9,7 +9,7 @@ NAMESPACE = 'real'
 CMD_TIMEOUT_SECONDS = 1
 WHEEL_TIMEOUT_MILLISECONDS = 30 # 0 means do not use the timeout
 TICKS_PER_REVOLUTION = 2048.0
-TOTAL_ELEVATOR_REVOLUTIONS = 10 # UNKNOWN
+TOTAL_ELEVATOR_REVOLUTIONS = 140 # UNKNOWN
 TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
 
 SCALING_FACTOR_FIX = 10000
@@ -22,7 +22,7 @@ PORTS = {
     # Pistons
     'ARM_ROLLER_BAR': [14, 15],
     'TOP_GRIPPER_SLIDER': [10, 11],
-    'TOP_GRIPPER': [12, 13],
+    'TOP_GRIPPER': [13, 12],
     'BOTTOM_GRIPPER': [8, 9],
     # Wheels
     'ELEVATOR': 13,
@@ -39,29 +39,41 @@ ELEVATOR_CONFIG = {
     "kF": 0.2,
 }
 
-class ArmController():
+JOINT_LIST = [
+    'arm_roller_bar_joint',
+    'top_slider_joint',
+    'top_gripper_left_arm_joint',
+    'bottom_gripper_left_arm_joint',
+    'elevator_center_joint',
+    'bottom_intake_joint',
+]
 
-    def __init__(self):
+def getJointList():
+    return JOINT_LIST
+
+class ArmController():
+    def __init__(self, use_mocks):
         self.last_cmds_time = time.time()
+        self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
+        self.use_mocks = use_mocks
         self.warn_timeout = True
         self.hub = wpilib.PneumaticHub(PORTS['HUB'])
         self.compressor = self.hub.makeCompressor()
 
         # Even though these two are technically two pistons, we're only using one solenoid to handle both
-        self.arm_roller_bar =       Piston(self.hub, PORTS['ARM_ROLLER_BAR']) 
-        self.top_gripper_slider =   Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
-        
-        self.top_gripper =          Piston(self.hub, PORTS['TOP_GRIPPER'])
-        self.bottom_gripper =       Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
-        self.elevator =             ElevatorWheel(PORTS['ELEVATOR'])
-        self.bottom_gripper_lift =  TalonWheel(PORTS['BOTTOM_GRIPPER_LIFT'], TOTAL_GRIPPER_REVOLUTIONS)
+        self.arm_roller_bar = Piston(self.hub, PORTS['ARM_ROLLER_BAR']) 
+        self.top_gripper_slider = Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
+        self.top_gripper = Piston(self.hub, PORTS['TOP_GRIPPER'])
+        self.bottom_gripper = Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
+        self.elevator = ElevatorWheel(PORTS['ELEVATOR'])
+        self.bottom_gripper_lift = IntakeWheel(PORTS['BOTTOM_GRIPPER_LIFT'])
 
         self.JOINT_MAP : dict[str, Piston | ElevatorWheel] = {
             # Pneumatics
-            'arm_roller_bar_joint':     self.arm_roller_bar,
+            'arm_roller_bar_joint': self.arm_roller_bar,
             'top_slider_joint': self.top_gripper_slider,
-            'top_gripper_left_arm_joint':        self.top_gripper,
-            'bottom_gripper_left_arm_joint':     self.bottom_gripper,
+            'top_gripper_left_arm_joint': self.top_gripper,
+            'bottom_gripper_left_arm_joint': self.bottom_gripper,
             # Wheels
             'elevator_center_joint': self.elevator,
             'bottom_intake_joint': self.bottom_gripper_lift
@@ -71,6 +83,10 @@ class ArmController():
         names = [""]*6
         positions = [0]*6
         velocities = [0]*6
+
+        if self.use_mocks:
+            if self.last_cmds:
+                return self.last_cmds
 
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):
@@ -122,6 +138,24 @@ class TalonWheel(ctre.TalonFX):
 
         self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
         self.totalRevolutions = totalRevolutions
+
+        self.configFactoryDefault(WHEEL_TIMEOUT_MILLISECONDS)
+
+        # Voltage
+        self.configVoltageCompSaturation(12, WHEEL_TIMEOUT_MILLISECONDS)
+        self.enableVoltageCompensation(True)
+        
+        # Sensors and frame
+        self.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
+        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, WHEEL_TIMEOUT_MILLISECONDS)
+        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, WHEEL_TIMEOUT_MILLISECONDS)
+        
+        # Nominal and Peak
+        self.configNominalOutputForward(0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configNominalOutputReverse(0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configPeakOutputForward(1, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configPeakOutputReverse(-1, WHEEL_TIMEOUT_MILLISECONDS)
     
     def getPosition(self) -> float:
         return (self.getSelectedSensorPosition() / (TICKS_PER_REVOLUTION * self.totalRevolutions))
@@ -136,6 +170,34 @@ class TalonWheel(ctre.TalonFX):
             self.set(ctre.TalonFXControlMode.Position, position * (TICKS_PER_REVOLUTION * self.totalRevolutions))
 
 
+class IntakeWheel():
+    def __init__(self, port : int):
+        return
+        super().__init__(port, TOTAL_GRIPPER_REVOLUTIONS)
+
+        self.setSensorPhase(False)
+        self.setInverted(False)
+
+        self.selectProfileSlot(ELEVATOR_CONFIG['SLOT'], 0)
+        self.config_kP(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kP'], WHEEL_TIMEOUT_MILLISECONDS)
+        self.config_kI(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kI'], WHEEL_TIMEOUT_MILLISECONDS)
+        self.config_kD(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kD'], WHEEL_TIMEOUT_MILLISECONDS)
+        self.config_kD(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kF'], WHEEL_TIMEOUT_MILLISECONDS)
+
+        self.configMotionCruiseVelocity(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum speed of motion magic (ticks/100ms)
+        self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
+
+    
+    def getPosition(self) -> float:
+        return 0.0
+    
+    def getVelocity(self) -> float:
+        return 0.0
+    
+    def setPosition(self, position : float): # Position should be between 0.0 and 1.0
+        return
+
+
 class ElevatorWheel(TalonWheel):
     def __init__(self, port : int):
         super().__init__(port, TOTAL_ELEVATOR_REVOLUTIONS)
@@ -146,6 +208,9 @@ class ElevatorWheel(TalonWheel):
         self.configNominalOutputReverse(0, WHEEL_TIMEOUT_MILLISECONDS)
         self.configPeakOutputForward(1, WHEEL_TIMEOUT_MILLISECONDS)
         self.configPeakOutputReverse(-1, WHEEL_TIMEOUT_MILLISECONDS)
+        self.setSensorPhase(False)
+        self.setInverted(False)
+
         self.selectProfileSlot(ELEVATOR_CONFIG['SLOT'], 0)
         self.config_kP(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kP'], WHEEL_TIMEOUT_MILLISECONDS)
         self.config_kI(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kI'], WHEEL_TIMEOUT_MILLISECONDS)
@@ -165,7 +230,7 @@ class ElevatorWheel(TalonWheel):
 
 
     def setPosition(self, position : float): # Position should be between 0.0 and 2.0
-        print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
+        # print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
         if wpilib.RobotBase.isSimulation():
             self.setSelectedSensorPosition((position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
         else:
