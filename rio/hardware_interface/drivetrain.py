@@ -62,6 +62,8 @@ AXLE_JOINT_GEAR_RATIO = 150.0/7.0
 TICKS_PER_REV = 2048.0
 CMD_TIMEOUT_SECONDS = 1
 
+USE_BRAKE_MODE = False
+
 nominal_voltage = 9.0
 steer_current_limit = 20.0
 
@@ -207,11 +209,15 @@ class SwerveModule():
         self.wheel_motor.config_kD(0, wheel_pid_constants["kD"], timeout_ms)
         
         # Brake
-        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+        if USE_BRAKE_MODE:
+            mode = ctre.NeutralMode.Brake
+        else:
+            mode = ctre.NeutralMode.Coast
+        self.wheel_motor.setNeutralMode(mode)
 
         # Velocity Ramp
         # TODO: Tweak this value
-        self.wheel_motor.configClosedloopRamp(0.3)
+        self.wheel_motor.configClosedloopRamp(0.1)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -245,8 +251,12 @@ class SwerveModule():
         self.axle_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)
         self.axle_motor.enableVoltageCompensation(True)
 
-        # Braking
-        self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
+        # Brake
+        if USE_BRAKE_MODE:
+            mode = ctre.NeutralMode.Brake
+        else:
+            mode = ctre.NeutralMode.Coast
+        self.wheel_motor.setNeutralMode(mode)
 
 
     def set(self, wheel_motor_vel, axle_position):
