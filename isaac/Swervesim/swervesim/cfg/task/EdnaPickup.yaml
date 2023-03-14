@@ -1,31 +1,26 @@
 # used to create the object
-name: SwerveF
+name: EdnaPickup
 
 physics_engine: ${..physics_engine}
 
 # if given, will override the device setting in gym. 
 env:
   numEnvs: 36
-  envSpacing: 20.0
+  envSpacing: 20
   resetDist: 3.0
-  clipObservations: 5.0
+  clipObservations: 1.0
   clipActions: 1.0
   controlFrequencyInv: 12 # 10 Hz?
-  baseInitState:
-    pos: [0.0, 0.0, 0.62] # x,y,z [m]
-    rot: [0.0, 0.0, 0.0, 1.0] # x,y,z,w [quat]
-    vLinear: [0.0, 0.0, 0.0]  # x,y,z [m/s]
-    vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
   control:
     # PD Drive parameters:
     stiffness: 85.0  # [N*m/rad]
     damping: 2.0     # [N*m*s/rad]
     actionScale: 13.5
   # episode length in seconds
-  episodeLength_s: 50
+  episodeLength_s: 15
 
 sim:
-  dt: 0.0083 # 1/120 s
+  dt: 0.01 # 1/10 s
   use_gpu_pipeline: ${eq:${...pipeline},"gpu"}
   gravity: [0.0, 0.0, -9.81]
   add_ground_plane: True
@@ -56,17 +51,16 @@ sim:
 
     # GPU buffers
     gpu_max_rigid_contact_count: 524288
-    gpu_max_rigid_patch_count: 81920
-    gpu_found_lost_pairs_capacity: 1024
-    gpu_found_lost_aggregate_pairs_capacity: 262144
-    gpu_total_aggregate_pairs_capacity: 1024
+    gpu_max_rigid_patch_count: 163840
+    gpu_found_lost_pairs_capacity: 4194304
+    gpu_found_lost_aggregate_pairs_capacity: 33554432
+    gpu_total_aggregate_pairs_capacity: 4194304
     gpu_max_soft_body_contacts: 1048576
     gpu_max_particle_contacts: 1048576
-    gpu_heap_capacity: 67108864
-    gpu_temp_buffer_capacity: 16777216
+    gpu_heap_capacity: 134217728
+    gpu_temp_buffer_capacity: 33554432
     gpu_max_num_partitions: 8
-
-  SwerveF:
+  EdnaPickup:
     # -1 to use default values
     override_usd_defaults: False
     fixed_base: False

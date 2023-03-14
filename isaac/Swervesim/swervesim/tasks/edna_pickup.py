@@ -45,7 +45,7 @@ import torch
 import math
 
 
-class Swerve_Field_Task(RLTask):
+class Edna_Pickup(RLTask):
     def __init__(
         self,
         name,

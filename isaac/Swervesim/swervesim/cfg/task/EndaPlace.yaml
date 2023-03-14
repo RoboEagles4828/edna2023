@@ -1,5 +1,5 @@
 # used to create the object
-name: SwerveCS
+name: EdnaPlace
 
 physics_engine: ${..physics_engine}
 
@@ -60,7 +60,7 @@ sim:
     gpu_heap_capacity: 134217728
     gpu_temp_buffer_capacity: 33554432
     gpu_max_num_partitions: 8
-  SwerveCS:
+  EdnaPlace:
     # -1 to use default values
     override_usd_defaults: False
     fixed_base: False
