@@ -63,7 +63,7 @@ def threadLoop(name, dds, action):
     global FRC_STAGE
     try:
         while STOP_THREADS == False:
-            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON" or name == "encoder":
+            if FRC_STAGE == "TELEOP" or name == "encoder":
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
@@ -225,6 +225,7 @@ class edna_robot(wpilib.TimedRobot):
         self.use_mocks = use_mocks
 
     def robotInit(self) -> None:
+        wpilib.CameraServer.launch()
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
         if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
@@ -247,6 +248,29 @@ class edna_robot(wpilib.TimedRobot):
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
             self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
             self.stage_publisher = DDS_Publisher(xml_path, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
+
+    def autonomousInit(self) -> None:
+        self.auton_timer = wpilib.Timer()
+        self.auton_timer.start()
+        STOP_THREADS = True
+        return super().autonomousInit()
+    
+    def autonomousPeriodic(self) -> None:
+        with drive_train_lock:
+            drive_joints = drivet.getJointList()
+            drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [-3.0, 0.0, -3.0, 0.0, -3.0, 0.0, -3.0, 0.0]})
+            if self.auton_timer.get() > 5:
+                drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})
+                drive_train.stop()
+            # if 1 > self.auton_timer.get():
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [3.0, 0.0, 3.0, 0.0, 3.0, 0.0, 3.0, 0.0]})
+            # if 2 > self.auton_timer.get() > 1:
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [-4.0, 0.0, -4.0, 0.0, -4.0, 0.0, -4.0, 0.0]})    
+            # if 3 > self.auton_timer.get() > 2:
+            #     drive_train.sendCommands({"name": drive_joints, "position": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})            
+
+    def autonomousExit(self):
+        drive_train.stop()  
 
     def teleopInit(self) -> None:
         logging.info("Entering Teleop")

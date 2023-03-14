@@ -239,7 +239,7 @@ class SwerveModule():
         self.axle_motor.config_kF(slot_idx, (1023.0 *  velocityCoefficient / nominal_voltage) * velocityConstant, timeout_ms)
         self.axle_motor.configMotionCruiseVelocity(2.0 / velocityConstant / velocityCoefficient, timeout_ms)
         self.axle_motor.configMotionAcceleration((8.0 - 2.0) / accelerationConstant / velocityCoefficient, timeout_ms)
-        self.axle_motor.configMotionSCurveStrength(4)
+        self.axle_motor.configMotionSCurveStrength(2)
 
         # Voltage Comp
         self.axle_motor.configVoltageCompSaturation(nominal_voltage, timeout_ms)
@@ -300,6 +300,8 @@ class SwerveModule():
             self.axle_motor.setSelectedSensorPosition(getShaftTicks(newAxlePosition, "position"))
         else:
             self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
+        logging.info('AXLE MOTOR POS: ', newAxlePosition)
+        logging.info('WHEEL MOTOR VEL: ', wheel_vel)
 
 
     def stop(self):

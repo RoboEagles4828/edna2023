@@ -10,6 +10,24 @@ from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSReliabilityPolic
 
 import time
 
+class toggleButton():
+    def __init__(self, button):
+        self.last_button = 0.0
+        self.flag = False
+        self.button = button
+        
+    
+    def toggle(self, buttons_list):
+        currentButton = buttons_list[self.button]
+        if currentButton == 1.0 and self.last_button == 0.0:
+            self.flag = not self.flag
+            self.last_button = currentButton
+            return self.flag
+        else:
+            self.last_button = currentButton
+            return self.flag
+        
+
 class PublishTrajectoryMsg(Node):
 
     def __init__(self):
@@ -53,11 +71,18 @@ class PublishTrajectoryMsg(Node):
         self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)
         self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)
         self.timer_period = 0.5  # seconds
+        self.aButton = toggleButton(self.button_dict['A'])
+        self.bButton = toggleButton(self.button_dict['B'])
+        self.lbButton = toggleButton(self.button_dict['LB'])
 
     def controller_callback(self, joystick: Joy):
         cmds = JointTrajectory()
         position_cmds = JointTrajectoryPoint()
         # self.get_logger().info('\nBUTTONS: ' + str(joystick.buttons) + '\nAXES: ' + str(joystick.axes))
+        
+        aToggleValue = self.aButton.toggle(joystick.buttons)
+        bToggleValue = self.bButton.toggle(joystick.buttons)
+        lbToggleValue = self.lbButton.toggle(joystick.buttons)
 
         if joystick.buttons[self.button_dict['LB']] == 1.0:
             self.pos = 1.1
@@ -65,17 +90,18 @@ class PublishTrajectoryMsg(Node):
             self.pos = 1.5
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.2
-        elif joystick.buttons[self.button_dict['LB']] == 0.0:
-            self.pos = 0.0
+        elif lbToggleValue:
+            self.pos = 0.2
         elif joystick.buttons[self.button_dict['RB']] == 0.0:
             self.pos = 0.0
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
-            self.pos
+            self.pos = 0.0
 
         if joystick.buttons[self.button_dict['Y']] == 1.0:
             self.rot = 0.1
         else:
             self.rot = 0.0
+        
 
         # self.joints = [
         #     'arm_roller_bar_joint',
@@ -95,9 +121,9 @@ class PublishTrajectoryMsg(Node):
             self.pos,
             self.rot,
             self.pos,
-            float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['A']]),
-            float(joystick.buttons[self.button_dict['B']]),
+            float(aToggleValue),
+            float(aToggleValue),
+            float(bToggleValue),
             float(joystick.buttons[self.button_dict['A']]),
             float(joystick.axes[self.axis_dict['RT']]),
             float(joystick.axes[self.axis_dict['RT']]),
