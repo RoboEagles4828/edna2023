@@ -49,6 +49,7 @@ class ImportBotExtension(BaseSampleExtension):
                     "b_text": "STOP",
                     "tooltip": "Start the cameras",
                     "on_clicked_fn": self._on_toggle_camera_button_event,
+                    
                 }
                 self.task_ui_elements["Toggle Camera"] = state_btn_builder(**dict)
                 self.task_ui_elements["Toggle Camera"].enabled = False

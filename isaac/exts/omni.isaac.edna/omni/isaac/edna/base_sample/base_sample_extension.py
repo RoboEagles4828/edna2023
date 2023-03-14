@@ -129,6 +129,15 @@ class BaseSampleExtension(omni.ext.IExt):
                         self._buttons["Load World"] = btn_builder(**dict)
                         self._buttons["Load World"].enabled = True
                         dict = {
+                            "label": "Digital Twin",
+                            "type": "button",
+                            "text": "Twin",
+                            "tooltip": "Starts Digital Twin of World",
+                            "on_clicked_fn": self._on_setup_digital_twin,
+                        }
+                        self._buttons["Load World"] = btn_builder(**dict)
+                        self._buttons["Load World"].enabled = True
+                        dict = {
                             "label": "Reset",
                             "type": "button",
                             "text": "Reset",
