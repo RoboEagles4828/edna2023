@@ -63,9 +63,9 @@ TICKS_PER_REV = 2048.0
 CMD_TIMEOUT_SECONDS = 1
 
 USE_BRAKE_MODE = False
+USE_CUSTOM_RAMP = True
 
 VELOCITY_RAMP = 0.25
-
 TOLERANCE = 0.05
 
 nominal_voltage = 9.0
@@ -221,7 +221,8 @@ class SwerveModule():
 
         # Velocity Ramp
         # TODO: Tweak this value
-        # self.wheel_motor.configClosedloopRamp(0.1)
+        if USE_CUSTOM_RAMP == False:
+            self.wheel_motor.configOpenloopRamp(0.1, timeout_ms)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -267,24 +268,28 @@ class SwerveModule():
         # wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
         # self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
         # self.last_wheel_vel_cmd = wheel_vel
+        if wheel_motor_vel == 0.0:
+            self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0.0)
+            self.last_wheel_vel_cmd = 0.0
+        else:
+            if USE_CUSTOM_RAMP:
+                wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
+                current_vel = self.wheel_motor.getSelectedSensorVelocity()
+                
+                difference = wheel_vel - current_vel
+                motor_set_vel = current_vel + difference*VELOCITY_RAMP
 
-        wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        current_vel = self.wheel_motor.getSelectedSensorVelocity()
-        
-        difference = wheel_vel - current_vel
-        motor_set_vel = current_vel + difference*VELOCITY_RAMP
+                logging.info(f'DIFFERENCE: {difference}, DIFF*VELORAMP: {difference*VELOCITY_RAMP}, current_vel: {current_vel}')
+                
+                self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, motor_set_vel)
 
-        logging.info(f'DIFFERENCE: {difference}, DIFF*VELORAMP: {difference*VELOCITY_RAMP}, current_vel: {current_vel}')
-        
-        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, motor_set_vel)
+                if abs(wheel_vel - motor_set_vel) <= TOLERANCE:
+                    motor_set_vel = wheel_vel
 
-        if abs(wheel_vel - motor_set_vel) <= TOLERANCE:
-            motor_set_vel = wheel_vel
+                logging.info(f'INCOMING VALUE: {wheel_vel}')
+                logging.info(f'WHEEL MOTOR SET VEL: {motor_set_vel}')
 
-        logging.info(f'INCOMING VALUE: {wheel_vel}')
-        logging.info(f'WHEEL MOTOR SET VEL: {motor_set_vel}')
-
-        self.last_wheel_vel_cmd = wheel_vel
+                self.last_wheel_vel_cmd = wheel_vel
 
         # MOTION MAGIC CONTROL FOR AXLE POSITION
         axle_motorPosition = getAxleRadians(self.axle_motor.getSelectedSensorPosition(), "position")
