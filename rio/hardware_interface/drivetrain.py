@@ -64,6 +64,10 @@ CMD_TIMEOUT_SECONDS = 1
 
 USE_BRAKE_MODE = False
 
+VELOCITY_RAMP = 0.25
+
+TOLERANCE = 0.05
+
 nominal_voltage = 9.0
 steer_current_limit = 20.0
 
@@ -184,12 +188,12 @@ class SwerveModule():
     
     def setupWheelMotor(self):
         self.wheel_motor.configFactoryDefault()
-        self.wheel_motor.configNeutralDeadband(0.05, timeout_ms)
+        self.wheel_motor.configNeutralDeadband(0.005, timeout_ms)
 
         # Direction and Sensors
         self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
         self.wheel_motor.setInverted(WHEEL_DIRECTION)
-        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
+        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.wheel_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, timeout_ms)
         
         # Peak and Nominal Outputs
@@ -217,7 +221,7 @@ class SwerveModule():
 
         # Velocity Ramp
         # TODO: Tweak this value
-        self.wheel_motor.configClosedloopRamp(0.1)
+        # self.wheel_motor.configClosedloopRamp(0.1)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -260,8 +264,26 @@ class SwerveModule():
 
 
     def set(self, wheel_motor_vel, axle_position):
+        # wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
+        # self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
+        # self.last_wheel_vel_cmd = wheel_vel
+
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
+        current_vel = self.wheel_motor.getSelectedSensorVelocity()
+        
+        difference = wheel_vel - current_vel
+        motor_set_vel = current_vel + difference*VELOCITY_RAMP
+
+        logging.info(f'DIFFERENCE: {difference}, DIFF*VELORAMP: {difference*VELOCITY_RAMP}, current_vel: {current_vel}')
+        
+        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, motor_set_vel)
+
+        if abs(wheel_vel - motor_set_vel) <= TOLERANCE:
+            motor_set_vel = wheel_vel
+
+        logging.info(f'INCOMING VALUE: {wheel_vel}')
+        logging.info(f'WHEEL MOTOR SET VEL: {motor_set_vel}')
+
         self.last_wheel_vel_cmd = wheel_vel
 
         # MOTION MAGIC CONTROL FOR AXLE POSITION

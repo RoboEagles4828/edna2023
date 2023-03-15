@@ -6,6 +6,11 @@ import time
 from sensor_msgs.msg import JointState
 
 
+# REAL ROBOT:
+# 1 rad/s for 5 seconds = 60 in (on avg)
+# ^ from stop to full speed to stop
+
+
 class PublishJointCmd(Node):
 
     def __init__(self):
@@ -58,7 +63,7 @@ class PublishJointCmd(Node):
                 0.0
             ]
         else:
-            speed = 2 * rad
+            speed = 6 * rad
             cmds.velocity = [ 
                 speed,
                 speed,
