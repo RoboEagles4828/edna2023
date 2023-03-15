@@ -37,7 +37,7 @@ class BaseSampleExtension(omni.ext.IExt):
         file_path: str,
         sample=None,
         number_of_extra_frames=1,
-        window_width=350,
+        window_width=400,
     ):
         if sample is None:
             self._sample = BaseSample()
@@ -191,6 +191,8 @@ class BaseSampleExtension(omni.ext.IExt):
             self._buttons["Load World"].enabled = True
 
         asyncio.ensure_future(_on_clear_async())
+        return
+    def _on_setup_digital_twin(self):
         return
 
     @abstractmethod

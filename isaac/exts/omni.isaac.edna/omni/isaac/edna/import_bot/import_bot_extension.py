@@ -27,6 +27,7 @@ class ImportBotExtension(BaseSampleExtension):
             sample=ImportBot(),
             number_of_extra_frames=1
         )
+        super()._on_setup_digital_twin()
         self.task_ui_elements = {}
         frame = self.get_frame(index=0)
         self.build_task_controls_ui(frame)
