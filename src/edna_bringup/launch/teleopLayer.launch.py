@@ -29,15 +29,15 @@ def generate_launch_description():
             condition=IfCondition(enable_joy),
             parameters=[{'use_sim_time': use_sim_time}])
 
-    controller_prefix = 'swerve_controller'
-    joy_teleop_twist = Node(
-        package='teleop_twist_joy',
-        namespace=namespace,
-        executable='teleop_node',
-        name='teleop_twist_joy_node',
-        parameters=[joystick_file],
-        remappings={(f'cmd_vel', f'{controller_prefix}/cmd_vel_unstamped')},
-    )
+    # controller_prefix = 'swerve_controller'
+    # joy_teleop_twist = Node(
+    #     package='teleop_twist_joy',
+    #     namespace=namespace,
+    #     executable='teleop_node',
+    #     name='teleop_twist_joy_node',
+    #     parameters=[joystick_file],
+    #     remappings={(f'cmd_vel', f'{controller_prefix}/cmd_vel_unstamped')},
+    # )
     joint_trajectory_teleop = Node(
         package='joint_trajectory_teleop',
         namespace=namespace,
@@ -67,7 +67,7 @@ def generate_launch_description():
             default_value='true',
             description='Enables joystick teleop'),
         joy,
-        joy_teleop_twist,
+        # joy_teleop_twist,
         joint_trajectory_teleop,
         frc_auton
     ])
