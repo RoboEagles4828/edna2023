@@ -75,18 +75,6 @@ def generate_launch_description():
         condition=IfCondition(use_ros2_control and load_controllers),
     )
 
-    joint_trajectory_controller_spawner = Node(
-        package="controller_manager",
-        namespace=namespace,
-        executable="spawner",
-        arguments=["joint_trajectory_controller", "-c", ['/', namespace, "/controller_manager"]],
-        parameters=[{
-            "robot_description": edna_description_xml,
-            "use_sim_time": use_sim_time,
-            }, controllers_file],
-        condition=IfCondition(use_ros2_control),
-    )
-
     #Starts ROS2 Control Swerve Drive Controller
     swerve_drive_controller_spawner = Node(
         package="controller_manager",
