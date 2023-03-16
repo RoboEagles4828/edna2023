@@ -66,11 +66,14 @@ class TesterNode(Node):
                 self.startTime = time.time()
         else:
             # Check if the current test should end...
+            timeleft = time.time() - self.startTime
+            print(f"\rRunning Test {self.currentTest} ({round(self.TESTS[self.currentTest]['time'] - timeleft, 2)}s remaining)", end='')
             if time.time() - self.startTime > self.TESTS[self.currentTest]["time"]:
                 self.recieving = False
                 self.testStatus.append({"pass": 0, "warn": 0, "fail": 0})
-                print(f"\nTest {self.currentTest} Completed")
+                print(f"\rTest {self.currentTest} Completed                                       ")
                 self.printResults()
+                print()
 
     def recieve(self, msg : JointState):
         if self.recieving:
