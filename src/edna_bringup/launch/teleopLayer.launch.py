@@ -70,5 +70,5 @@ def generate_launch_description():
         joy,
         joy_teleop_twist,
         joint_trajectory_teleop,
-        frc_auton
+        # frc_auton
     ])
