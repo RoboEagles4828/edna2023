@@ -228,16 +228,16 @@ namespace swerve_controller
       optimize(rear_right_position, rear_right_current_pos, rear_right_velocity);
     }
     
-    front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
-    front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
-    rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
-    rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
+    // front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
+    // front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
+    // rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
+    // rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
 
-    front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
-    front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
-    rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
-    rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
-    second_last_wheel_commands= last_wheel_commands;
+    // front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
+    // front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
+    // rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
+    // rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
+    // second_last_wheel_commands= last_wheel_commands;
 
     
     last_wheel_commands.clear();
