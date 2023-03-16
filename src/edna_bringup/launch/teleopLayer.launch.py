@@ -35,10 +35,16 @@ def generate_launch_description():
         namespace=namespace,
         executable='teleop_node',
         name='teleop_twist_joy_node',
-        parameters=[joystick_file],
-        remappings={(f'cmd_vel', f'{controller_prefix}/cmd_vel_unstamped')},
+        parameters=[joystick_file, {'use_sim_time': use_sim_time}],
+        remappings={("cmd_vel", f"{controller_prefix}/cmd_vel_unstamped")},
     )
-    
+    joint_trajectory_teleop = Node(
+        package='joint_trajectory_teleop',
+        namespace=namespace,
+        executable='joint_trajectory_teleop',
+        name='joint_trajectory_teleop',
+        parameters=[{'use_sim_time': use_sim_time}]
+    )
     
     # Launch!
     return LaunchDescription([
@@ -60,5 +66,6 @@ def generate_launch_description():
             description='Enables joystick teleop'),
         joy,
         joy_teleop_twist,
+        joint_trajectory_teleop,
         frc_auton
     ])
