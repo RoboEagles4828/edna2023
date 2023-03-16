@@ -237,7 +237,25 @@ namespace swerve_controller
       optimize(rear_left_position, rear_left_current_pos, rear_left_velocity);
       optimize(rear_right_position, rear_right_current_pos, rear_right_velocity);
     }
+    
+    front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
+    front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
+    rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
+    rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
 
+    front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
+    front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
+    rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
+    rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
+    second_last_wheel_commands= last_wheel_commands;
+
+    
+    last_wheel_commands.clear();
+    last_wheel_commands.push_back(front_left_velocity);
+    last_wheel_commands.push_back(front_right_velocity);
+    last_wheel_commands.push_back(rear_left_velocity);
+    last_wheel_commands.push_back(rear_right_velocity);
+    
     front_left_wheel_command_handle_->set_velocity(front_left_velocity);
     front_right_wheel_command_handle_->set_velocity(front_right_velocity);
     rear_left_wheel_command_handle_->set_velocity(rear_left_velocity);
@@ -258,6 +276,19 @@ namespace swerve_controller
   controller_interface::CallbackReturn SwerveController::on_configure(const rclcpp_lifecycle::State &)
   {
     auto logger = get_node()->get_logger();
+  //   /**
+  //  * \brief Constructor
+  //  * \param [in] has_velocity_limits     if true, applies velocity limits
+  //  * \param [in] has_acceleration_limits if true, applies acceleration limits
+  //  * \param [in] has_jerk_limits         if true, applies jerk limits
+  //  * \param [in] min_velocity Minimum velocity [m/s], usually <= 0
+  //  * \param [in] max_velocity Maximum velocity [m/s], usually >= 0
+  //  * \param [in] min_acceleration Minimum acceleration [m/s^2], usually <= 0
+  //  * \param [in] max_acceleration Maximum acceleration [m/s^2], usually >= 0
+  //  * \param [in] min_jerk Minimum jerk [m/s^3], usually <= 0
+  //  * \param [in] max_jerk Maximum jerk [m/s^3], usually >= 0
+  //  **/
+    limiter_wheel_ = SpeedLimiter(true,true,true,-31.4,31.4,-15.7,15.7,-7.85,7.85);
 
     // Get Parameters
     front_left_wheel_joint_name_ = get_node()->get_parameter("front_left_wheel_joint").as_string();
