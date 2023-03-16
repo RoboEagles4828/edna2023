@@ -198,20 +198,10 @@ namespace swerve_controller
     const double c = linear_x_velocity_comand - angular_velocity_comand * x_offset / 2.0;
     const double d = linear_x_velocity_comand + angular_velocity_comand * x_offset / 2.0;
 
-    double front_left_velocity = sqrt(pow(b, 2) + pow(d, 2)) / circumference;
-    double front_right_velocity = sqrt(pow(b, 2) + pow(c, 2)) / circumference;
-    double rear_left_velocity = sqrt(pow(a, 2) + pow(d, 2)) / circumference;
-    double rear_right_velocity = sqrt(pow(a, 2) + pow(c, 2)) / circumference;
-
-    // Normalize wheel velocities if any are greater than max
-    double velMax = std::max({front_left_velocity, front_right_velocity, rear_left_velocity, rear_right_velocity});
-    if (velMax > max_wheel_angular_velocity_)
-    {
-      front_left_velocity = front_left_velocity/velMax * max_wheel_angular_velocity_;
-      front_right_velocity = front_right_velocity/velMax * max_wheel_angular_velocity_;
-      rear_left_velocity = rear_left_velocity/velMax * max_wheel_angular_velocity_;
-      rear_right_velocity = rear_right_velocity/velMax * max_wheel_angular_velocity_;
-    }
+    double front_left_velocity = sqrt(pow(b, 2) + pow(d, 2)) / radius;
+    double front_right_velocity = sqrt(pow(b, 2) + pow(c, 2)) / radius;
+    double rear_left_velocity = sqrt(pow(a, 2) + pow(d, 2)) / radius;
+    double rear_right_velocity = sqrt(pow(a, 2) + pow(c, 2)) / radius;
 
     double front_left_position;
     double front_right_position ;
