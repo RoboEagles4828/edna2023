@@ -72,7 +72,7 @@ def threadLoop(name, dds, action):
     global FRC_STAGE
     try:
         while STOP_THREADS == False:
-            if FRC_STAGE == "TELEOP" or name == "encoder":
+            if FRC_STAGE in ["TELEOP", "AUTON"] or name in ["encoder", "stage-broadcaster"]:
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
@@ -201,14 +201,15 @@ def joystickThread():
     threadLoop('joystick', joystick_publisher, joystickAction)
 
 def joystickAction(publisher : DDS_Publisher):
-    global joystick
-    data = None
-    try:
-        data = joystick.getData()
-    except:
-        logging.warn("No joystick data could be fetched!")
-        initJoystick()
-    publisher.write(data)
+    if FRC_STAGE == "TELEOP":
+        global joystick
+        data = None
+        try:
+            data = joystick.getData()
+        except:
+            logging.warn("No joystick data could be fetched!")
+            initJoystick()
+        publisher.write(data)
 
 
 
