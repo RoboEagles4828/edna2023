@@ -71,7 +71,7 @@ def generate_launch_description():
         parameters=[{
             "robot_description": edna_description_xml,
             "use_sim_time": use_sim_time,
-            }, controllers_file],
+            }, joint_trajectory_file],
         condition=IfCondition(use_ros2_control and load_controllers),
     )
 
