@@ -19,7 +19,9 @@ class PublishJointCmd(Node):
         timer_period = 0.01  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
-        self.stop_time = time.time() + 5
+        self.distance = 52.0
+        self.num_rotations = self.distance/(4*math.pi)
+        self.stop_time = time.time() + self.num_rotations
         self.TIMED_STOP = True
 
 
@@ -42,6 +44,16 @@ class PublishJointCmd(Node):
                 speed = 0.0
             else:
                 speed = 2*rad
+            cmds.position = [
+                0.0, #ignore
+                0.0, #ignore
+                0.0, #ignore
+                0.0, #ignore
+                rad/4.0,
+                -rad/4.0,
+                -rad/4.0,
+                rad/4.0
+            ]
             cmds.velocity = [ 
                 speed,
                 speed,
@@ -52,18 +64,8 @@ class PublishJointCmd(Node):
                 0.0, #ignore
                 0.0, #ignore
             ]
-            cmds.position = [
-                0.0, #ignore
-                0.0, #ignore
-                0.0, #ignore
-                0.0, #ignore
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
         else:
-            speed = 6 * rad
+            speed = 2 * rad
             cmds.velocity = [ 
                 speed,
                 speed,
