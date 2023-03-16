@@ -28,6 +28,7 @@
 
 #include "controller_interface/controller_interface.hpp"
 #include "swerve_controller/visibility_control.h"
+#include "swerve_controller/speed_limiter.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "hardware_interface/handle.hpp"
@@ -120,7 +121,13 @@ protected:
   std::string front_left_axle_joint_name_;
   std::string front_right_axle_joint_name_;
   std::string rear_left_axle_joint_name_;
-  std::string rear_right_axle_joint_name_;
+  std::string rear_right_axle_joint_name_; 
+  std::vector<double> last_wheel_commands{0.0,0.0,0.0,0.0};
+  std::vector<double> second_last_wheel_commands{0.0,0.0,0.0,0.0};
+  SpeedLimiter limiter_wheel_;
+
+
+
   struct WheelParams
   {
     double x_offset = 0.0; // Chassis Center to Axle Center
