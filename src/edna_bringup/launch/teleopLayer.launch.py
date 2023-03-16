@@ -21,7 +21,10 @@ def generate_launch_description():
             executable='joy_node', 
             name='joy_node',
             condition=IfCondition(enable_joy),
-            parameters=[{'use_sim_time': use_sim_time}])
+            parameters=[{
+                'deadzone': 0.15,
+                'use_sim_time': use_sim_time
+            }])
 
     controller_prefix = 'swerve_controller'
     joy_teleop_twist = Node(
