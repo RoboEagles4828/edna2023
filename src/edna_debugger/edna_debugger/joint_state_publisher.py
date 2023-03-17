@@ -82,7 +82,8 @@ class JointStatePublisher(rclpy.node.Node):
                 self.joint_list.append(name)
                 minval *= math.pi/180.0
                 maxval *= math.pi/180.0
-                self.free_joints[name] = self._init_joint(minval, maxval, 0.0)
+                self.free_joints_sub[name] = self._init_joint(minval, maxval, 0.0)
+                self.free_joints_pub[name] = self.free_joints_sub[name]
 
     def init_urdf(self, robot):
         robot = robot.getElementsByTagName('robot')[0]
@@ -142,7 +143,8 @@ class JointStatePublisher(rclpy.node.Node):
 
                 if jtype == 'continuous':
                     joint['continuous'] = True
-                self.free_joints[name] = joint
+                self.free_joints_sub[name] = joint
+                self.free_joints_pub[name] = joint.copy()
 
     def configure_robot(self, description):
         self.get_logger().debug('Got description, configuring robot')
@@ -158,7 +160,8 @@ class JointStatePublisher(rclpy.node.Node):
 
         # Make sure to clear out the old joints so we don't get duplicate joints
         # on a new robot description.
-        self.free_joints = {}
+        self.free_joints_sub = {}
+        self.free_joints_pub = {}
         self.joint_list = [] # for maintaining the original order of the joints
 
         if robot.getElementsByTagName('COLLADA'):
@@ -229,7 +232,9 @@ class JointStatePublisher(rclpy.node.Node):
         # letting 'automatically_declare_parameters_from_overrides' declare
         # any parameters for us.
 
-        self.free_joints = {}
+        self.free_joints_sub = {}
+        self.free_joints_pub = {}
+
         self.joint_list = [] # for maintaining the original order of the joints
         self.dependent_joints = self.parse_dependent_joints()
         self.use_mimic = self.get_param('use_mimic_tags')
@@ -273,15 +278,17 @@ class JointStatePublisher(rclpy.node.Node):
         # joint_state_publisher_gui) to be notified when things are updated.
         self.source_update_cb = None
 
+
         # Override topic name here
         self.pub = self.create_publisher(sensor_msgs.msg.JointState, 'isaac_joint_commands', 10)
         self.create_subscription(sensor_msgs.msg.JointState, 'isaac_joint_states', self.source_cb, 10)
         self.timer = self.create_timer(1.0 / self.get_param('rate'), self.timer_callback)
 
     def source_cb(self, msg):
+        # self.get_logger().info("ran source callback")
         for i in range(len(msg.name)):
             name = msg.name[i]
-            if name not in self.free_joints:
+            if name not in self.free_joints_sub:
                 continue
 
             if msg.position:
@@ -297,7 +304,7 @@ class JointStatePublisher(rclpy.node.Node):
             else:
                 effort = None
 
-            joint = self.free_joints[name]
+            joint = self.free_joints_sub[name]
             if position is not None:
                 joint['position'] = position
             if velocity is not None:
@@ -305,6 +312,7 @@ class JointStatePublisher(rclpy.node.Node):
             if effort is not None:
                 joint['effort'] = effort
 
+        
         if self.source_update_cb is not None:
             self.source_update_cb()
 
@@ -326,14 +334,14 @@ class JointStatePublisher(rclpy.node.Node):
         has_position = len(self.dependent_joints.items()) > 0
         has_velocity = False
         has_effort = False
-        for name, joint in self.free_joints.items():
+        for name, joint in self.free_joints_pub.items():
             if not has_position and 'position' in joint:
                 has_position = True
             if not has_velocity and 'velocity' in joint:
                 has_velocity = True
             if not has_effort and 'effort' in joint:
                 has_effort = True
-        num_joints = (len(self.free_joints.items()) +
+        num_joints = (len(self.free_joints_pub.items()) +
                       len(self.dependent_joints.items()))
         if has_position:
             msg.position = num_joints * [0.0]
@@ -347,8 +355,8 @@ class JointStatePublisher(rclpy.node.Node):
             joint = None
 
             # Add Free Joint
-            if name in self.free_joints:
-                joint = self.free_joints[name]
+            if name in self.free_joints_pub:
+                joint = self.free_joints_pub[name]
                 factor = 1
                 offset = 0
             # Add Dependent Joint
@@ -369,7 +377,7 @@ class JointStatePublisher(rclpy.node.Node):
                     parent = param['parent']
                     offset += factor * param.get('offset', 0)
                     factor *= param.get('factor', 1)
-                joint = self.free_joints[parent]
+                joint = self.free_joints_pub[parent]
 
             if has_position and 'position' in joint:
                 msg.position[i] = float(joint['position']) * factor + offset
@@ -383,7 +391,7 @@ class JointStatePublisher(rclpy.node.Node):
             self.pub.publish(msg)
 
     def update(self, delta):
-        for name, joint in self.free_joints.items():
+        for name, joint in self.free_joints_sub.items():
             forward = joint.get('forward', True)
             if forward:
                 joint['position'] += delta
