@@ -324,6 +324,8 @@ namespace swerve_controller
   {
     auto logger = get_node()->get_logger();
 
+    
+
     limiter_linear_X_ = SpeedLimiter(
       get_node()->get_parameter("linear.x.has_velocity_limits").as_bool(),
       get_node()->get_parameter("linear.x.has_acceleration_limits").as_bool(),
@@ -334,6 +336,10 @@ namespace swerve_controller
       get_node()->get_parameter("linear.x.max_acceleration").as_double(),
       get_node()->get_parameter("linear.x.min_jerk").as_double(),
       get_node()->get_parameter("linear.x.max_jerk").as_double());
+
+    RCLCPP_WARN(logger, "Linear X Limiter Velocity Limits:      %f, %f", limiter_linear_X_.min_velocity_, limiter_linear_X_.max_velocity_);
+    RCLCPP_WARN(logger, "Linear X Limiter Acceleration Limits:  %f, %f", limiter_linear_X_.min_acceleration_, limiter_linear_X_.max_acceleration_);
+    RCLCPP_WARN(logger, "Linear X Limiter Jert Limits:          %f, %f", limiter_linear_X_.min_jerk_, limiter_linear_X_.max_jerk_);
     
     limiter_linear_Y_ = SpeedLimiter(
       get_node()->get_parameter("linear.y.has_velocity_limits").as_bool(),
@@ -345,6 +351,10 @@ namespace swerve_controller
       get_node()->get_parameter("linear.y.max_acceleration").as_double(),
       get_node()->get_parameter("linear.y.min_jerk").as_double(),
       get_node()->get_parameter("linear.y.max_jerk").as_double());
+
+    RCLCPP_WARN(logger, "Linear Y Limiter Velocity Limits:      %f, %f", limiter_linear_Y_.min_velocity_, limiter_linear_Y_.max_velocity_);
+    RCLCPP_WARN(logger, "Linear Y Limiter Acceleration Limits:  %f, %f", limiter_linear_Y_.min_acceleration_, limiter_linear_Y_.max_acceleration_);
+    RCLCPP_WARN(logger, "Linear Y Limiter Jert Limits:          %f, %f", limiter_linear_Y_.min_jerk_, limiter_linear_Y_.max_jerk_);
     
     limiter_angular_Z_ = SpeedLimiter(
       get_node()->get_parameter("angular.z.has_velocity_limits").as_bool(),
@@ -356,6 +366,10 @@ namespace swerve_controller
       get_node()->get_parameter("angular.z.max_acceleration").as_double(),
       get_node()->get_parameter("angular.z.min_jerk").as_double(),
       get_node()->get_parameter("angular.z.max_jerk").as_double());
+    
+    RCLCPP_WARN(logger, "Angular Z Limiter Velocity Limits:      %f, %f", limiter_angular_Z_.min_velocity_, limiter_angular_Z_.max_velocity_);
+    RCLCPP_WARN(logger, "Angular Z Limiter Acceleration Limits:  %f, %f", limiter_angular_Z_.min_acceleration_, limiter_angular_Z_.max_acceleration_);
+    RCLCPP_WARN(logger, "Angular Z Limiter Jert Limits:          %f, %f", limiter_angular_Z_.min_jerk_, limiter_angular_Z_.max_jerk_);
     
     // Get Parameters
     front_left_wheel_joint_name_ = get_node()->get_parameter("front_left_wheel_joint").as_string();

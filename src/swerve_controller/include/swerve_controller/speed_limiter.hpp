@@ -80,8 +80,7 @@ public:
    * \see http://en.wikipedia.org/wiki/Jerk_%28physics%29#Motion_control
    */
   double limit_jerk(double & v, double v0, double v1, double dt);
-
-private:
+  
   // Enable/Disable velocity/acceleration/jerk limits:
   bool has_velocity_limits_;
   bool has_acceleration_limits_;
