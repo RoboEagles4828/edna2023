@@ -15,8 +15,8 @@
       axis_angular:  # Right thumb stick horizontal
         yaw: 3
       scale_angular: #negative to fix turning direction
-        yaw: -0.0002
+        yaw: -0.0005
       scale_angular_turbo:
-        yaw: -0.0003
+        yaw: -0.0007
       
-      enable_turbo_button: 6
+      enable_turbo_button: 5
