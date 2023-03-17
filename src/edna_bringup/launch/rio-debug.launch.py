@@ -8,10 +8,10 @@ def generate_launch_description():
     bringup_path = get_package_share_directory("edna_bringup")
     rviz_file = os.path.join(bringup_path, 'config', 'riodebug.rviz')
     
-    common = { 'use_sim_time': 'false', 'namespace': 'real' }
+    common = { 'use_sim_time': 'false', 'namespace': 'liam' }
     
     control_launch_args = common | {
-        'use_ros2_control': 'true',
+        'use_ros2_control': 'false',
         'load_controllers': 'false',
         'hardware_plugin': 'swerve_hardware/RealDriveHardware',
     }

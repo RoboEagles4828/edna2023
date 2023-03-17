@@ -90,18 +90,6 @@ def generate_launch_description():
         )
     )
 
-    # Starts Joint State Publisher GUI for rviz
-    joint_state_publisher_gui = Node (
-        package='joint_state_publisher_gui',
-        namespace=namespace,
-        executable='joint_state_publisher_gui',
-        output='screen',
-        parameters=[{
-            'use_sim_time': use_sim_time,
-            'publish_default_velocities':  True,
-        }],
-        condition=IfCondition( PythonExpression([ "'", use_ros2_control, "' == 'false'" ]) ),
-    )
 
     # Launch!
     return LaunchDescription([
@@ -130,6 +118,5 @@ def generate_launch_description():
         control_node,
         joint_state_broadcaster_spawner,
         joint_trajectory_controller_spawner,
-        swerve_drive_controller_delay,
-        joint_state_publisher_gui
+        swerve_drive_controller_delay
     ])
