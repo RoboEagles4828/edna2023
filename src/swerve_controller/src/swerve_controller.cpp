@@ -184,7 +184,6 @@ namespace swerve_controller
     
     double x_offset = wheel_params_.x_offset;
     double radius = wheel_params_.radius;
-    double circumference = 2 * M_PI * radius;
 
     // get current wheel positions
     const double front_left_current_pos = front_left_axle_command_handle_->get_position();
@@ -198,10 +197,10 @@ namespace swerve_controller
     const double c = linear_x_velocity_comand - angular_velocity_comand * x_offset / 2.0;
     const double d = linear_x_velocity_comand + angular_velocity_comand * x_offset / 2.0;
 
-    double front_left_velocity = sqrt(pow(b, 2) + pow(d, 2)) / circumference;
-    double front_right_velocity = sqrt(pow(b, 2) + pow(c, 2)) / circumference;
-    double rear_left_velocity = sqrt(pow(a, 2) + pow(d, 2)) / circumference;
-    double rear_right_velocity = sqrt(pow(a, 2) + pow(c, 2)) / circumference;
+    double front_left_velocity = sqrt(pow(b, 2) + pow(d, 2)) / radius;
+    double front_right_velocity = sqrt(pow(b, 2) + pow(c, 2)) / radius;
+    double rear_left_velocity = sqrt(pow(a, 2) + pow(d, 2)) / radius;
+    double rear_right_velocity = sqrt(pow(a, 2) + pow(c, 2)) / radius;
 
     // Normalize wheel velocities if any are greater than max
     double velMax = std::max({front_left_velocity, front_right_velocity, rear_left_velocity, rear_right_velocity});
@@ -238,16 +237,16 @@ namespace swerve_controller
       optimize(rear_right_position, rear_right_current_pos, rear_right_velocity);
     }
     
-    front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
-    front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
-    rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
-    rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
+    // front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
+    // front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
+    // rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
+    // rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
 
-    front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
-    front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
-    rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
-    rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
-    second_last_wheel_commands= last_wheel_commands;
+    // front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
+    // front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
+    // rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
+    // rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
+    // second_last_wheel_commands= last_wheel_commands;
 
     
     last_wheel_commands.clear();
