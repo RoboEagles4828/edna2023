@@ -66,6 +66,9 @@ struct TeleopTwistJoy::Impl
   int64_t enable_turbo_button;
   int64_t enable_field_oriented_button;
 
+  int fieldOrientationButtonLastState = 0;
+  bool fieldOrientationEnabled = false;
+
   std::map<std::string, int64_t> axis_linear_map;
   std::map<std::string, std::map<std::string, double>> scale_linear_map;
 
@@ -377,13 +380,21 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   //     RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "%d:%d:%ld",joy_msg->buttons[i],i,enable_field_oriented_button);
   // }
 
+  if (enable_field_oriented_button >= 0 && static_cast<int>(joy_msg->buttons.size()) > enable_field_oriented_button) {
+    auto state = joy_msg->buttons[enable_field_oriented_button];
+    if (state == 1 && fieldOrientationButtonLastState == 0) {
+      fieldOrientationEnabled = !fieldOrientationEnabled;
+      RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "Field Oriented: %d",fieldOrientationEnabled);
+    }
+    fieldOrientationButtonLastState = state;
+  }
 
-// Math for field oriented drive
-  if(joy_msg->buttons[enable_field_oriented_button]==0){
-  double robot_odom_orientation = ((get_orientation_val(last_msg)));
-  double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
-  lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
-  lin_x_vel = temp;
+  // Math for field oriented drive
+  if(fieldOrientationEnabled) {
+    double robot_odom_orientation = ((get_orientation_val(last_msg)));
+    double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
+    lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
+    lin_x_vel = temp;
   }
   
 
