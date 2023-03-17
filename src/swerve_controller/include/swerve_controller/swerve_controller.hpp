@@ -121,11 +121,13 @@ protected:
   std::string front_left_axle_joint_name_;
   std::string front_right_axle_joint_name_;
   std::string rear_left_axle_joint_name_;
-  std::string rear_right_axle_joint_name_; 
-  std::vector<double> last_wheel_commands{0.0,0.0,0.0,0.0};
-  std::vector<double> second_last_wheel_commands{0.0,0.0,0.0,0.0};
-  SpeedLimiter limiter_wheel_;
-
+  std::string rear_right_axle_joint_name_;
+  // std::vector<double> last_wheel_commands{0.0,0.0,0.0,0.0};
+  // std::vector<double> second_last_wheel_commands{0.0,0.0,0.0,0.0};
+  SpeedLimiter limiter_linear_X_;
+  SpeedLimiter limiter_linear_Y_;
+  SpeedLimiter limiter_angular_Z_;
+  std::queue<Twist> previous_commands_;
 
 
   struct WheelParams
