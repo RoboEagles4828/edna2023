@@ -63,7 +63,7 @@ class ArmController():
         self.arm_roller_bar = Piston(self.hub, PORTS['ARM_ROLLER_BAR']) 
         self.top_gripper_slider = Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
         self.top_gripper = Piston(self.hub, PORTS['TOP_GRIPPER'])
-        self.bottom_gripper = Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
+        # self.bottom_gripper = Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
         self.elevator = ElevatorWheel(PORTS['ELEVATOR'])
         self.bottom_gripper_lift = IntakeWheel(PORTS['BOTTOM_GRIPPER_LIFT'])
 
@@ -72,7 +72,7 @@ class ArmController():
             'arm_roller_bar_joint': self.arm_roller_bar,
             'top_slider_joint': self.top_gripper_slider,
             'top_gripper_left_arm_joint': self.top_gripper,
-            'bottom_gripper_left_arm_joint': self.bottom_gripper,
+            'bottom_gripper_left_arm_joint': None,
             # Wheels
             'elevator_center_joint': self.elevator,
             'bottom_intake_joint': self.bottom_gripper_lift
@@ -86,8 +86,13 @@ class ArmController():
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):
             names[index] = joint_name
-            positions[index] = int(self.JOINT_MAP[joint_name].getPosition() * SCALING_FACTOR_FIX)
-            velocities[index] = int(self.JOINT_MAP[joint_name].getVelocity() * SCALING_FACTOR_FIX)
+            # Allow for joints to be removed quickly
+            if self.JOINT_MAP[joint_name] == None:
+                positions[index] = 0.0
+                velocities[index] = 0.0
+            else:
+                positions[index] = int(self.JOINT_MAP[joint_name].getPosition() * SCALING_FACTOR_FIX)
+                velocities[index] = int(self.JOINT_MAP[joint_name].getVelocity() * SCALING_FACTOR_FIX)
         return { "name" : names, "position": positions, "velocity": velocities}
 
     # TODO: Add this later!!!
@@ -98,7 +103,9 @@ class ArmController():
             self.last_cmds_time = time.time()
             self.warn_timeout = True
             for i in range(len(commands["name"])):
-                self.JOINT_MAP[commands["name"][i]].setPosition(commands['position'][i])
+                joint_name = commands["name"][i]
+                if joint_name in self.JOINT_MAP.keys():
+                    self.JOINT_MAP[joint_name].setPosition(commands['position'][i])
         
         elif (time.time() - self.last_cmds_time > CMD_TIMEOUT_SECONDS):
             self.stop()
