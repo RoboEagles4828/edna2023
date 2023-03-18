@@ -365,6 +365,17 @@ double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
  
   return angle;
 }
+double correct_joystick_pos(const std::map<std::string, double>& scale_map,const std::string& fieldname, double vel_to_correct, double other_vel)
+{
+  if(fieldname=="x")
+  {
+    vel_to_correct = sin(atan2(vel_to_correct,other_vel))*scale_map.at(fieldname);
+  }
+  else if(fieldname=="y")
+  {
+    vel_to_correct = cos(atan2(vel_to_correct,other_vel))*scale_map.at(fieldname);
+  }
+}
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
                                          const std::string& which_map)
