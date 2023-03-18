@@ -280,7 +280,8 @@ class JointStatePublisher(rclpy.node.Node):
 
 
         # Override topic name here
-        self.pub = self.create_publisher(sensor_msgs.msg.JointState, 'forward_command_controller/commands', 10)
+        self.pub_pos = self.create_publisher(std_msgs.msg.Float64MultiArray, 'forward_position_controller/commands', 10)
+        self.pub_vel = self.create_publisher(std_msgs.msg.Float64MultiArray, 'forward_velocity_controller/commands', 10)
         self.create_subscription(sensor_msgs.msg.JointState, 'joint_states', self.source_cb, 10)
         self.timer = self.create_timer(1.0 / self.get_param('rate'), self.timer_callback)
 
@@ -325,13 +326,11 @@ class JointStatePublisher(rclpy.node.Node):
     def timer_callback(self):
         # Publish Joint States
         msg = sensor_msgs.msg.JointState()
-        msg.header.stamp = self.get_clock().now().to_msg()
-
         if self.delta > 0:
             self.update(self.delta)
 
         # Initialize msg.position, msg.velocity, and msg.effort.
-        has_position = len(self.dependent_joints.items()) > 0
+
         has_velocity = False
         has_effort = False
         for name, joint in self.free_joints_pub.items():
@@ -386,9 +385,19 @@ class JointStatePublisher(rclpy.node.Node):
             if has_effort and 'effort' in joint:
                 msg.effort[i] = float(joint['effort'])
 
-        if msg.name or msg.position or msg.velocity or msg.effort:
-            # Only publish non-empty messages
-            self.pub.publish(msg)
+        # Only publish non-empty messages
+        if not (msg.name or msg.position or msg.velocity or msg.effort):
+            self.get_logger().info("ret")
+            return
+
+        pos_msg = std_msgs.msg.Float64MultiArray()
+        vel_msg = std_msgs.msg.Float64MultiArray()
+
+        pos_msg.data = msg.position
+        vel_msg.data = msg.velocity
+
+        self.pub_pos.publish(pos_msg)
+        self.pub_vel.publish(vel_msg)
 
     def update(self, delta):
         for name, joint in self.free_joints_sub.items():
