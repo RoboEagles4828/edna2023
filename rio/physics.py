@@ -18,10 +18,10 @@ import typing
 if typing.TYPE_CHECKING:
     from robot import EdnaRobot
 
-WHEEL_MOTOR_MAX_VEL = 9100
-WHEEL_MOTOR_ACCEL_TIME = 0.25
-AXLE_MOTOR_MAX_VEL = 5100
-AXLE_MOTOR_ACCEL_TIME = 0.25
+WHEEL_MOTOR_MAX_VEL = 20920
+WHEEL_MOTOR_ACCEL_TIME = 0.20
+AXLE_MOTOR_MAX_VEL = 21050
+AXLE_MOTOR_ACCEL_TIME = 0.20
 
 class PhysicsEngine:
     def __init__(self, physics_controller: PhysicsInterface, robot: "EdnaRobot"):
