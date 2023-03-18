@@ -14,7 +14,7 @@ DPAD_REF = {
 class Joystick:
     def __init__(self):
         self.joystick = wpilib.XboxController(CONTROLLER_PORT)
-        self.deadzone = 0.1
+        self.deadzone = 0.15
 
     def getData(self):
         
