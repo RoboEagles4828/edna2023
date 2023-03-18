@@ -32,7 +32,6 @@ JOINT_NAMES = [
     'arm_roller_bar_joint',
     'top_slider_joint',
     'top_gripper_left_arm_joint',
-    'bottom_gripper_left_arm_joint',
     # Wheels
     'elevator_center_joint',
     'bottom_intake_joint',

@@ -365,6 +365,39 @@ double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
  
   return angle;
 }
+double correct_joystick_pos(const std::map<std::string, double>& scale_map,const std::string& fieldname, double lin_x_vel, double lin_y_vel)
+{
+  if(sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2))>1)
+  {
+    if(fieldname=="x")
+    {
+      double vel_to_correct = sin(atan2(lin_x_vel,lin_y_vel))*scale_map.at(fieldname);
+      return vel_to_correct;
+    }
+    else if(fieldname=="y")
+    {
+      double vel_to_correct = cos(atan2(lin_x_vel,lin_y_vel))*scale_map.at(fieldname);
+      return vel_to_correct;
+    }
+  }
+  else 
+  {
+    if(fieldname=="x")
+    {
+      double vel_to_correct = sin(atan2(lin_x_vel,lin_y_vel))*sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2));
+      return vel_to_correct;
+    }
+    else if(fieldname=="y")
+    {
+      double vel_to_correct = cos(atan2(lin_x_vel,lin_y_vel))*sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2));
+      return vel_to_correct;
+    }
+    
+  }
+  
+  return 0.0;
+
+}
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
                                          const std::string& which_map)
@@ -375,6 +408,9 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
   double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
   double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  double temp = correct_joystick_pos(scale_linear_map[which_map],"x", lin_x_vel,lin_y_vel);
+  lin_y_vel = correct_joystick_pos(scale_linear_map[which_map],"y", lin_x_vel, lin_y_vel);
+  lin_x_vel = temp;
   // RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "%f",lin_x_vel);
   // for( uint i =0u; i<joy_msg->buttons.size(); i++){
   //     RCLCPP_INFO(rclcpp::get_logger("IsaacDriveHardware"), "%d:%d:%ld",joy_msg->buttons[i],i,enable_field_oriented_button);
