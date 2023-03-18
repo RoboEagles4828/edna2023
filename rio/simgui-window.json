@@ -18,12 +18,12 @@
     "###FMS": {
       "Collapsed": "0",
       "Pos": "1017,28",
-      "Size": "32,38"
+      "Size": "336,164"
     },
     "###Joysticks": {
       "Collapsed": "0",
       "Pos": "242,566",
-      "Size": "32,38"
+      "Size": "976,252"
     },
     "###NetworkTables": {
       "Collapsed": "0",
@@ -43,17 +43,17 @@
     "###RoboRIO": {
       "Collapsed": "0",
       "Pos": "23,268",
-      "Size": "32,38"
+      "Size": "233,216"
     },
     "###System Joysticks": {
       "Collapsed": "0",
       "Pos": "4,567",
-      "Size": "32,38"
+      "Size": "232,254"
     },
     "###Timing": {
       "Collapsed": "0",
       "Pos": "125,25",
-      "Size": "32,38"
+      "Size": "162,142"
     },
     "Debug##Default": {
       "Collapsed": "0",
@@ -63,7 +63,7 @@
     "Robot State": {
       "Collapsed": "0",
       "Pos": "6,25",
-      "Size": "32,38"
+      "Size": "109,114"
     }
   }
 }

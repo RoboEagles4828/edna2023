@@ -209,7 +209,7 @@ class SwerveModule():
 
         # Velocity Ramp
         # TODO: Tweak this value
-        self.wheel_motor.configClosedloopRamp(0.3)
+        # self.wheel_motor.configClosedloopRamp(0.1)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -249,8 +249,9 @@ class SwerveModule():
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        self.wheel_motor.set(ctre.ControlMode.Velocity, wheel_vel)
+        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
         self.last_wheel_vel_cmd = wheel_vel
+        # print(wheel_vel)
 
         # MOTION MAGIC CONTROL FOR AXLE POSITION
         axle_motorPosition = getAxleRadians(self.axle_motor.getSelectedSensorPosition(), "position")
@@ -294,16 +295,19 @@ class SwerveModule():
 
         # Last, add the current existing loops that the motor has gone through.
         newAxlePosition += axle_motorPosition - axle_absoluteMotorPosition
-        self.axle_motor.set(ctre.ControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
+        self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
         # logging.info('AXLE MOTOR POS: ', newAxlePosition)
         # logging.info('WHEEL MOTOR VEL: ', wheel_vel)
 
 
     def stop(self):
-        self.wheel_motor.set(ctre.ControlMode.PercentOutput, 0)
-        self.axle_motor.set(ctre.ControlMode.PercentOutput, 0)
+        self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
+        self.axle_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def getEncoderData(self):
+        value = self.getEncoderPosition()
+        if self.axle_joint_name == "front_left_axle_joint":
+            print(value)
         output = [
             {
                 "name": self.wheel_joint_name,
