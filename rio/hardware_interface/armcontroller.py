@@ -43,7 +43,6 @@ JOINT_LIST = [
     'arm_roller_bar_joint',
     'top_slider_joint',
     'top_gripper_left_arm_joint',
-    'bottom_gripper_left_arm_joint',
     'elevator_center_joint',
     'bottom_intake_joint',
 ]
