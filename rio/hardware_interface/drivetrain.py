@@ -1,7 +1,6 @@
 import wpilib
 import ctre
 import ctre.sensors
-from enum import Enum, auto
 import math
 import time
 import logging
@@ -99,11 +98,11 @@ accelerationConstant = 0.25
 positionCoefficient = 2.0 * math.pi / TICKS_PER_REV / AXLE_JOINT_GEAR_RATIO
 velocityCoefficient = positionCoefficient * 10.0
 # axle (radians) -> shaft (ticks)
-def getShaftTicks(radians, type):
+def getShaftTicks(radians, type) -> int:
     if type == "position":
-        return radians / positionCoefficient
+        return int(radians / positionCoefficient)
     elif type == "velocity":
-        return radians / velocityCoefficient
+        return int(radians / velocityCoefficient)
     else:
         return 0
 
@@ -119,11 +118,11 @@ def getAxleRadians(ticks, type):
 wheelPositionCoefficient = 2.0 * math.pi / TICKS_PER_REV / WHEEL_JOINT_GEAR_RATIO
 wheelVelocityCoefficient = wheelPositionCoefficient * 10.0
 # wheel (radians) -> shaft (ticks)
-def getWheelShaftTicks(radians, type):
+def getWheelShaftTicks(radians, type) -> int:
     if type == "position":
-        return radians / wheelPositionCoefficient
+        return int(radians / wheelPositionCoefficient)
     elif type == "velocity":
-        return radians / wheelVelocityCoefficient
+        return int(radians / wheelVelocityCoefficient)
     else:
         return 0
 
@@ -151,9 +150,9 @@ class SwerveModule():
         self.axle_encoder_port = module_config["axle_encoder_port"]
         self.encoder_offset = module_config["encoder_offset"]
 
-        self.wheel_motor = ctre.TalonFX(self.wheel_joint_port)
-        self.axle_motor = ctre.TalonFX(self.axle_joint_port)
-        self.encoder = ctre.sensors.CANCoder(self.axle_encoder_port)
+        self.wheel_motor = ctre.WPI_TalonFX(self.wheel_joint_port, "rio")
+        self.axle_motor = ctre.WPI_TalonFX(self.axle_joint_port, "rio")
+        self.encoder = ctre.sensors.WPI_CANCoder(self.axle_encoder_port, "rio")
 
         self.last_wheel_vel_cmd = None
         self.last_axle_vel_cmd = None
@@ -169,7 +168,6 @@ class SwerveModule():
         self.encoderconfig.absoluteSensorRange = ctre.sensors.AbsoluteSensorRange.Unsigned_0_to_360
         self.encoderconfig.initializationStrategy = ctre.sensors.SensorInitializationStrategy.BootToAbsolutePosition
         self.encoderconfig.sensorDirection = ENCODER_DIRECTION
-        self.encoder = ctre.sensors.CANCoder(self.axle_encoder_port)
         self.encoder.configAllSettings(self.encoderconfig)
         self.encoder.setPositionToAbsolute(timeout_ms)
         self.encoder.setStatusFramePeriod(ctre.sensors.CANCoderStatusFrame.SensorData, 10, timeout_ms)
@@ -187,8 +185,8 @@ class SwerveModule():
         # Direction and Sensors
         self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
         self.wheel_motor.setInverted(WHEEL_DIRECTION)
+        self.wheel_motor.configSelectedFeedbackSensor(ctre.FeedbackDevice.IntegratedSensor, slot_idx, timeout_ms)
         self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
-        self.wheel_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, timeout_ms)
         
         # Peak and Nominal Outputs
         self.wheel_motor.configNominalOutputForward(0, timeout_ms)
@@ -220,7 +218,7 @@ class SwerveModule():
         # Direction and Sensors
         self.axle_motor.setSensorPhase(AXLE_DIRECTION)
         self.axle_motor.setInverted(AXLE_DIRECTION)
-        self.axle_motor.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, pid_loop_idx, timeout_ms)
+        self.axle_motor.configSelectedFeedbackSensor(ctre.FeedbackDevice.IntegratedSensor, slot_idx, timeout_ms)
         self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, timeout_ms)
         self.axle_motor.setSelectedSensorPosition(getShaftTicks(self.getEncoderPosition(), "position"), pid_loop_idx, timeout_ms)
@@ -251,7 +249,7 @@ class SwerveModule():
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
+        self.wheel_motor.set(ctre.ControlMode.Velocity, wheel_vel)
         self.last_wheel_vel_cmd = wheel_vel
 
         # MOTION MAGIC CONTROL FOR AXLE POSITION
@@ -296,17 +294,14 @@ class SwerveModule():
 
         # Last, add the current existing loops that the motor has gone through.
         newAxlePosition += axle_motorPosition - axle_absoluteMotorPosition
-        if wpilib.RobotBase.isSimulation():
-            self.axle_motor.setSelectedSensorPosition(getShaftTicks(newAxlePosition, "position"))
-        else:
-            self.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
-        logging.info('AXLE MOTOR POS: ', newAxlePosition)
-        logging.info('WHEEL MOTOR VEL: ', wheel_vel)
+        self.axle_motor.set(ctre.ControlMode.MotionMagic, getShaftTicks(newAxlePosition, "position"))
+        # logging.info('AXLE MOTOR POS: ', newAxlePosition)
+        # logging.info('WHEEL MOTOR VEL: ', wheel_vel)
 
 
     def stop(self):
-        self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
-        self.axle_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
+        self.wheel_motor.set(ctre.ControlMode.PercentOutput, 0)
+        self.axle_motor.set(ctre.ControlMode.PercentOutput, 0)
 
     def getEncoderData(self):
         output = [
@@ -324,22 +319,20 @@ class SwerveModule():
         return output
 
 class DriveTrain():
-    def __init__(self, use_mocks):
-        self.use_mocks = use_mocks
+    def __init__(self):
         self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
         self.last_cmds_time = time.time()
         self.warn_timeout = True
         self.front_left = SwerveModule(MODULE_CONFIG["front_left"])
         self.front_right = SwerveModule(MODULE_CONFIG["front_right"])
-        self.back_left = SwerveModule(MODULE_CONFIG["rear_left"])
-        self.back_right = SwerveModule(MODULE_CONFIG["rear_right"])
+        self.rear_left = SwerveModule(MODULE_CONFIG["rear_left"])
+        self.rear_right = SwerveModule(MODULE_CONFIG["rear_right"])
         self.module_lookup = \
         {
             'front_left_axle_joint': self.front_left,
             'front_right_axle_joint': self.front_right,
-            'rear_left_axle_joint': self.back_left,
-            'rear_right_axle_joint': self.back_right,
-
+            'rear_left_axle_joint': self.rear_left,
+            'rear_right_axle_joint': self.rear_right,
         }
 
     def getEncoderData(self):
@@ -347,15 +340,11 @@ class DriveTrain():
         positions = [0]*8
         velocities = [0]*8
 
-        if self.use_mocks:
-            if self.last_cmds:
-                return self.last_cmds
-
         encoderInfo = []
         encoderInfo += self.front_left.getEncoderData() 
         encoderInfo += self.front_right.getEncoderData()
-        encoderInfo += self.back_left.getEncoderData()
-        encoderInfo += self.back_right.getEncoderData()
+        encoderInfo += self.rear_left.getEncoderData()
+        encoderInfo += self.rear_right.getEncoderData()
         assert len(encoderInfo) == 8
         for index, encoder in enumerate(encoderInfo):
             names[index] = encoder['name']
@@ -366,8 +355,8 @@ class DriveTrain():
     def stop(self):
         self.front_left.stop()
         self.front_right.stop()
-        self.back_left.stop()
-        self.back_right.stop()
+        self.rear_left.stop()
+        self.rear_right.stop()
 
 
     def sendCommands(self, commands):
