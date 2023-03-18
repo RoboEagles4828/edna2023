@@ -19,8 +19,6 @@ joint_mapping:
   top_gripper_left_arm_joint: 5
   top_slider_joint: 6
   bottom_intake_joint: 7
-  bottom_gripper_right_arm_joint: 8
-  bottom_gripper_left_arm_joint: 9
 function_mapping:
   elevator_loading_station:
     button: "RSin"
@@ -32,13 +30,13 @@ function_mapping:
     button: "LB"
     toggle: true
   elevator_high_level:
-    button: "RB"
+    button: "squares"
     toggle: true
   top_gripper_control:
     button: "A"
     toggle: true
   elevator_pivot_control:
-    button: 3 # Y
+    button: "Y"
     toggle: true
   top_slider_control:
     button: "B"
