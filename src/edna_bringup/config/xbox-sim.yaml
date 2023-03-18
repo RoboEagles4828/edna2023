@@ -15,11 +15,11 @@
       axis_angular:  # Right thumb stick horizontal
         yaw: 3
       scale_angular:
-        yaw: -3.0
+        yaw: -5.0
       scale_angular_turbo:
-        yaw: -6.0
+        yaw: -7.0
       
-      enable_turbo_button: 6
+      enable_turbo_button: 5
       enable_field_oriented_button: 7
   
   

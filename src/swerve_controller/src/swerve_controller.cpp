@@ -109,6 +109,38 @@ namespace swerve_controller
 
       auto_declare<double>("cmd_vel_timeout_seconds", cmd_vel_timeout_milliseconds_.count() / 1000.0);
       auto_declare<bool>("use_stamped_vel", use_stamped_vel_);
+
+      // Limits
+      auto_declare<bool>("linear.x.has_velocity_limits", false);
+      auto_declare<bool>("linear.x.has_acceleration_limits", false);
+      auto_declare<bool>("linear.x.has_jerk_limits", false);
+      auto_declare<double>("linear.x.max_velocity", 0.0);
+      auto_declare<double>("linear.x.min_velocity", 0.0);
+      auto_declare<double>("linear.x.max_acceleration", 0.0);
+      auto_declare<double>("linear.x.min_acceleration", 0.0);
+      auto_declare<double>("linear.x.max_jerk", 0.0);
+      auto_declare<double>("linear.x.min_jerk", 0.0);
+
+      auto_declare<bool>("linear.y.has_velocity_limits", false);
+      auto_declare<bool>("linear.y.has_acceleration_limits", false);
+      auto_declare<bool>("linear.y.has_jerk_limits", false);
+      auto_declare<double>("linear.y.max_velocity", 0.0);
+      auto_declare<double>("linear.y.min_velocity", 0.0);
+      auto_declare<double>("linear.y.max_acceleration", 0.0);
+      auto_declare<double>("linear.y.min_acceleration", 0.0);
+      auto_declare<double>("linear.y.max_jerk", 0.0);
+      auto_declare<double>("linear.y.min_jerk", 0.0);
+
+      auto_declare<bool>("angular.z.has_velocity_limits", false);
+      auto_declare<bool>("angular.z.has_acceleration_limits", false);
+      auto_declare<bool>("angular.z.has_jerk_limits", false);
+      auto_declare<double>("angular.z.max_velocity", 0.0);
+      auto_declare<double>("angular.z.min_velocity", 0.0);
+      auto_declare<double>("angular.z.max_acceleration", 0.0);
+      auto_declare<double>("angular.z.min_acceleration", 0.0);
+      auto_declare<double>("angular.z.max_jerk", 0.0);
+      auto_declare<double>("angular.z.min_jerk", 0.0);
+
     }
     catch (const std::exception &e)
     {
@@ -145,9 +177,11 @@ namespace swerve_controller
   }
 
   controller_interface::return_type SwerveController::update(
-      const rclcpp::Time &time, const rclcpp::Duration & /*period*/)
+      const rclcpp::Time &time, const rclcpp::Duration & period)
   {
     auto logger = get_node()->get_logger();
+    auto clk = * get_node()->get_clock();
+    
     if (get_state().id() == State::PRIMARY_STATE_INACTIVE)
     {
       if (!is_halted)
@@ -178,10 +212,34 @@ namespace swerve_controller
 
     // INPUTS
     Twist command = *last_command_msg;
+    auto & last_command = previous_commands_.back().twist;
+    auto & second_to_last_command = previous_commands_.front().twist;
     double &linear_x_velocity_comand = command.twist.linear.x;
     double &linear_y_velocity_comand = command.twist.linear.y;
     double &angular_velocity_comand = command.twist.angular.z;
     
+    double original_linear_x_velocity_comand = linear_x_velocity_comand;
+    double original_linear_y_velocity_comand = linear_y_velocity_comand;
+    double original_angular_velocity_comand = angular_velocity_comand;
+
+    // Limits
+    limiter_linear_X_.limit(linear_x_velocity_comand, last_command.linear.x, second_to_last_command.linear.x, period.seconds());
+    limiter_linear_Y_.limit(linear_y_velocity_comand, last_command.linear.y, second_to_last_command.linear.y, period.seconds());
+    limiter_angular_Z_.limit(angular_velocity_comand, last_command.angular.z, second_to_last_command.angular.z, period.seconds());
+    
+    previous_commands_.pop();
+    previous_commands_.emplace(command);
+
+    if (linear_x_velocity_comand != original_linear_x_velocity_comand) {
+      RCLCPP_WARN_THROTTLE(logger, clk, 1000, "Limiting Linear X %f -> %f", original_linear_x_velocity_comand, linear_x_velocity_comand);
+    }
+    if (linear_y_velocity_comand != original_linear_y_velocity_comand) {
+      RCLCPP_WARN_THROTTLE(logger, clk, 1000, "Limiting Linear Y %f -> %f", original_linear_y_velocity_comand, linear_y_velocity_comand);
+    }
+    if (angular_velocity_comand != original_angular_velocity_comand) {
+      RCLCPP_WARN_THROTTLE(logger, clk, 1000, "Limiting Angular Z %f -> %f", original_angular_velocity_comand, angular_velocity_comand);
+    }
+
     double x_offset = wheel_params_.x_offset;
     double radius = wheel_params_.radius;
 
@@ -236,24 +294,14 @@ namespace swerve_controller
       optimize(rear_left_position, rear_left_current_pos, rear_left_velocity);
       optimize(rear_right_position, rear_right_current_pos, rear_right_velocity);
     }
-    
-    // front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
-    // front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
-    // rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
-    // rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
 
+    // Old Limit Wheel Velocity
     // front_left_velocity=limiter_wheel_.limit(front_left_velocity,last_wheel_commands[0], second_last_wheel_commands[0],0.1);
     // front_right_velocity=limiter_wheel_.limit(front_right_velocity,last_wheel_commands[1], second_last_wheel_commands[1],0.1);
     // rear_left_velocity=limiter_wheel_.limit(rear_left_velocity,last_wheel_commands[2], second_last_wheel_commands[2],0.1);
     // rear_right_velocity=limiter_wheel_.limit(rear_right_velocity,last_wheel_commands[3], second_last_wheel_commands[3],0.1);
     // second_last_wheel_commands= last_wheel_commands;
 
-    
-    last_wheel_commands.clear();
-    last_wheel_commands.push_back(front_left_velocity);
-    last_wheel_commands.push_back(front_right_velocity);
-    last_wheel_commands.push_back(rear_left_velocity);
-    last_wheel_commands.push_back(rear_right_velocity);
     
     front_left_wheel_command_handle_->set_velocity(front_left_velocity);
     front_right_wheel_command_handle_->set_velocity(front_right_velocity);
@@ -275,20 +323,54 @@ namespace swerve_controller
   controller_interface::CallbackReturn SwerveController::on_configure(const rclcpp_lifecycle::State &)
   {
     auto logger = get_node()->get_logger();
-  //   /**
-  //  * \brief Constructor
-  //  * \param [in] has_velocity_limits     if true, applies velocity limits
-  //  * \param [in] has_acceleration_limits if true, applies acceleration limits
-  //  * \param [in] has_jerk_limits         if true, applies jerk limits
-  //  * \param [in] min_velocity Minimum velocity [m/s], usually <= 0
-  //  * \param [in] max_velocity Maximum velocity [m/s], usually >= 0
-  //  * \param [in] min_acceleration Minimum acceleration [m/s^2], usually <= 0
-  //  * \param [in] max_acceleration Maximum acceleration [m/s^2], usually >= 0
-  //  * \param [in] min_jerk Minimum jerk [m/s^3], usually <= 0
-  //  * \param [in] max_jerk Maximum jerk [m/s^3], usually >= 0
-  //  **/
-    limiter_wheel_ = SpeedLimiter(true,true,true,-31.4,31.4,-15.7,15.7,-7.85,7.85);
 
+    
+
+    limiter_linear_X_ = SpeedLimiter(
+      get_node()->get_parameter("linear.x.has_velocity_limits").as_bool(),
+      get_node()->get_parameter("linear.x.has_acceleration_limits").as_bool(),
+      get_node()->get_parameter("linear.x.has_jerk_limits").as_bool(),
+      get_node()->get_parameter("linear.x.min_velocity").as_double(),
+      get_node()->get_parameter("linear.x.max_velocity").as_double(),
+      get_node()->get_parameter("linear.x.min_acceleration").as_double(),
+      get_node()->get_parameter("linear.x.max_acceleration").as_double(),
+      get_node()->get_parameter("linear.x.min_jerk").as_double(),
+      get_node()->get_parameter("linear.x.max_jerk").as_double());
+
+    RCLCPP_WARN(logger, "Linear X Limiter Velocity Limits:      %f, %f", limiter_linear_X_.min_velocity_, limiter_linear_X_.max_velocity_);
+    RCLCPP_WARN(logger, "Linear X Limiter Acceleration Limits:  %f, %f", limiter_linear_X_.min_acceleration_, limiter_linear_X_.max_acceleration_);
+    RCLCPP_WARN(logger, "Linear X Limiter Jert Limits:          %f, %f", limiter_linear_X_.min_jerk_, limiter_linear_X_.max_jerk_);
+    
+    limiter_linear_Y_ = SpeedLimiter(
+      get_node()->get_parameter("linear.y.has_velocity_limits").as_bool(),
+      get_node()->get_parameter("linear.y.has_acceleration_limits").as_bool(),
+      get_node()->get_parameter("linear.y.has_jerk_limits").as_bool(),
+      get_node()->get_parameter("linear.y.min_velocity").as_double(),
+      get_node()->get_parameter("linear.y.max_velocity").as_double(),
+      get_node()->get_parameter("linear.y.min_acceleration").as_double(),
+      get_node()->get_parameter("linear.y.max_acceleration").as_double(),
+      get_node()->get_parameter("linear.y.min_jerk").as_double(),
+      get_node()->get_parameter("linear.y.max_jerk").as_double());
+
+    RCLCPP_WARN(logger, "Linear Y Limiter Velocity Limits:      %f, %f", limiter_linear_Y_.min_velocity_, limiter_linear_Y_.max_velocity_);
+    RCLCPP_WARN(logger, "Linear Y Limiter Acceleration Limits:  %f, %f", limiter_linear_Y_.min_acceleration_, limiter_linear_Y_.max_acceleration_);
+    RCLCPP_WARN(logger, "Linear Y Limiter Jert Limits:          %f, %f", limiter_linear_Y_.min_jerk_, limiter_linear_Y_.max_jerk_);
+    
+    limiter_angular_Z_ = SpeedLimiter(
+      get_node()->get_parameter("angular.z.has_velocity_limits").as_bool(),
+      get_node()->get_parameter("angular.z.has_acceleration_limits").as_bool(),
+      get_node()->get_parameter("angular.z.has_jerk_limits").as_bool(),
+      get_node()->get_parameter("angular.z.min_velocity").as_double(),
+      get_node()->get_parameter("angular.z.max_velocity").as_double(),
+      get_node()->get_parameter("angular.z.min_acceleration").as_double(),
+      get_node()->get_parameter("angular.z.max_acceleration").as_double(),
+      get_node()->get_parameter("angular.z.min_jerk").as_double(),
+      get_node()->get_parameter("angular.z.max_jerk").as_double());
+    
+    RCLCPP_WARN(logger, "Angular Z Limiter Velocity Limits:      %f, %f", limiter_angular_Z_.min_velocity_, limiter_angular_Z_.max_velocity_);
+    RCLCPP_WARN(logger, "Angular Z Limiter Acceleration Limits:  %f, %f", limiter_angular_Z_.min_acceleration_, limiter_angular_Z_.max_acceleration_);
+    RCLCPP_WARN(logger, "Angular Z Limiter Jert Limits:          %f, %f", limiter_angular_Z_.min_jerk_, limiter_angular_Z_.max_jerk_);
+    
     // Get Parameters
     front_left_wheel_joint_name_ = get_node()->get_parameter("front_left_wheel_joint").as_string();
     front_right_wheel_joint_name_ = get_node()->get_parameter("front_right_wheel_joint").as_string();
@@ -359,6 +441,9 @@ namespace swerve_controller
 
     const Twist empty_twist;
     received_velocity_msg_ptr_.set(std::make_shared<Twist>(empty_twist));
+
+    previous_commands_.emplace(empty_twist);
+    previous_commands_.emplace(empty_twist);
 
     // initialize command subscriber
     if (use_stamped_vel_)
@@ -461,6 +546,9 @@ namespace swerve_controller
     subscriber_is_active_ = false;
     velocity_command_subscriber_.reset();
     velocity_command_unstamped_subscriber_.reset();
+
+    std::queue<Twist> empty;
+    std::swap(previous_commands_, empty);
 
     received_velocity_msg_ptr_.set(nullptr);
     is_halted = false;
