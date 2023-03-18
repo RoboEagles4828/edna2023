@@ -280,8 +280,8 @@ class JointStatePublisher(rclpy.node.Node):
 
 
         # Override topic name here
-        self.pub = self.create_publisher(sensor_msgs.msg.JointState, 'isaac_joint_commands', 10)
-        self.create_subscription(sensor_msgs.msg.JointState, 'isaac_joint_states', self.source_cb, 10)
+        self.pub = self.create_publisher(sensor_msgs.msg.JointState, 'forward_command_controller/commands', 10)
+        self.create_subscription(sensor_msgs.msg.JointState, 'joint_states', self.source_cb, 10)
         self.timer = self.create_timer(1.0 / self.get_param('rate'), self.timer_callback)
 
     def source_cb(self, msg):
