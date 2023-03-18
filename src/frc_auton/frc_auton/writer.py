@@ -1,64 +1,47 @@
-import rclpy 
-from rclpy.node import Node
-from rclpy.serialization import serialize_message
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from std_msgs.msg import String
-from geometry_msgs.msg import Twist
 from rosbags.rosbag2 import Writer
-import rosbag2_py
+from rosbags.serde import serialize_cdr
+from rosbags.typesys.types import std_msgs__msg__String as String
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from rosbags.typesys.types import geometry_msgs__msg__Twist, trajectory_msgs__msg__JointTrajectory
+from geometry_msgs.msg import Twist
 import time
-
-class BagRecorder(Node):
+import rclpy
+from rclpy.node import Node
+# create writer instance and open for writing
+class BagWriter(Node): 
     def __init__(self):
-        super().__init__('simple_bag_recorder')
-        self.writer = rosbag2_py.SequentialWriter()
-        storage_options = rosbag2_py._storage.StorageOptions(
-            uri='teleop_bag',
-            storage_id='sqlite3')
-        self.subscription = self.create_subscription(
-                Twist(),
-                '/real/swerve_controller/cmd_vel_unstamped',
-                self.topic_callback,
-                10
-        )
-        self.subscription
-        self.subscription = self.create_subscription(
-                JointTrajectory(),
-                '/real/joint_trajectory_controller/joint_trajectory',
-                self.topic_callback,
-                10)
-        self.subscription
-        converter_options = rosbag2_py._storage.ConverterOptions('', '')
-        self.writer.open(storage_options, converter_options)
+        super().__init__('bag_writer')
+        self.subscription_swerve = self.create_subscription(Twist, 'swerve_controller/cmd_vel_unstamped', self.swerve_callback, 10)
+        self.subscription_arm = self.create_subscription(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', self.arm_callback, 10)
+    def swerve_callback(self, msg):
+        #if msg.data.split('|')[1] == 'True':
+        with Writer('teleop_bag') as writer:
+            topic = 'swerve_controller/cmd_vel_unstamped'
+            msgtype = geometry_msgs__msg__Twist.__msgtype__
+            connection = writer.add_connection(topic, msgtype, 'cdr', '')
 
-    def topic_callback(self, msg):
-        topic_info = rosbag2_py._storage.TopicMetadata(
-            name='rosbag_commands_cmd_vel',
-            type=str(),
-            serialization_format='str',
-            )
-        self.writer.create_topic(topic_info)
+            # serialize and write message
+            timestamp = time.time()
+            message = msg
+            writer.write(connection, timestamp, serialize_cdr(message, msgtype))
+    def arm_callback(self, msg):
+        with Writer('teleop_bag') as writer:
+            topic = 'joint_trajectory_controller/joint_trajectory'
+            msgtype = trajectory_msgs__msg__JointTrajectory.__msgtype__
+            connection = writer.add_connection(topic, msgtype, 'cdr', '')
 
-        topic_info = rosbag2_py._storage.TopicMetadata(
-            name='rosbag_commands_joint_trajectory',
-            type=str(),
-            serialization_format='str',
-            )
-        self.writer.create_topic(topic_info)
-        self.writer.write(
-            '/real/swerve_controller/cmd_vel_unstamped',
-            serialize_message(msg),
-            self.get_clock().now().nanoseconds)
-        self.writer.write(
-            '/real/joint_trajectory_controller/joint_trajectory',
-            serialize_message(msg),
-            self.get_clock().now().nanoseconds)
-
-def main(args=None):
+            # serialize and write message
+            timestamp = time.time()
+            message = msg
+            writer.write(connection, timestamp, serialize_cdr(message, msgtype))
+def main(args=None):    
     rclpy.init(args=args)
-    br = BagRecorder()
-    rclpy.spin(br)
-    rclpy.shutdown()
 
+    bag_writer = BagWriter()
+
+    rclpy.spin(bag_writer)
+
+    bag_writer.destroy_node()
+    rclpy.shutdown()
 if __name__ == '__main__':
     main()
