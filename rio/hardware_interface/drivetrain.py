@@ -180,13 +180,13 @@ class SwerveModule():
     
     def setupWheelMotor(self):
         self.wheel_motor.configFactoryDefault()
-        self.wheel_motor.configNeutralDeadband(0.05, timeout_ms)
+        self.wheel_motor.configNeutralDeadband(0.01, timeout_ms)
 
         # Direction and Sensors
         self.wheel_motor.setSensorPhase(WHEEL_DIRECTION)
         self.wheel_motor.setInverted(WHEEL_DIRECTION)
         self.wheel_motor.configSelectedFeedbackSensor(ctre.FeedbackDevice.IntegratedSensor, slot_idx, timeout_ms)
-        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_1_General, 10, timeout_ms)
+        self.wheel_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_21_FeedbackIntegrated, 10, timeout_ms)
         
         # Peak and Nominal Outputs
         self.wheel_motor.configNominalOutputForward(0, timeout_ms)
@@ -205,11 +205,11 @@ class SwerveModule():
         self.wheel_motor.config_kD(0, wheel_pid_constants["kD"], timeout_ms)
         
         # Brake
-        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
+        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Coast)
 
         # Velocity Ramp
         # TODO: Tweak this value
-        # self.wheel_motor.configClosedloopRamp(0.1)
+        self.wheel_motor.configClosedloopRamp(0.1)
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -219,7 +219,7 @@ class SwerveModule():
         self.axle_motor.setSensorPhase(AXLE_DIRECTION)
         self.axle_motor.setInverted(AXLE_DIRECTION)
         self.axle_motor.configSelectedFeedbackSensor(ctre.FeedbackDevice.IntegratedSensor, slot_idx, timeout_ms)
-        self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
+        # self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, timeout_ms)
         self.axle_motor.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, timeout_ms)
         self.axle_motor.setSelectedSensorPosition(getShaftTicks(self.getEncoderPosition(), "position"), pid_loop_idx, timeout_ms)
 
@@ -246,12 +246,19 @@ class SwerveModule():
         # Braking
         self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
+    def neutralize_wheel(self):
+        self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
+        if wheel_motor_vel == 0.0:
+            self.neutralize_wheel()
+        else:
+            self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
         self.last_wheel_vel_cmd = wheel_vel
-        # print(wheel_vel)
+        
+        if abs(wheel_motor_vel) > 0:
+            print(wheel_vel)
 
         # MOTION MAGIC CONTROL FOR AXLE POSITION
         axle_motorPosition = getAxleRadians(self.axle_motor.getSelectedSensorPosition(), "position")
@@ -305,9 +312,9 @@ class SwerveModule():
         self.axle_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def getEncoderData(self):
-        value = self.getEncoderPosition()
-        if self.axle_joint_name == "front_left_axle_joint":
-            print(value)
+        # value = self.getEncoderPosition()
+        # if self.axle_joint_name == "front_left_axle_joint":
+        #     print(value)
         output = [
             {
                 "name": self.wheel_joint_name,
