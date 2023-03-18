@@ -34,30 +34,30 @@
       linear.x.has_velocity_limits: true
       linear.x.has_acceleration_limits: true
       linear.x.has_jerk_limits: false
-      linear.x.max_velocity: 3.0
-      linear.x.min_velocity: -3.0
-      linear.x.max_acceleration: 10.0
-      linear.x.min_acceleration: -10.0
+      linear.x.max_velocity: 2.0
+      linear.x.min_velocity: -2.0
+      linear.x.max_acceleration: 3.0
+      linear.x.min_acceleration: -3.0
       linear.x.max_jerk: 5.0
       linear.x.min_jerk: -5.0
 
       linear.y.has_velocity_limits: true
       linear.y.has_acceleration_limits: true
       linear.y.has_jerk_limits: false
-      linear.y.max_velocity: 3.0
-      linear.y.min_velocity: -3.0
-      linear.y.max_acceleration: 10.0
-      linear.y.min_acceleration: -10.0
+      linear.y.max_velocity: 2.0
+      linear.y.min_velocity: -2.0
+      linear.y.max_acceleration: 3.0
+      linear.y.min_acceleration: -3.0
       linear.y.max_jerk: 5.0
       linear.y.min_jerk: -5.0
       
       angular.z.has_velocity_limits: true
-      angular.z.has_acceleration_limits: false
+      angular.z.has_acceleration_limits: true
       angular.z.has_jerk_limits: false
-      angular.z.max_velocity: 15.0
-      angular.z.min_velocity: -15.0
-      angular.z.max_acceleration: 15.0
-      angular.z.min_acceleration: -15.0
+      angular.z.max_velocity: 3.0
+      angular.z.min_velocity: -3.0
+      angular.z.max_acceleration: 3.0
+      angular.z.min_acceleration: -3.0
       angular.z.max_jerk: 5.0
       angular.z.min_jerk: -5.0
       

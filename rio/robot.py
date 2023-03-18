@@ -4,9 +4,6 @@ import threading
 import traceback
 import time
 import os, inspect
-# TODO Reuse this
-import hardware_interface.drivetrain as drivet
-import hardware_interface.armcontroller as armc
 from hardware_interface.drivetrain import DriveTrain
 from hardware_interface.joystick import Joystick
 from hardware_interface.armcontroller import ArmController
@@ -17,10 +14,11 @@ ENABLE_JOY = True
 ENABLE_DRIVE =  True
 ENABLE_ARM = True
 ENABLE_STAGE_BROADCASTER = True
+FRC_STAGE = "DISABLED"
+FMS_ATTACHED = False
+STOP_THREADS = False
 
 # Locks
-FRC_STAGE = "DISABLED"
-STOP_THREADS = False
 rti_init_lock = threading.Lock()
 drive_train_lock = threading.Lock()
 arm_controller_lock = threading.Lock()
@@ -38,27 +36,28 @@ xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 ############################################
 ## Hardware
 drive_train : DriveTrain = None
-def initDriveTrain(use_mocks):
+def initDriveTrain():
     global drive_train
-    drive_train = DriveTrain(use_mocks)
-    logging.info("Success: DriveTrain created")
+    if drive_train == None:
+        drive_train = DriveTrain()
+        logging.info("Success: DriveTrain created")
+    return drive_train
 
 joystick : Joystick = None
 def initJoystick():
-    try:
-        global joystick
+    global joystick
+    if joystick == None:
         joystick = Joystick()
         logging.info("Success: Joystick created")
-        return True
-    except Exception as e:
-        logging.error("Failed to create joystick")
-        return False
+    return joystick
 
 arm_controller : ArmController = None
-def initArmController(use_mocks):
+def initArmController():
     global arm_controller
-    arm_controller = ArmController(use_mocks)
-    logging.info("Success: ArmController created")
+    if arm_controller == None:
+        arm_controller = ArmController()
+        logging.info("Success: ArmController created")
+    return arm_controller
 
 ############################################
 
@@ -118,14 +117,7 @@ def encoderThread():
 
 def encoderAction(publisher):
     # TODO: Make these some sort of null value to identify lost data
-    joint_list = drivet.getJointList() + armc.getJointList()
-    joint_count = len(joint_list)
-    drivet_joint_count = len(drivet.getJointList())
-    armc_joint_count = len(armc.getJointList())
     data = {
-        # "name": joint_list,
-        # "position": [0.0]*joint_count,
-        # "velocity": [[0.0]*joint_count]
         'name': [],
         'position': [],
         'velocity': []
@@ -226,27 +218,24 @@ def stageBroadcasterThread():
 
 def stageBroadcasterAction(publisher : DDS_Publisher):
     global FRC_STAGE
-    publisher.write({ "data": FRC_STAGE })
+    global FMS_ATTACHED
+    publisher.write({ "data": f"{FRC_STAGE}|{FMS_ATTACHED}" })
 
 
 
 
 
 ######### Robot Class #########
-class edna_robot(wpilib.TimedRobot):
+class EdnaRobot(wpilib.TimedRobot):
 
-    def __init__(self, period = 0.2, use_threading = True, use_mocks = False) -> None:
-        super().__init__(period)
-        self.use_threading = use_threading
-        self.use_mocks = use_mocks
-
-    def robotInit(self) -> None:
+    def robotInit(self):
+        self.use_threading = True
         wpilib.CameraServer.launch()
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
 
-        if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
-        if ENABLE_JOY: initJoystick()
-        if ENABLE_ARM: initArmController(self.use_mocks)
+        self.drive_train = initDriveTrain()
+        self.joystick = initJoystick()
+        self.arm_controller = initArmController()
 
         self.threads = []
         if self.use_threading:
@@ -266,15 +255,17 @@ class edna_robot(wpilib.TimedRobot):
             self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
             self.stage_publisher = DDS_Publisher(xml_path, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
 
-    
+
     # Auton
-    def autonomousInit(self) -> None:
+    def autonomousInit(self):
         logging.info("Entering Auton")
         global FRC_STAGE
         FRC_STAGE = "AUTON"
 
 
-    def autonomousPeriodic(self) -> None:
+    def autonomousPeriodic(self):
+        global FMS_ATTACHED
+        FMS_ATTACHED = wpilib.DriverStation.isFMSAttached()
         if self.use_threading:
             self.manageThreads()
         else:
@@ -287,18 +278,20 @@ class edna_robot(wpilib.TimedRobot):
 
 
     # Teleop
-    def teleopInit(self) -> None:
+    def teleopInit(self):
         logging.info("Entering Teleop")
         global FRC_STAGE
         FRC_STAGE = "TELEOP"
     
-    def teleopPeriodic(self) -> None:
+    def teleopPeriodic(self):
+        global FMS_ATTACHED
+        FMS_ATTACHED = wpilib.DriverStation.isFMSAttached()
         if self.use_threading:
             self.manageThreads()
         else:
             self.doActions()
 
-    def teleopExit(self) -> None:
+    def teleopExit(self):
         logging.info("Exiting Teleop")
         global FRC_STAGE
         FRC_STAGE = "DISABLED"
@@ -326,12 +319,8 @@ class edna_robot(wpilib.TimedRobot):
         commandAction(self.command_subscriber)
         armAction(self.arm_command_subscriber)
         joystickAction(self.joystick_publisher)
-        stageAction(self.stage_publisher)
-        return
+        stageBroadcasterAction(self.stage_publisher)
 
-    def disabledInit(self) -> None:
-        return
-    
     # Is this needed?
     def stopThreads(self):
         global STOP_THREADS
@@ -342,4 +331,4 @@ class edna_robot(wpilib.TimedRobot):
 
 
 if __name__ == '__main__':
-    wpilib.run(edna_robot)
+    wpilib.run(EdnaRobot)
