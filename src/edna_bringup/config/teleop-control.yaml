@@ -1,0 +1,45 @@
+controller_mapping:
+    A: 0
+    B: 1
+    X: 2
+    Y: 3
+    LB: 4
+    RB: 5
+    squares: 6
+    menu: 7
+    xbox: 8
+    LSin: 9
+    RSin: 10
+joint_mapping:
+  arm_roller_bar_joint: 0
+  elevator_center_joint: 1
+  elevator_outer_1_joint: 2
+  elevator_outer_2_joint: 3
+  top_gripper_right_arm_joint: 4
+  top_gripper_left_arm_joint: 5
+  top_slider_joint: 6
+  bottom_intake_joint: 7
+  bottom_gripper_right_arm_joint: 8
+  bottom_gripper_left_arm_joint: 9
+function_mapping:
+  elevator_loading_station:
+    button: "RSin"
+    toggle: true
+  skis_up:
+    button: "LSin"
+    toggle: true
+  elevator_mid_level:
+    button: "LB"
+    toggle: true
+  elevator_high_level:
+    button: "RB"
+    toggle: true
+  top_gripper_control:
+    button: "A"
+    toggle: true
+  elevator_pivot_control:
+    button: 3 # Y
+    toggle: true
+  top_slider_control:
+    button: "B"
+    toggle: true
