@@ -12,9 +12,6 @@ setup(
         ('share/' + package_name, ['package.xml']),
     ],
     install_requires=['setuptools','rosbags'],
-    extras_require={
-        'rosbags': ['rosbags']
-    },
     zip_safe=True,
     maintainer='admin',
     maintainer_email='nchan18@outlook.com',
