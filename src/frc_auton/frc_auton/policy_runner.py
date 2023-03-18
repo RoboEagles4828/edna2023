@@ -34,8 +34,6 @@ class Reader(Node):
             'top_gripper_left_arm_joint',
             'top_slider_joint',
             'bottom_intake_joint',
-            'bottom_gripper_right_arm_joint',
-            'bottom_gripper_left_arm_joint',
         ]   
 
     def get_action(self, msg):

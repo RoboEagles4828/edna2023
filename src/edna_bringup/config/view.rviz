@@ -64,7 +64,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /prat/robot_description
+      Value: /real/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -220,7 +220,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: prat
+    TF Prefix: real
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -229,63 +229,63 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      prat/arm_back_leg_link:
+      real/arm_back_leg_link:
         Value: false
-      prat/arm_elevator_leg_link:
+      real/arm_elevator_leg_link:
         Value: false
-      prat/arm_roller_bar_link:
+      real/arm_roller_bar_link:
         Value: false
-      prat/base_link:
+      real/base_link:
         Value: false
-      prat/bottom_gripper_bar_link:
+      real/bottom_gripper_bar_link:
         Value: true
-      prat/bottom_intake_link:
+      real/bottom_intake_link:
         Value: true
-      prat/elevator_center_link:
+      real/elevator_center_link:
         Value: true
-      prat/elevator_outer_1_link:
+      real/elevator_outer_1_link:
         Value: true
-      prat/elevator_outer_2_link:
+      real/elevator_outer_2_link:
         Value: true
-      prat/front_left_axle_link:
+      real/front_left_axle_link:
         Value: true
-      prat/front_left_wheel_link:
+      real/front_left_wheel_link:
         Value: false
-      prat/front_right_axle_link:
+      real/front_right_axle_link:
         Value: true
-      prat/front_right_wheel_link:
+      real/front_right_wheel_link:
         Value: false
-      prat/odom:
+      real/odom:
         Value: false
-      prat/rear_left_axle_link:
+      real/rear_left_axle_link:
         Value: true
-      prat/rear_left_wheel_link:
+      real/rear_left_wheel_link:
         Value: false
-      prat/rear_right_axle_link:
+      real/rear_right_axle_link:
         Value: true
-      prat/rear_right_wheel_link:
+      real/rear_right_wheel_link:
         Value: false
-      prat/swerve_chassis_link:
+      real/swerve_chassis_link:
         Value: false
-      prat/top_gripper_bar_link:
+      real/top_gripper_bar_link:
         Value: true
-      prat/top_gripper_left_arm_link:
+      real/top_gripper_left_arm_link:
         Value: true
-      prat/top_gripper_right_arm_link:
+      real/top_gripper_right_arm_link:
         Value: true
-      prat/top_slider_link:
+      real/top_slider_link:
         Value: true
-      prat/zed_base_link:
+      real/zed_base_link:
         Value: false
-      prat/zed_camera_center:
+      real/zed_camera_center:
         Value: false
-      prat/zed_left_camera_frame:
+      real/zed_left_camera_frame:
         Value: false
-      prat/zed_left_camera_optical_frame:
+      real/zed_left_camera_optical_frame:
         Value: false
-      prat/zed_right_camera_frame:
+      real/zed_right_camera_frame:
         Value: false
-      prat/zed_right_camera_optical_frame:
+      real/zed_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -293,32 +293,32 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      prat/base_link:
-        prat/swerve_chassis_link:
-          prat/arm_back_leg_link:
-            prat/elevator_outer_1_link:
-              prat/elevator_center_link:
-                prat/elevator_outer_2_link:
-                  prat/top_slider_link:
-                    prat/top_gripper_bar_link:
-                      prat/top_gripper_left_arm_link: {}
-                      prat/top_gripper_right_arm_link: {}
-          prat/arm_elevator_leg_link:
-            prat/arm_roller_bar_link: {}
-          prat/front_left_axle_link:
-            prat/front_left_wheel_link: {}
-          prat/front_right_axle_link:
-            prat/front_right_wheel_link: {}
-          prat/rear_left_axle_link:
-            prat/rear_left_wheel_link: {}
-          prat/rear_right_axle_link:
-            prat/rear_right_wheel_link: {}
-          prat/zed_base_link:
-            prat/zed_camera_center:
-              prat/zed_left_camera_frame:
-                prat/zed_left_camera_optical_frame: {}
-              prat/zed_right_camera_frame:
-                prat/zed_right_camera_optical_frame: {}
+      real/base_link:
+        real/swerve_chassis_link:
+          real/arm_back_leg_link:
+            real/elevator_outer_1_link:
+              real/elevator_center_link:
+                real/elevator_outer_2_link:
+                  real/top_slider_link:
+                    real/top_gripper_bar_link:
+                      real/top_gripper_left_arm_link: {}
+                      real/top_gripper_right_arm_link: {}
+          real/arm_elevator_leg_link:
+            real/arm_roller_bar_link: {}
+          real/front_left_axle_link:
+            real/front_left_wheel_link: {}
+          real/front_right_axle_link:
+            real/front_right_wheel_link: {}
+          real/rear_left_axle_link:
+            real/rear_left_wheel_link: {}
+          real/rear_right_axle_link:
+            real/rear_right_wheel_link: {}
+          real/zed_base_link:
+            real/zed_camera_center:
+              real/zed_left_camera_frame:
+                real/zed_left_camera_optical_frame: {}
+              real/zed_right_camera_frame:
+                real/zed_right_camera_optical_frame: {}
     Update Interval: 0
     Value: true
   - Angle Tolerance: 0.20000000298023224
@@ -358,12 +358,12 @@ Visualization Manager:
       Filter size: 10
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /prat
+      Value: /real
     Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: prat/base_link
+    Fixed Frame: real/base_link
     Frame Rate: 30
   Name: root
   Tools:

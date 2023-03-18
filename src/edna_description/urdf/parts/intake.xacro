@@ -32,9 +32,9 @@
         <limit effort = "100.0" lower = "0" upper = "1.42" velocity = "1"/>
     </joint>
 
-    <xacro:gripper prefix="${prefix}" parent="${prefix}_intake_link">
+    <!-- <xacro:gripper prefix="${prefix}" parent="${prefix}_intake_link">
         <origin xyz = "${intake_block_length - 0.05} 0 -0.035" rpy = "0 0 0" />
-    </xacro:gripper>
+    </xacro:gripper> -->
 
 
   </xacro:macro>

@@ -23,7 +23,6 @@ PORTS = {
     'ARM_ROLLER_BAR': [14, 15],
     'TOP_GRIPPER_SLIDER': [10, 11],
     'TOP_GRIPPER': [13, 12],
-    'BOTTOM_GRIPPER': [8, 9],
     # Wheels
     'ELEVATOR': 13,
     'BOTTOM_GRIPPER_LIFT': 14
@@ -43,7 +42,6 @@ JOINT_LIST = [
     'arm_roller_bar_joint',
     'top_slider_joint',
     'top_gripper_left_arm_joint',
-    'bottom_gripper_left_arm_joint',
     'elevator_center_joint',
     'bottom_intake_joint',
 ]
@@ -63,7 +61,6 @@ class ArmController():
         self.arm_roller_bar = Piston(self.hub, PORTS['ARM_ROLLER_BAR']) 
         self.top_gripper_slider = Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
         self.top_gripper = Piston(self.hub, PORTS['TOP_GRIPPER'])
-        self.bottom_gripper = Piston(self.hub, PORTS['BOTTOM_GRIPPER'])
         self.elevator = ElevatorWheel(PORTS['ELEVATOR'])
         self.bottom_gripper_lift = IntakeWheel(PORTS['BOTTOM_GRIPPER_LIFT'])
 
@@ -72,16 +69,15 @@ class ArmController():
             'arm_roller_bar_joint': self.arm_roller_bar,
             'top_slider_joint': self.top_gripper_slider,
             'top_gripper_left_arm_joint': self.top_gripper,
-            'bottom_gripper_left_arm_joint': self.bottom_gripper,
             # Wheels
             'elevator_center_joint': self.elevator,
             'bottom_intake_joint': self.bottom_gripper_lift
         }
 
     def getEncoderData(self):
-        names = [""]*6
-        positions = [0]*6
-        velocities = [0]*6
+        names = [""]*5
+        positions = [0]*5
+        velocities = [0]*5
 
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):
