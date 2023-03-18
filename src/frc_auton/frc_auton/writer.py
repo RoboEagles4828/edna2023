@@ -11,10 +11,12 @@ from rclpy.node import Node
 class BagWriter(Node): 
     def __init__(self):
         super().__init__('bag_writer')
+        self.subscription_stage =self.create_subscription(String, 'frc_stage', self.stage_callback, 10)
         self.subscription_swerve = self.create_subscription(Twist, 'swerve_controller/cmd_vel_unstamped', self.swerve_callback, 10)
         self.subscription_arm = self.create_subscription(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', self.arm_callback, 10)
     def swerve_callback(self, msg):
         #if msg.data.split('|')[1] == 'True':
+        print(msg.data)
         with Writer('teleop_bag') as writer:
             topic = 'swerve_controller/cmd_vel_unstamped'
             msgtype = geometry_msgs__msg__Twist.__msgtype__
@@ -25,6 +27,7 @@ class BagWriter(Node):
             message = msg
             writer.write(connection, timestamp, serialize_cdr(message, msgtype))
     def arm_callback(self, msg):
+        print(msg.data)
         with Writer('teleop_bag') as writer:
             topic = 'joint_trajectory_controller/joint_trajectory'
             msgtype = trajectory_msgs__msg__JointTrajectory.__msgtype__
