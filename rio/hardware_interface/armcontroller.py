@@ -9,7 +9,7 @@ NAMESPACE = 'real'
 CMD_TIMEOUT_SECONDS = 1
 WHEEL_TIMEOUT_MILLISECONDS = 30 # 0 means do not use the timeout
 TICKS_PER_REVOLUTION = 2048.0
-TOTAL_ELEVATOR_REVOLUTIONS = 140 # UNKNOWN
+TOTAL_ELEVATOR_REVOLUTIONS = 160 # UNKNOWN
 TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
 
 SCALING_FACTOR_FIX = 10000
@@ -52,10 +52,9 @@ def getJointList():
     return JOINT_LIST
 
 class ArmController():
-    def __init__(self, use_mocks):
+    def __init__(self):
         self.last_cmds_time = time.time()
         self.last_cmds = { "name" : getJointList(), "position": [0.0]*len(getJointList()), "velocity": [0.0]*len(getJointList()) }
-        self.use_mocks = use_mocks
         self.warn_timeout = True
         self.hub = wpilib.PneumaticHub(PORTS['HUB'])
         self.compressor = self.hub.makeCompressor()
@@ -83,10 +82,6 @@ class ArmController():
         names = [""]*6
         positions = [0]*6
         velocities = [0]*6
-
-        if self.use_mocks:
-            if self.last_cmds:
-                return self.last_cmds
 
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):
@@ -126,10 +121,10 @@ class Piston():
         self.solenoid.set(wpilib.DoubleSolenoid.Value.kReverse if position == 0 else wpilib.DoubleSolenoid.Value.kForward)
 
 
-class TalonWheel(ctre.TalonFX):
+class TalonWheel(ctre.WPI_TalonFX):
 
     def __init__(self, port : int, totalRevolutions : int):
-        super().__init__(port)
+        super().__init__(port, "rio")
         self.totalRevolutions = totalRevolutions
 
         self.configFactoryDefault(WHEEL_TIMEOUT_MILLISECONDS)
@@ -139,7 +134,7 @@ class TalonWheel(ctre.TalonFX):
         self.enableVoltageCompensation(True)
         
         # Sensors and frame
-        self.configSelectedFeedbackSensor(ctre.TalonFXFeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
+        self.configSelectedFeedbackSensor(ctre.FeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
         self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
         self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, WHEEL_TIMEOUT_MILLISECONDS)
         self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, WHEEL_TIMEOUT_MILLISECONDS)
