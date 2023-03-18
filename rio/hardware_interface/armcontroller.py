@@ -10,7 +10,7 @@ CMD_TIMEOUT_SECONDS = 1
 WHEEL_TIMEOUT_MILLISECONDS = 30 # 0 means do not use the timeout
 TICKS_PER_REVOLUTION = 2048.0
 TOTAL_ELEVATOR_REVOLUTIONS = 160 # UNKNOWN
-TOTAL_GRIPPER_REVOLUTIONS = 2   # UNKNOWN
+TOTAL_GRIPPER_REVOLUTIONS = 5.5   # UNKNOWN
 
 SCALING_FACTOR_FIX = 10000
 
@@ -82,8 +82,13 @@ class ArmController():
         # Iterate over the JOINT_MAP and run the get() function for each of them
         for index, joint_name in enumerate(self.JOINT_MAP.keys()):
             names[index] = joint_name
-            positions[index] = int(self.JOINT_MAP[joint_name].getPosition() * SCALING_FACTOR_FIX)
-            velocities[index] = int(self.JOINT_MAP[joint_name].getVelocity() * SCALING_FACTOR_FIX)
+            # Allow for joints to be removed quickly
+            if self.JOINT_MAP[joint_name] == None:
+                positions[index] = 0.0
+                velocities[index] = 0.0
+            else:
+                positions[index] = int(self.JOINT_MAP[joint_name].getPosition() * SCALING_FACTOR_FIX)
+                velocities[index] = int(self.JOINT_MAP[joint_name].getVelocity() * SCALING_FACTOR_FIX)
         return { "name" : names, "position": positions, "velocity": velocities}
 
     # TODO: Add this later!!!
@@ -94,7 +99,9 @@ class ArmController():
             self.last_cmds_time = time.time()
             self.warn_timeout = True
             for i in range(len(commands["name"])):
-                self.JOINT_MAP[commands["name"][i]].setPosition(commands['position'][i])
+                joint_name = commands["name"][i]
+                if joint_name in self.JOINT_MAP.keys():
+                    self.JOINT_MAP[joint_name].setPosition(commands['position'][i])
         
         elif (time.time() - self.last_cmds_time > CMD_TIMEOUT_SECONDS):
             self.stop()
@@ -124,6 +131,7 @@ class TalonWheel(ctre.WPI_TalonFX):
         self.totalRevolutions = totalRevolutions
 
         self.configFactoryDefault(WHEEL_TIMEOUT_MILLISECONDS)
+        self.configNeutralDeadband(0.01, WHEEL_TIMEOUT_MILLISECONDS)
 
         # Voltage
         self.configVoltageCompSaturation(12, WHEEL_TIMEOUT_MILLISECONDS)
@@ -132,8 +140,6 @@ class TalonWheel(ctre.WPI_TalonFX):
         # Sensors and frame
         self.configSelectedFeedbackSensor(ctre.FeedbackDevice.IntegratedSensor, 0, WHEEL_TIMEOUT_MILLISECONDS)
         self.configIntegratedSensorInitializationStrategy(ctre.sensors.SensorInitializationStrategy.BootToZero)
-        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, WHEEL_TIMEOUT_MILLISECONDS)
-        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, WHEEL_TIMEOUT_MILLISECONDS)
         
         # Nominal and Peak
         self.configNominalOutputForward(0, WHEEL_TIMEOUT_MILLISECONDS)
@@ -151,16 +157,18 @@ class TalonWheel(ctre.WPI_TalonFX):
         if wpilib.RobotBase.isSimulation():
             self.setSelectedSensorPosition(position * TICKS_PER_REVOLUTION * self.totalRevolutions)
         else:
-            self.set(ctre.TalonFXControlMode.Position, position * (TICKS_PER_REVOLUTION * self.totalRevolutions))
+            self.set(ctre.TalonFXControlMode.MotionMagic, position * (TICKS_PER_REVOLUTION * self.totalRevolutions))
 
 
-class IntakeWheel():
+class IntakeWheel(TalonWheel):
     def __init__(self, port : int):
-        return
         super().__init__(port, TOTAL_GRIPPER_REVOLUTIONS)
 
         self.setSensorPhase(False)
         self.setInverted(False)
+        self.setNeutralMode(ctre.NeutralMode.Brake)
+
+        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_13_Base_PIDF0, 10, WHEEL_TIMEOUT_MILLISECONDS)
 
         self.selectProfileSlot(ELEVATOR_CONFIG['SLOT'], 0)
         self.config_kP(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kP'], WHEEL_TIMEOUT_MILLISECONDS)
@@ -170,17 +178,13 @@ class IntakeWheel():
 
         self.configMotionCruiseVelocity(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum speed of motion magic (ticks/100ms)
         self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
-
     
-    def getPosition(self) -> float:
-        return 0.0
-    
-    def getVelocity(self) -> float:
-        return 0.0
-    
-    def setPosition(self, position : float): # Position should be between 0.0 and 1.0
-        return
-
+    def setPosition(self, position : float): 
+        print(f"Setting intake pos to {str(position)}")
+        if position > 0.5:
+            self.set(ctre.TalonFXControlMode.Velocity, -TICKS_PER_REVOLUTION/2)
+        else:
+            self.set(ctre.TalonFXControlMode.Velocity, TICKS_PER_REVOLUTION/2)
 
 class ElevatorWheel(TalonWheel):
     def __init__(self, port : int):
@@ -189,6 +193,8 @@ class ElevatorWheel(TalonWheel):
         self.setSensorPhase(False)
         self.setInverted(False)
 
+        self.setStatusFramePeriod(ctre.StatusFrameEnhanced.Status_10_MotionMagic, 10, WHEEL_TIMEOUT_MILLISECONDS)
+
         self.selectProfileSlot(ELEVATOR_CONFIG['SLOT'], 0)
         self.config_kP(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kP'], WHEEL_TIMEOUT_MILLISECONDS)
         self.config_kI(ELEVATOR_CONFIG['SLOT'], ELEVATOR_CONFIG['kI'], WHEEL_TIMEOUT_MILLISECONDS)
@@ -199,15 +205,15 @@ class ElevatorWheel(TalonWheel):
         self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
     
     def getPosition(self) -> float:
-        return super().getPosition() * 2
+        return super().getPosition()
     
     def getVelocity(self) -> float:
-        return super().getVelocity() * 2
+        return super().getVelocity()
 
 
     def setPosition(self, position : float): # Position should be between 0.0 and 2.0
         # print(f"Setting elevator position to {position} (converted to {(position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS)})")
         if wpilib.RobotBase.isSimulation():
-            self.setSelectedSensorPosition((position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
+            self.setSelectedSensorPosition(position * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
         else:
-            self.set(ctre.TalonFXControlMode.MotionMagic, (position / 2) * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
+            self.set(ctre.TalonFXControlMode.MotionMagic, position * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
