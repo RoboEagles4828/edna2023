@@ -14,10 +14,11 @@ ENABLE_JOY = True
 ENABLE_DRIVE =  True
 ENABLE_ARM = True
 ENABLE_STAGE_BROADCASTER = True
+FRC_STAGE = "DISABLED"
+FMS_ATTACHED = False
+STOP_THREADS = False
 
 # Locks
-FRC_STAGE = "DISABLED"
-STOP_THREADS = False
 rti_init_lock = threading.Lock()
 drive_train_lock = threading.Lock()
 arm_controller_lock = threading.Lock()
@@ -217,7 +218,8 @@ def stageBroadcasterThread():
 
 def stageBroadcasterAction(publisher : DDS_Publisher):
     global FRC_STAGE
-    publisher.write({ "data": FRC_STAGE })
+    global FMS_ATTACHED
+    publisher.write({ "data": f"{FRC_STAGE}|{FMS_ATTACHED}" })
 
 
 
@@ -262,6 +264,8 @@ class EdnaRobot(wpilib.TimedRobot):
 
 
     def autonomousPeriodic(self):
+        global FMS_ATTACHED
+        FMS_ATTACHED = wpilib.DriverStation.isFMSAttached()
         if self.use_threading:
             self.manageThreads()
         else:
@@ -280,6 +284,8 @@ class EdnaRobot(wpilib.TimedRobot):
         FRC_STAGE = "TELEOP"
     
     def teleopPeriodic(self):
+        global FMS_ATTACHED
+        FMS_ATTACHED = wpilib.DriverStation.isFMSAttached()
         if self.use_threading:
             self.manageThreads()
         else:
