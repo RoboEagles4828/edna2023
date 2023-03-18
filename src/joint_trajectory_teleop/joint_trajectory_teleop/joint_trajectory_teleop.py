@@ -70,9 +70,7 @@ class PublishTrajectoryMsg(Node):
 
         self.logger = logging.get_logger('JOINT-TRAJCECTORY-TELEOP')
 
-        self.toggle_buttons = {
-            'elevator_loading_station': 0
-        }
+        self.toggle_buttons = {}
 
         for function in self.functions:
             button = self.yaml['controller_mapping'][self.yaml['function_mapping'][function.__name__]['button']]
