@@ -6,6 +6,7 @@ import math
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from sensor_msgs.msg import Joy
 import os
+from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSReliabilityPolicy, QoSProfile
 
 import time
 
@@ -85,14 +86,10 @@ class PublishTrajectoryMsg(Node):
 
         if joystick.buttons[self.button_dict['LB']] == 1.0:
             self.pos = 1.1
-        elif joystick.buttons[self.button_dict['RB']] == 1.0:
-            self.pos = 1.5
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.2
         elif lbToggleValue:
             self.pos = 0.2
-        elif joystick.buttons[self.button_dict['RB']] == 0.0:
-            self.pos = 0.0
         elif joystick.buttons[self.button_dict['RIN']] == 1.0:
             self.pos = 0.0
 

@@ -15,13 +15,22 @@ def generate_launch_description():
     joystick_file = LaunchConfiguration('joystick_file')
     enable_joy = LaunchConfiguration('enable_joy')
     
+    frc_auton = Node(
+        package = "frc_auton",
+        namespace=namespace,
+        executable= "reader",
+        name = "frc_auton_node"
+    )
     joy = Node(
             package='joy',
             namespace=namespace,
             executable='joy_node', 
             name='joy_node',
             condition=IfCondition(enable_joy),
-            parameters=[{'use_sim_time': use_sim_time}])
+            parameters=[{
+                'use_sim_time': use_sim_time,
+                'deadzone': 0.15,
+            }])
 
     controller_prefix = 'swerve_controller'
     joy_teleop_twist = Node(
@@ -60,5 +69,6 @@ def generate_launch_description():
             description='Enables joystick teleop'),
         joy,
         joy_teleop_twist,
-        joint_trajectory_teleop
+        joint_trajectory_teleop,
+        frc_auton
     ])

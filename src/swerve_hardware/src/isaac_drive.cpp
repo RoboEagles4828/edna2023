@@ -258,22 +258,22 @@ hardware_interface::return_type IsaacDriveHardware::read(const rclcpp::Time & ti
 
 
 
-hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
+hardware_interface::return_type swerve_hardware::IsaacDriveHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
 {
   
   // Calculate Axle Velocities using motion magic
-  double dt = 0.1;
+  double dt = period.seconds();
   for (auto i = 0u; i < joint_names_.size(); i++) {
     if (joint_names_[i].find("axle") != std::string::npos) {
       auto vel = motion_magic_[i].getNextVelocity(hw_command_position_[i], hw_positions_[i], hw_velocities_[i], dt);
       // RCLCPP_INFO(rclcpp::get_logger("TestDriveHardware"), "Current: %f, Target: %f Vel: %f", hw_positions_[i], hw_command_position_[i], vel);
       hw_command_velocity_[i] = vel;
-      double to_add = (previous_velocity + vel) * dt / 2.0;
-      hw_positions_[i] = hw_positions_[i] + to_add;
-      previous_velocity = vel;
+    }
+
+    if (joint_names_[i] == "front_left_wheel_joint") {
       auto& clk = *node_->get_clock();
-      RCLCPP_INFO_THROTTLE(rclcpp::get_logger("IsaacDriveHardware"), clk, 500,
-      "Joint: %s Current: %f Target: %f Vel: %f", joint_names_[i].c_str(), hw_positions_[i], hw_command_position_[i], hw_command_velocity_[i]);
+      RCLCPP_INFO_THROTTLE(rclcpp::get_logger("IsaacDriveHardware"), clk, 2000,
+        "Joint: %s Current Vel: %f Target Vel: %f Pos: %f", joint_names_[i].c_str(), hw_velocities_[i], hw_command_velocity_[i], hw_positions_[i]);
     }
   }
   
