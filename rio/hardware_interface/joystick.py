@@ -17,13 +17,22 @@ class Joystick:
         self.deadzone = 0.1
 
     def getData(self):
+        
+        def scale(a):
+            return int(a * SCALING_FACTOR_FIX * -1)
+        def toInt(b):
+            return int(b)
+
+        def scaleTrigger(c):
+            return int((c * -2 + 1) * SCALING_FACTOR_FIX)
+        
         axes = [
-            self.joystick.getLeftX() if abs(self.joystick.getLeftX()) > self.deadzone else 0.0,
-            self.joystick.getLeftY() if abs(self.joystick.getLeftY()) > self.deadzone else 0.0,
-            self.joystick.getLeftTriggerAxis() if abs(self.joystick.getLeftTriggerAxis()) > self.deadzone else 0.0,
-            self.joystick.getRightX() if abs(self.joystick.getRightX()) > self.deadzone else 0.0,
-            self.joystick.getRightY() if abs(self.joystick.getRightY()) > self.deadzone else 0.0,
-            self.joystick.getRightTriggerAxis() if abs(self.joystick.getRightTriggerAxis()) > self.deadzone else 0.0
+            scale(self.joystick.getLeftX()) if abs(self.joystick.getLeftX()) > self.deadzone else 0.0,
+            scale(self.joystick.getLeftY()) if abs(self.joystick.getLeftY()) > self.deadzone else 0.0,
+            scaleTrigger(self.joystick.getLeftTriggerAxis()) if abs(self.joystick.getLeftTriggerAxis()) > self.deadzone else 0.0,
+            scale(self.joystick.getRightX()) if abs(self.joystick.getRightX()) > self.deadzone else 0.0,
+            scale(self.joystick.getRightY()) if abs(self.joystick.getRightY()) > self.deadzone else 0.0,
+            scaleTrigger(self.joystick.getRightTriggerAxis()) if abs(self.joystick.getRightTriggerAxis()) > self.deadzone else 0.0
         ]
         buttons = [
             self.joystick.getAButton(),
@@ -41,13 +50,6 @@ class Joystick:
             self.joystick.getLeftStickButton(),
             self.joystick.getRightStickButton()
         ]
-
-        def scale(a):
-            return int(a * SCALING_FACTOR_FIX * -1)
-        def toInt(b):
-            return int(b)
-
-        axes = map(scale, axes)
         buttons = map(toInt, buttons)
 
         return {"axes": list(axes), "buttons": list(buttons)}
