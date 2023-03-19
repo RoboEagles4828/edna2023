@@ -180,7 +180,6 @@ class IntakeWheel(TalonWheel):
         self.configMotionAcceleration(ELEVATOR_CONFIG['MAX_SPEED'], WHEEL_TIMEOUT_MILLISECONDS) # Sets the maximum acceleration of motion magic (ticks/100ms)
     
     def setPosition(self, position : float): 
-        print(f"Setting intake pos to {str(position)}")
         if position > 0.5:
             self.set(ctre.TalonFXControlMode.Velocity, -TICKS_PER_REVOLUTION/2)
         else:

@@ -12,6 +12,7 @@ class TalonFxSim:
         self.accelToFullTime = accelToFullTime
         self.fullVel = fullVel
         self.sensorPhase = sensorPhase
+        
         self.velocity = 0.0
         self.pos = 0.0
         self.deltaPos = 0.0
@@ -23,23 +24,33 @@ class TalonFxSim:
     # the motor model that is being controlled by the robot code.
     def update(self, period : float):
         self.talonSim = self.talon.getSimCollection()
+        
+        # Determine a small change in velocity for this period
         accelAmount = self.fullVel / self.accelToFullTime * period
+        # Determine how much effort the motor should be doing
         outPerc = self.talonSim.getMotorOutputLeadVoltage() / 12
         if self.sensorPhase:
             outPerc *= -1
         
+
         # Calculate the velocity
+        # The wheel should move at some proportion of the full velocity with some noise 
         theoreticalVel = outPerc * self.fullVel * self.randomFloatRange(0.95, 1.0)
+        # If the theoretical velocity is greater than how much we can accelerate in this period, max accelerate
         if theoreticalVel > self.velocity + accelAmount:
             self.velocity += accelAmount
+        # If the theoretical velocity is less than how much we can deccelerate in this period, max deccelerate
         elif theoreticalVel < self.velocity - accelAmount:
             self.velocity -= accelAmount
+        # Otherwise, we are close enough to the theoretical velocity, so just set it
         else:
             self.velocity = 0.9 * (theoreticalVel - self.velocity)
         
+        # Tolerance to set the velocity to 0
         if abs(outPerc) < 0.01:
             self.velocity = 0
         
+
         # Calculate the position
         self.deltaPos = self.velocity * period * 10
         self.pos += self.deltaPos
@@ -64,3 +75,11 @@ class TalonFxSim:
     def randomFloatRange(self, max, min):
         offset = (max - min) * random.random()
         return round(min + offset, 4)
+
+
+    # For viewing and testings purposes
+    def getSimulatedPosition(self) -> float:
+        return self.talon.getSelectedSensorPosition()
+
+    def getSimulatedVelocity(self) -> float:
+        return self.talon.getSelectedSensorVelocity()

@@ -2,17 +2,41 @@ from ctre.sensors import CANCoder, CANCoderSimCollection
 
 import math
 
+CANCODER_TICKS_PER_REV = 4096
+
 class CancoderSim():
-    def __init__(self, cancoder : CANCoder, offset : float = 0.0):
+    def __init__(self, cancoder : CANCoder, offsetDegress : float = 0.0, sensorPhase: bool = False):
         self.encoder : CANCoder = cancoder
         self.encoderSim : CANCoderSimCollection = None
-        self.offset = offset
-        # self.encoder.getSimCollection().setRawPosition(self.offset)
+        self.offset = math.radians(offsetDegress)
+        self.sensorPhase = sensorPhase
+        self.velocity = 0.0
+        self.position = 0.0
+        self.last = None
     
-    def radiansToTicks(self, radians : float) -> int:
-        return int(radians * 4096 / (2 * math.pi))
-
-    def update(self, period : float, velocity : float, position : float):
+    def update(self, period : float, deltaPositionRadians : float, velocityRadians : float):
+        if self.sensorPhase:
+            deltaPositionRadians *= -1
+            velocityRadians *= -1
+        self.position += deltaPositionRadians
+        self.velocity = velocityRadians
+        
+        # Update the encoder sensors on the motor
         self.encoderSim = self.encoder.getSimCollection()
-        self.encoderSim.setRawPosition(self.radiansToTicks(position + math.radians(self.offset)))
-        self.encoderSim.setVelocity(self.radiansToTicks(velocity) * 10)
+        self.encoderSim.setRawPosition(self.radiansToEncoderTicks(self.position, "position"))
+        self.encoderSim.setVelocity(self.radiansToEncoderTicks(self.velocity, "velocity"))
+    
+    def radiansToEncoderTicks(self, radians : float, displacementType : str) -> int:
+        ticks = radians * CANCODER_TICKS_PER_REV / (2 * math.pi)
+        if displacementType == "position":
+            return int(ticks)
+        elif displacementType == "velocity":
+            return int(ticks / 10)
+        else:
+            return 0
+
+    def getSimulatedPosition(self):
+        return math.radians( self.encoder.getAbsolutePosition() )
+
+    def getSimulatedVelocity(self):
+        return math.radians( self.encoder.getVelocity() )

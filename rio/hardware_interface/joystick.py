@@ -22,7 +22,6 @@ class Joystick:
             return int(a * SCALING_FACTOR_FIX * -1)
         def toInt(b):
             return int(b)
-
         def scaleTrigger(c):
             return int((c * -2 + 1) * SCALING_FACTOR_FIX)
         
