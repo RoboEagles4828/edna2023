@@ -33,7 +33,9 @@ class StageSubscriber(Node):
 
 
     def listener_callback(self, msg):
-        if(msg.data=="Auton | True" ):
+        stage = str(msg.data).split(" | ")[0]
+        fms = bool(str(msg.data).split(" | ")[1])
+        if(stage.lower() == 'auton' and fms):
             
             if(self.reader.has_next()):
                 (topic, data, t)=self.reader.read_next()

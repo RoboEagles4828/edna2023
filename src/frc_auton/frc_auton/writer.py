@@ -45,14 +45,14 @@ class BagWriter(Node):
         self.subscription_swerve = self.create_subscription(Twist,'/real/swerve_controller/cmd_vel_unstamped',self.swerve_callback,10)
         self.subscription_swerve
     def swerve_callback(self, msg):
-        if(self.stage == "auton" and self.fms):
+        if(self.stage.lower() == "auton" and self.fms):
             self.writer_swerve.write(
                 '/real/swerve_controller/cmd_vel_unstamped',
                 serialize_message(msg),
                 self.get_clock().now().nanoseconds)
                 
     def arm_callback(self, msg):
-        if(self.stage == "auton" and self.fms):
+        if(self.stage.lower() == "auton" and self.fms):
             self.writer_arm.write(
                 '/real/joint_trajectory_controller/joint_trajectory',
                 serialize_message(msg),
