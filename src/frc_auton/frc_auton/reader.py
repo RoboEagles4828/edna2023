@@ -1,43 +1,49 @@
-from rosbags.rosbag2 import Reader
-from rosbags.serde import deserialize_cdr
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from rosbags.typesys.types import geometry_msgs__msg__Twist, trajectory_msgs__msg__JointTrajectory
 from std_msgs.msg import String
+import rosbag2_py
+from pathlib import Path
+from rclpy.serialization import deserialize_message
+import rosbag2_py
+from std_msgs.msg import String
+
 
 
 class StageSubscriber(Node):
 
     def __init__(self):
         super().__init__('stage_subscriber')
+
+        # self.subscription  # prevent unused variable warning
+        self.reader = rosbag2_py.SequentialReader()
+        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/bags/swerve_bag_0', storage_id='sqlite3') #change this to the bag you want to read
+        self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
+        self.reader.open(self.storage_options,self.converter_options)
+        self.reader_2 = rosbag2_py.SequentialReader()
+        self.storage_options_2 = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/bags/arm_bag_0', storage_id='sqlite3') #change this to the bag you want to read
+        self.converter_options_2 = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
+        self.reader_2.open(self.storage_options_2,self.converter_options_2)
         self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
         self.publish_twist = self.create_publisher(Twist,'/real/swerve_controller/cmd_vel_unstamped',10)
         self.publish_trajectory = self.create_publisher(JointTrajectory,'/real/joint_trajectory_controller/joint_trajectory',10)
-        self.subscription  # prevent unused variable warning
+
+           
+
 
     def listener_callback(self, msg):
-        # print(msg)
-        # if msg==True:
-        # print("yes")
-        if(msg.data=="Auton"):
-            with Reader('Auto_ros_bag/rosbag2_2023_03_14-23_54_20') as reader:
-                for connection, timestamp, rawdata in reader.messages():
-                    # print(connection.topic)
-                    if connection.topic == '/real/swerve_controller/cmd_vel_unstamped':
-                        msg2 = deserialize_cdr(rawdata,connection.msgtype)
-                        twist_msg = Twist()
-                        twist_msg.linear.x = float(msg2.linear.x)
-                        twist_msg.linear.y = float(msg2.linear.y)
-                        twist_msg.angular.z = float(msg2.angular.z) 
-                        self.publisher.publish(twist_msg)
-                    if connection.topic == '/real/joint_trajectory_controller/joint_trajectory':
-                        msg = deserialize_cdr(rawdata,connection.msgtype)
-                        trajectory_msg= JointTrajectory()
-                        trajectory_msg.joint_names = str(msg2.joint_names)
-                        trajectory_msg.points.positions = str(msg2.points.positions)
-                        
+        if(msg.data=="Auton | True" ):
+            
+            if(self.reader.has_next()):
+                (topic, data, t)=self.reader.read_next()
+                msg2 = deserialize_message(data,Twist)
+                self.publish_twist.publish(msg2)
+            
+            if(self.reader_2.has_next()):
+                (topic, data, t)=self.reader_2.read_next()
+                msg3 = deserialize_message(data,JointTrajectory)
+                self.publish_trajectory.publish(msg3)
 
 
 

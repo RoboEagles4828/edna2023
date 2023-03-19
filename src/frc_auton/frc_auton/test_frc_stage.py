@@ -15,7 +15,7 @@ class StagePublisher(Node):
 
     def timer_callback(self):
         msg = String()
-        msg.data = "TELEOP | True"
+        msg.data = "AUTON | True"
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: %s' % msg.data)
         self.i += 1
