@@ -34,6 +34,15 @@ namespace swerve_hardware
     return std::atof(text.c_str());
   }
 
+  bool RealDriveHardware::parse_bool(const std::string & text)
+  {
+    if(strcmp(text.c_str(), "true") == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   hardware_interface::CallbackReturn RealDriveHardware::on_init(const hardware_interface::HardwareInfo & info)
   {
 
@@ -83,7 +92,16 @@ namespace swerve_hardware
     for (auto i = 0u; i < info_.joints.size(); ++i)
     {
       const auto & joint = info_.joints.at(i);
-      
+
+      bool use_percent = false;
+      double max = parse_double(joint.command_interfaces[0].max);
+      double min = parse_double(joint.command_interfaces[0].min);
+
+      auto param_percent_it = joint.parameters.find("percent");
+      if (param_percent_it != joint.parameters.end()) {
+        use_percent = parse_bool(joint.parameters.at("percent"));
+      }
+
       // Mimics
       if (joint.parameters.find("mimic") != joint.parameters.cend())
       {
@@ -120,17 +138,21 @@ namespace swerve_hardware
         JointGroupMember member;
         member.joint_index = i;
         member.joint_name = joint.name;
+        member.percent = use_percent;
+        member.max = max;
+        member.min = min;
 
         arm_names_output_.push_back(joint.name);
-
         arm_joints_.push_back(member);
       } else {
         JointGroupMember member;
         member.joint_index = i;
         member.joint_name = joint.name;
+        member.percent = use_percent;
+        member.max = max;
+        member.min = min;
 
         drive_names_output_.push_back(joint.name);
-
         drive_joints_.push_back(member);
       }
     }
@@ -302,20 +324,6 @@ namespace swerve_hardware
     return real_velocity / RIO_CONVERSION_FACTOR;
   }
 
-  // void RealDriveHardware::convertToRealPositions(std::vector<double> ros_positions)
-  // {
-  //   for (auto i = 0u; i < ros_positions.size(); i++)
-  //   {
-  //     // Try not to modify the original vector
-  //     auto pos = ros_positions[i];
-  //     if (pos < 0.0)
-  //     {
-  //       pos += 2.0 * M_PI;
-  //     }
-  //     hw_command_position_converted_[i] = pos;
-  //   }
-  // }
-
   hardware_interface::return_type RealDriveHardware::read(const rclcpp::Time &time, const rclcpp::Duration & /*period*/)
   {
     rclcpp::spin_some(node_);
@@ -337,8 +345,14 @@ namespace swerve_hardware
       for (const auto & arm_joint : arm_joints_)
       {
         if (strcmp(names[i].c_str(), arm_joint.joint_name.c_str()) == 0) {
-          hw_positions_[arm_joint.joint_index] = convertToRosPosition(positions[i]);
-          hw_velocities_[arm_joint.joint_index] = convertToRosVelocity((float)velocities[i]);
+          if (arm_joint.percent) {
+            double scale = arm_joint.max - arm_joint.min;
+            hw_positions_[arm_joint.joint_index] = convertToRosPosition(positions[i] * scale + arm_joint.min);
+            hw_velocities_[arm_joint.joint_index] = convertToRosVelocity((float)velocities[i] * scale);
+          } else {
+            hw_positions_[arm_joint.joint_index] = convertToRosPosition(positions[i]);
+            hw_velocities_[arm_joint.joint_index] = convertToRosVelocity((float)velocities[i]);
+          }
           break;
         }
       }
@@ -371,14 +385,16 @@ namespace swerve_hardware
 
     for (auto i = 0u; i < drive_joints_.size(); ++i)
     {
-      hw_command_drive_velocity_output_[i] = hw_command_velocity_[drive_joints_[i].joint_index];
-      hw_command_drive_position_output_[i] = hw_command_position_[drive_joints_[i].joint_index];
+      auto joint = drive_joints_[i];
+      hw_command_drive_velocity_output_[i] = hw_command_velocity_[joint.joint_index];
+      hw_command_drive_position_output_[i] = hw_command_position_[joint.joint_index];
     }
 
     for (auto i = 0u; i < arm_joints_.size(); ++i)
     {
-      hw_command_arm_velocity_output_[i] = hw_command_velocity_[arm_joints_[i].joint_index];
-      hw_command_arm_position_output_[i] = hw_command_position_[arm_joints_[i].joint_index];
+      auto joint = arm_joints_[i];
+      hw_command_arm_velocity_output_[i] = hw_command_velocity_[joint.joint_index];
+      hw_command_arm_position_output_[i] = hw_command_position_[joint.joint_index];
     }
   
     if (realtime_real_publisher_->trylock())
