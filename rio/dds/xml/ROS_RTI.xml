@@ -18,6 +18,15 @@ This code contains trade secrets of Real-Time Innovations, Inc.
     <!-- types -->
     <types>
       <include file="Header.xml"/>
+      <module name="std_msgs">
+        <module name="msg">
+          <module name="dds_">
+            <struct name="String_">
+              <member name="data" type="string" stringMaxLength="255"/>
+            </struct>
+          </module>
+        </module>
+      </module>
       <module name="sensor_msgs">
         <module name="msg">
           <module name="dds_">
@@ -57,6 +66,10 @@ This code contains trade secrets of Real-Time Innovations, Inc.
           <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
           <topic name="rt/real/real_joint_states" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
         </domain>
+        <domain name="ROS2_DOMAIN_FRC_STAGE" domain_id="0">
+          <register_type name="std_msgs::msg::dds_::String_" type_ref="std_msgs::msg::dds_::String_" />
+          <topic name="rt/real/frc_stage" register_type_ref="std_msgs::msg::dds_::String_"/>
+        </domain>
     </domain_library>
 
     <!-- Participant library -->
@@ -93,5 +106,12 @@ This code contains trade secrets of Real-Time Innovations, Inc.
             <data_writer name="encoder_info_writer" topic_ref="rt/real/real_joint_states" />
           </publisher>
       </domain_participant>
+
+      <domain_participant name="stage_broadcaster" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_FRC_STAGE">
+          <publisher name="stage_publisher">
+            <data_writer name="stage_writer" topic_ref="rt/real/frc_stage" />
+          </publisher>
+      </domain_participant>
+
     </domain_participant_library>
 </dds>

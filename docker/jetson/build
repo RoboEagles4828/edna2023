@@ -1,29 +1,52 @@
 #!/bin/bash
 
 echo "ONLY USE THIS SCRIPT ON THE JETSON"
-
+VERSION=2 # Increment manually for now
+PREV_VERSION="$((VERSION-1))"
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
-IMAGE_NAME="jetson:2023"
+IMAGE_NAME="jetson"
+
+# Build Intermediate Image
+echo "Building base intermediate image : jetson-base:$VERSION"
+cd ../developer
 
 rm -rf ./src
 cp -r ../../src .
+# Copy rio requirements to be installed
+cp ../../rio/requirements.txt ./src/requirements.txt
 
-docker build -t $GITHUB_REGISTRY/$IMAGE_NAME --cache-from $GITHUB_REGISTRY/$IMAGE_NAME .
+# Build from the Dockerfile in the developer folder making an intermediate image
+docker build -t jetson-base:$VERSION \
+    --cache-from jetson-base:$PREV_VERSION \
+    --build-arg BASE_IMAGE=ros:humble-ros-base \
+    --build-arg INSTALL_DOCKER="false" .
 
-echo "Build finished"
+echo "Build finished for base intermediate"
+
+
+# Build Final Image
+echo "Building final image : $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION"
+cd ../jetson
+
+docker build -t $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION \
+    --cache-from $GITHUB_REGISTRY/$IMAGE_NAME:$PREV_VERSION \
+    --build-arg VERSION=$VERSION .
+
+echo "Build finished for final image"
+
 
 echo "Would you like to run the image in interactive mode? (y/n)"
 read INTERACTIVE
 
 if [ "$INTERACTIVE" = "y" ]; then
-    docker run --rm -it -e ACCEPT_EULA=y $GITHUB_REGISTRY/$IMAGE_NAME
+    docker run --rm -it $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION
 fi
 
 echo "Would you like to push the image to the registry? (y/n)"
 read PUSH
 
 if [ "$PUSH" = "y" ]; then
-    docker push $GITHUB_REGISTRY/$IMAGE_NAME
+    docker push $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION
 fi
 
 rm -rf src

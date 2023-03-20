@@ -26,7 +26,6 @@ def generate_launch_description():
     # Get paths to other config files
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
-    joint_trajectory_file = os.path.join(bringup_pkg_path, 'config', 'joint_trajectory_controller.yaml')
     
     # Create a robot_state_publisher node
     node_robot_state_publisher = Node(

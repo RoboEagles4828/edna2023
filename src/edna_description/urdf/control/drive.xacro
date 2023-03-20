@@ -58,6 +58,7 @@
           <param name="min">0</param>
           <param name="max">0.07</param>
         </command_interface>
+        <param name="percent">true</param>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
         <param name="arm_group">true</param>
@@ -71,12 +72,14 @@
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
           <param name="mimic">arm_roller_bar_joint</param>
+          <param name="multiplier">1.8</param>
       </joint>
       <joint name = "elevator_center_joint">
           <command_interface name="position">
             <param name="min">0</param>
             <param name="max">0.56</param>
           </command_interface>
+          <param name="percent">true</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
@@ -89,12 +92,14 @@
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="mimic">elevator_center_joint</param>
+          <param name="multiplier">1.0</param>
       </joint>
       <joint name = "top_slider_joint">
           <command_interface name="position">
-            <param name="min">-1</param>
-            <param name="max">1</param>
+            <param name="min">0</param>
+            <param name="max">0.30</param>
           </command_interface>
+          <param name="percent">true</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
@@ -102,9 +107,10 @@
       </joint>
       <joint name = "top_gripper_left_arm_joint">
           <command_interface name="position">
-            <param name="min">-1</param>
-            <param name="max">1</param>
+            <param name="min">0</param>
+            <param name="max">0.90</param>
           </command_interface>
+          <param name="percent">true</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
@@ -118,35 +124,18 @@
           <state_interface name="velocity"/>
           <param name="arm_grouping">true</param>
           <param name="mimic">top_gripper_left_arm_joint</param>
+          <param name="multiplier">1.0</param>
       </joint>
        <joint name = "bottom_intake_joint">
           <command_interface name="position">
-            <param name="min">-1</param>
-            <param name="max">1</param>
+            <param name="min">0</param>
+            <param name="max">${pi/2 - 0.05}</param>
           </command_interface>
+          <param name="percent">true</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
           <param name="primary">true</param>
-      </joint>
-      <joint name = "bottom_gripper_left_arm_joint">
-          <command_interface name="position">
-            <param name="min">-1</param>
-            <param name="max">1</param>
-          </command_interface>
-          <state_interface name="position"/>
-          <state_interface name="velocity"/>
-          <param name="arm_group">true</param>
-      </joint>
-      <joint name = "bottom_gripper_right_arm_joint">
-          <command_interface name="position">
-            <param name="min">-1</param>
-            <param name="max">1</param>
-          </command_interface>
-          <state_interface name="position"/>
-          <state_interface name="velocity"/>
-          <param name="arm_group">true</param>
-          <param name="mimic">bottom_gripper_left_arm_joint</param>
       </joint>
     </ros2_control>
   </xacro:macro>

@@ -4,9 +4,6 @@ import threading
 import traceback
 import time
 import os, inspect
-# TODO Reuse this
-import hardware_interface.drivetrain as drivet
-import hardware_interface.armcontroller as armc
 from hardware_interface.drivetrain import DriveTrain
 from hardware_interface.joystick import Joystick
 from hardware_interface.armcontroller import ArmController
@@ -16,13 +13,15 @@ EMABLE_ENCODER = True
 ENABLE_JOY = True
 ENABLE_DRIVE =  True
 ENABLE_ARM = True
+ENABLE_STAGE_BROADCASTER = True
 
-# Locks
-FRC_STAGE = "DISABLED"
-STOP_THREADS = False
-rti_init_lock = threading.Lock()
-drive_train_lock = threading.Lock()
-arm_controller_lock = threading.Lock()
+# Global Variables
+frc_stage = "DISABLED"
+fms_attached = False
+stop_threads = False
+drive_train : DriveTrain = None
+joystick : Joystick = None
+arm_controller : ArmController = None
 
 # Logging
 format = "%(asctime)s: %(message)s"
@@ -32,38 +31,50 @@ logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 curr_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
-## Hardware
-drive_train : DriveTrain = None
-def initDriveTrain(use_mocks : bool):
-    global drive_train
-    drive_train = DriveTrain(use_mocks)
-    logging.info("Success: DriveTrain created")
 
-joystick : Joystick = None
+
+############################################
+## Hardware
+def initDriveTrain():
+    global drive_train
+    if drive_train == None:
+        drive_train = DriveTrain()
+        logging.info("Success: DriveTrain created")
+    return drive_train
+
 def initJoystick():
-    try:
-        global joystick
+    global joystick
+    if joystick == None:
         joystick = Joystick()
         logging.info("Success: Joystick created")
-        return True
-    except Exception as e:
-        logging.error("Failed to create joystick")
-        return False
+    return joystick
 
-arm_controller : ArmController = None
-def initArmController(use_mocks : bool):
+def initArmController():
     global arm_controller
-    arm_controller = ArmController(use_mocks)
-    logging.info("Success: ArmController created")
+    if arm_controller == None:
+        arm_controller = ArmController()
+        logging.info("Success: ArmController created")
+    return arm_controller
 
-## Generic Loop that is used for all threads
+def initDDS(ddsAction, participantName, actionName):
+    dds = None
+    with rti_init_lock:
+        dds = ddsAction(xml_path, participantName, actionName)
+    return dds
+
+############################################
+
+
+
+############################################
+## Threads
 def threadLoop(name, dds, action):
     logging.info(f"Starting {name} thread")
-    global STOP_THREADS
-    global FRC_STAGE
+    global stop_threads
+    global frc_stage
     try:
-        while STOP_THREADS == False:
-            if FRC_STAGE == "TELEOP" or FRC_STAGE == "AUTON" or name == "encoder":
+        while stop_threads == False:
+            if frc_stage in ["TELEOP", "AUTON"] or name in ["encoder", "stage-broadcaster"]:
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
@@ -73,6 +84,8 @@ def threadLoop(name, dds, action):
     
     logging.info(f"Closing {name} thread")
     dds.close()
+
+
 # Generic Start Thread Function
 def startThread(name) -> threading.Thread | None:
     thread = None
@@ -84,33 +97,32 @@ def startThread(name) -> threading.Thread | None:
         thread = threading.Thread(target=armThread, daemon=True)
     elif name == "joystick":
         thread = threading.Thread(target=joystickThread, daemon=True)
+    elif name == "stage-broadcaster":
+        thread = threading.Thread(target=stageBroadcasterThread, daemon=True)
     
     thread.start()
     return thread
 
+# Locks
+rti_init_lock = threading.Lock()
+drive_train_lock = threading.Lock()
+arm_controller_lock = threading.Lock()
+############################################
 
 
 
-######### Encoder Thread and Action #########
+
+################## ENCODER ##################
 ENCODER_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::encoder_info"
 ENCODER_WRITER_NAME = "encoder_info_publisher::encoder_info_writer"
 
 def encoderThread():
-    encoder_publisher = None
-    with rti_init_lock:
-        encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
+    encoder_publisher = initDDS(DDS_Publisher, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
     threadLoop('encoder', encoder_publisher, encoderAction)
 
 def encoderAction(publisher):
     # TODO: Make these some sort of null value to identify lost data
-    joint_list = drivet.getJointList() + armc.getJointList()
-    joint_count = len(joint_list)
-    drivet_joint_count = len(drivet.getJointList())
-    armc_joint_count = len(armc.getJointList())
     data = {
-        # "name": joint_list,
-        # "position": [0.0]*joint_count,
-        # "velocity": [[0.0]*joint_count]
         'name': [],
         'position': [],
         'velocity': []
@@ -123,11 +135,6 @@ def encoderAction(publisher):
             data['name'] += drive_data['name']
             data['position'] += drive_data['position']
             data['velocity'] += drive_data['velocity']
-            # for index, name in enumerate(drivet.getJointList()):
-            #     drive_data_index = drive_data['name'].index(name)
-            #     data['name'][index] = drive_data['name'][drive_data_index]
-            #     data["position"][index] = drive_data["position"][drive_data_index],
-            #     data["velocity"][index] = drive_data["velocity"][drive_data_index],
     
     global arm_controller
     with arm_controller_lock:
@@ -136,25 +143,18 @@ def encoderAction(publisher):
             data['name'] += arm_data['name']
             data['position'] += arm_data['position']
             data['velocity'] += arm_data['velocity']
-            # for index, name in enumerate(armc.getJointList()):
-            #     arm_data_index = arm_data['name'].index(name)
-            #     data['name'][index] = drive_data['name'][arm_data_index]
-            #     data["position"][index] = arm_data["position"][arm_data_index],
-            #     data["velocity"][index] = arm_data["velocity"][arm_data_index],
 
     publisher.write(data)
+############################################
 
 
 
-
-######### Command Thread and Action #########
+################## COMMAND ##################
 COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::joint_commands"
 COMMAND_WRITER_NAME = "isaac_joint_commands_subscriber::joint_commands_reader"
 
 def commandThread():
-    command_subscriber = None
-    with rti_init_lock:
-        command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
+    command_subscriber = initDDS(DDS_Subscriber, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
     threadLoop('command', command_subscriber, commandAction)
 
 def commandAction(subscriber : DDS_Subscriber):
@@ -162,16 +162,16 @@ def commandAction(subscriber : DDS_Subscriber):
     global drive_train
     with drive_train_lock:
         drive_train.sendCommands(data)
+############################################
 
 
-######### Arm Thread and Action #########
+
+################## ARM ##################
 ARM_COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::arm_commands"
 ARM_COMMAND_WRITER_NAME = "isaac_arm_commands_subscriber::arm_commands_reader"
 
 def armThread():
-    arm_command_subscriber = None
-    with rti_init_lock:
-        arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+    arm_command_subscriber = initDDS(DDS_Subscriber, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
     threadLoop('arm', arm_command_subscriber, armAction)
 
 def armAction(subscriber : DDS_Subscriber):
@@ -179,80 +179,119 @@ def armAction(subscriber : DDS_Subscriber):
     global arm_controller
     with arm_controller_lock:
         arm_controller.sendCommands(data)
+############################################
 
 
-######### Joystick Thread and Action #########
+
+################## JOYSTICK ##################
 JOYSTICK_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::joystick"
 JOYSTICK_WRITER_NAME = "joystick_data_publisher::joystick_data_writer"
 
 def joystickThread():
-    joystick_publisher = None
-    with rti_init_lock:
-        joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
+    joystick_publisher = initDDS(DDS_Publisher, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
     threadLoop('joystick', joystick_publisher, joystickAction)
 
 def joystickAction(publisher : DDS_Publisher):
-    global joystick
-    data = None
-    try:
-        data = joystick.getData()
-    except:
-        logging.warn("No joystick data could be fetched!")
-        initJoystick()
-    publisher.write(data)
+    if frc_stage == "TELEOP":
+        global joystick
+        data = None
+        try:
+            data = joystick.getData()
+        except:
+            logging.warn("No joystick data could be fetched!")
+            initJoystick()
+        publisher.write(data)
+############################################
+
+
+
+################## STAGE ##################
+STAGE_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::stage_broadcaster"
+STAGE_WRITER_NAME = "stage_publisher::stage_writer"
+
+def stageBroadcasterThread():
+    stage_publisher = initDDS(DDS_Publisher, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
+    threadLoop('stage-broadcaster', stage_publisher, stageBroadcasterAction)
+
+def stageBroadcasterAction(publisher : DDS_Publisher):
+    global frc_stage
+    global fms_attached
+    publisher.write({ "data": f"{frc_stage}|{fms_attached}" })
+############################################
+
+
 
 
 ######### Robot Class #########
-class edna_robot(wpilib.TimedRobot):
+class EdnaRobot(wpilib.TimedRobot):
 
-    def __init__(self, period = 0.2, use_threading = True) -> None:
-        super().__init__(period)
-        self.use_threading = use_threading
-
-    def robotInit(self) -> None:
+    def robotInit(self):
+        self.use_threading = True
+        wpilib.CameraServer.launch()
         logging.warning("Running in simulation!") if wpilib.RobotBase.isSimulation() else logging.info("Running in real!")
-        
-        if wpilib.RobotBase.isSimulation():
-            self.use_mocks = True
-            logging.info(f"SETTING MOCKS TO TRUE")
-        else:
-            self.use_mocks = False
-        
-        if ENABLE_DRIVE: initDriveTrain(self.use_mocks)
-        if ENABLE_JOY: initJoystick()
-        if ENABLE_ARM: initArmController(self.use_mocks)
+
+        self.drive_train = initDriveTrain()
+        self.joystick = initJoystick()
+        self.arm_controller = initArmController()
 
         self.threads = []
         if self.use_threading:
             logging.info("Initializing Threads")
-            global STOP_THREADS
-            STOP_THREADS = False
+            global stop_threads
+            stop_threads = False
             if ENABLE_DRIVE: self.threads.append({"name": "command", "thread": startThread("command") })
             if ENABLE_ARM: self.threads.append({"name": "arm-command", "thread": startThread("arm-command")})
             if ENABLE_JOY: self.threads.append({"name": "joystick", "thread": startThread("joystick") })
             if EMABLE_ENCODER: self.threads.append({"name": "encoder", "thread": startThread("encoder") })
+            if ENABLE_STAGE_BROADCASTER: self.threads.append({"name": "stage-broadcaster", "thread": startThread("stage-broadcaster") })
 
         else:
             self.encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
             self.joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
             self.command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
             self.arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+            self.stage_publisher = DDS_Publisher(xml_path, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
 
-    def teleopInit(self) -> None:
-        logging.info("Entering Teleop")
-        global FRC_STAGE
-        FRC_STAGE = "TELEOP"
-    
-    def teleopPeriodic(self) -> None:
+
+    # Auton
+    def autonomousInit(self):
+        logging.info("Entering Auton")
+        global frc_stage
+        frc_stage = "AUTON"
+
+
+    def autonomousPeriodic(self):
+        global fms_attached
+        fms_attached = wpilib.DriverStation.isFMSAttached()
         if self.use_threading:
             self.manageThreads()
         else:
             self.doActions()
 
-    def teleopExit(self) -> None:
+    def autonomousExit(self):
+        logging.info("Exiting Auton")
+        global frc_stage
+        frc_stage = "AUTON"
+
+
+    # Teleop
+    def teleopInit(self):
+        logging.info("Entering Teleop")
+        global frc_stage
+        frc_stage = "TELEOP"
+    
+    def teleopPeriodic(self):
+        global fms_attached
+        fms_attached = wpilib.DriverStation.isFMSAttached()
+        if self.use_threading:
+            self.manageThreads()
+        else:
+            self.doActions()
+
+    def teleopExit(self):
         logging.info("Exiting Teleop")
-        global FRC_STAGE
-        FRC_STAGE = "DISABLED"
+        global frc_stage
+        frc_stage = "DISABLED"
         with drive_train_lock:
             drive_train.stop()
         with arm_controller_lock:
@@ -277,19 +316,16 @@ class edna_robot(wpilib.TimedRobot):
         commandAction(self.command_subscriber)
         armAction(self.arm_command_subscriber)
         joystickAction(self.joystick_publisher)
-        return
+        stageBroadcasterAction(self.stage_publisher)
 
-    def disabledInit(self) -> None:
-        return
-    
     # Is this needed?
     def stopThreads(self):
-        global STOP_THREADS
-        STOP_THREADS = True
+        global stop_threads
+        stop_threads = True
         for thread in self.threads:
             thread.join()
         logging.info('All Threads Stopped')
 
 
 if __name__ == '__main__':
-    wpilib.run(edna_robot)
+    wpilib.run(EdnaRobot)

@@ -20,13 +20,12 @@ class PublishJointCmd(Node):
         
         position_cmds.name = [
             # Pneumatics
-            'arm_roller_bar_joint', 
-            'top_gripper_slider_joint',
-            'top_gripper_joint',
-            'bottom_gripper_joint',
+            'arm_roller_bar_joint',
+            'top_slider_joint',
+            'top_gripper_left_arm_joint',
             # Wheels
-            'elevator_left_elevator_center_joint',
-            'bottom_gripper_lift_joint'
+            'elevator_center_joint',
+            'bottom_intake_joint',
         ]
         # position_cmds.name = []
         # rad = math.pi
@@ -34,7 +33,6 @@ class PublishJointCmd(Node):
         position_cmds.position = [ 
             0.0,      # Either a 0 (down) or a 1 (up) 
             0.0,      # Either a 0 (fully back) or a 1 (fully extended)
-            0.0,      # Either a 0 (open) or a 1 (closed)
             0.0,      # Either a 0 (open) or a 1 (closed)
             0.0,      # Value between 0.0 (fully back) and 2.0 (fully extended) (will be converted on their end, so just take the motor value and multiply it by two)
             0.0       # Value between 0.0 (fully down) and 1.0 (fully up)
