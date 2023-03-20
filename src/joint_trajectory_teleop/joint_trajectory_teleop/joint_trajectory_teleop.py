@@ -59,7 +59,6 @@ class PublishTrajectoryMsg(Node):
             self.yaml = yaml.safe_load(f)
 
         self.functions = [self.elevator_loading_station, self.skis_up, self.elevator_mid_level, self.elevator_high_level, self.top_gripper_control, self.elevator_pivot_control, self.top_slider_control]
-
         self.cmds: JointTrajectory = JointTrajectory()
         self.position_cmds: JointTrajectoryPoint = JointTrajectoryPoint()
         self.position_cmds.positions = [0.0] * len(self.joints)
@@ -85,15 +84,11 @@ class PublishTrajectoryMsg(Node):
             toggle = self.yaml['function_mapping'][function.__name__]['toggle']
             if toggle:
                 button = self.toggle_buttons[function.__name__].toggle(joystick.buttons)
-            function(joystick, button, toggle)
-            print(self.cmds.points[0].positions)
+            else:
+                button = joystick.buttons[button]
+            function(button)
 
-    def elevator_loading_station(self, joystick: Joy, button: int, toggle: bool):
-
-        if toggle:
-            button_val = button
-        else:
-            button_val = float(joystick.buttons[button])
+    def elevator_loading_station(self, button_val: int):
         
         #TODO: Tweak the values
 
@@ -109,13 +104,8 @@ class PublishTrajectoryMsg(Node):
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
 
-    def skis_up(self, joystick: Joy, button: int, toggle: bool):
+    def skis_up(self, button_val: int):
 
-        if toggle:
-            button_val = button
-        else:
-            button_val = float(joystick.buttons[button])
-        
         #TODO: Tweak the values
         self.position_cmds.positions[int(self.joint_map['bottom_intake_joint'])] = button_val
         
@@ -123,12 +113,7 @@ class PublishTrajectoryMsg(Node):
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
 
-    def elevator_mid_level(self, joystick: Joy, button: int, toggle: bool):
-
-        if toggle:
-            button_val = button
-        else:
-            button_val = float(joystick.buttons[button])
+    def elevator_mid_level(self, button_val: int):
         
         #TODO: Tweak the values
         if button_val == 1.0:
@@ -141,12 +126,7 @@ class PublishTrajectoryMsg(Node):
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
 
-    def elevator_high_level(self, joystick: Joy, button: int, toggle: bool):
-
-        if toggle:
-            button_val = button
-        else:
-            button_val = float(joystick.buttons[button])
+    def elevator_high_level(self, button_val: int):
         
         #TODO: Tweak the values
         if button_val == 1.0:
@@ -163,13 +143,8 @@ class PublishTrajectoryMsg(Node):
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
 
-    def top_gripper_control(self, joystick: Joy, button: int, toggle: bool):
+    def top_gripper_control(self, button_val: int):
 
-        if toggle:
-            button_val = button
-        else:
-            button_val = float(joystick.buttons[button])
-        
         #TODO: Tweak the values
         if button_val == 1.0:
             self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = 1.0
@@ -182,13 +157,8 @@ class PublishTrajectoryMsg(Node):
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
 
-    def elevator_pivot_control(self, joystick: Joy, button: int, toggle: bool):
+    def elevator_pivot_control(self, button_val: int):
 
-        if toggle:
-            button_val = button
-        else:
-            button_val = float(joystick.buttons[button])
-        
         #TODO: Tweak the values
         if button_val == 1.0:
             self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 1.0
@@ -198,26 +168,14 @@ class PublishTrajectoryMsg(Node):
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
 
-    def top_slider_control(self, joystick: Joy, button: int, toggle: bool):
-
-        if toggle:
-            button_val = button
-        else:
-            button_val = float(joystick.buttons[button])
+    def top_slider_control(self, button_val: int):
 
         #TODO: Tweak the values
         if button_val == 1.0:
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
         
-        
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
-
-    
-        
-
-
-
 
 def main(args=None):
     rclpy.init(args=args)
