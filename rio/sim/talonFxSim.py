@@ -4,20 +4,24 @@ import random
 import math
 # from pyfrc.physics.motor_cfgs import MOTOR_CFG_FALCON_500
 
+import wpilib.simulation
+import wpimath.system.plant
+
+FALCON_SENSOR_TICKS_PER_REV = 2048
+
 class TalonFxSim:
 
-    def __init__(self, talonFx : TalonFX, accelToFullTime : float, fullVel : float, sensorPhase : bool ) -> None:
+    def __init__(self, talonFx : TalonFX, moi : float, gearRatio : float, sensorPhase : bool ) -> None:
         self.talon : TalonFX = talonFx
         self.talonSim : TalonFXSimCollection = None
-        self.accelToFullTime = accelToFullTime
-        self.fullVel = fullVel
-        self.sensorPhase = sensorPhase
-        
+        self.moi = moi
+        self.gearRatio = gearRatio
+        self.sensorPhase = -1 if sensorPhase else 1
+        self.gearbox = wpimath.system.plant.DCMotor.falcon500(1)        
+        self.motor = wpilib.simulation.DCMotorSim(self.gearbox, self.gearRatio, self.moi, [0.0, 0.0])
         self.velocity = 0.0
-        self.pos = 0.0
-        self.deltaPos = 0.0
+        self.position = 0.0
         self.supplyCurrent = 0.0
-        self.statorCurrent = 0.0
     
     
     # Simulates the movement of falcon 500 motors by getting the voltages from the
@@ -25,57 +29,40 @@ class TalonFxSim:
     def update(self, period : float):
         self.talonSim = self.talon.getSimCollection()
         
-        # Determine a small change in velocity for this period
-        accelAmount = self.fullVel / self.accelToFullTime * period
-        # Determine how much effort the motor should be doing
-        outPerc = self.talonSim.getMotorOutputLeadVoltage() / 12
-        if self.sensorPhase:
-            outPerc *= -1
-        
-
-        # Calculate the velocity
-        # The wheel should move at some proportion of the full velocity with some noise 
-        theoreticalVel = outPerc * self.fullVel * self.randomFloatRange(0.95, 1.0)
-        # If the theoretical velocity is greater than how much we can accelerate in this period, max accelerate
-        if theoreticalVel > self.velocity + accelAmount:
-            self.velocity += accelAmount
-        # If the theoretical velocity is less than how much we can deccelerate in this period, max deccelerate
-        elif theoreticalVel < self.velocity - accelAmount:
-            self.velocity -= accelAmount
-        # Otherwise, we are close enough to the theoretical velocity, so just set it
-        else:
-            self.velocity = 0.9 * (theoreticalVel - self.velocity)
-        
-        # Tolerance to set the velocity to 0
-        if abs(outPerc) < 0.01:
-            self.velocity = 0
-        
-
-        # Calculate the position
-        self.deltaPos = self.velocity * period * 10
-        self.pos += self.deltaPos
+        # Update the motor model
+        voltage = self.talonSim.getMotorOutputLeadVoltage() * self.sensorPhase
+        self.motor.setInputVoltage(voltage)
+        self.motor.update(period)
+        newPosition = self.motor.getAngularPosition()
+        self.deltaPosition = newPosition - self.position
+        self.position = newPosition
+        self.velocity = self.motor.getAngularVelocity()
 
         # Update the encoder sensors on the motor
-        self.talonSim.addIntegratedSensorPosition(int(self.deltaPos))
-        self.talonSim.setIntegratedSensorVelocity(int(self.velocity))
+        positionShaftTicks = int(self.radiansToSensorTicks(self.position * self.gearRatio, "position"))
+        velocityShaftTicks = int(self.radiansToSensorTicks(self.velocity * self.gearRatio, "velocity"))
+        self.talonSim.setIntegratedSensorRawPosition(positionShaftTicks)
+        self.talonSim.setIntegratedSensorVelocity(velocityShaftTicks)
 
         # Update the current and voltage
-        self.supplyCurrent = abs(outPerc) * 30 * self.randomFloatRange(0.95, 1.05)
-        self.statorCurrent = 0 if outPerc == 0 else self.supplyCurrent / abs(outPerc)
-        self.talonSim.setSupplyCurrent(self.supplyCurrent)
-        self.talonSim.setStatorCurrent(self.statorCurrent)
+        self.talonSim.setSupplyCurrent(self.motor.getCurrentDraw())
         self.talonSim.setBusVoltage(RobotController.getBatteryVoltage())
     
-    def getSupplyCurrent(self) -> float:
-        return self.supplyCurrent
-
-    def getStatorCurrent(self) -> float:
-        return self.statorCurrent
+    def radiansToSensorTicks(self, radians : float, displacementType : str) -> int:
+        ticks = radians * FALCON_SENSOR_TICKS_PER_REV / (2 * math.pi)
+        if displacementType == "position":
+            return ticks
+        else:
+            return ticks / 10
     
-    def randomFloatRange(self, max, min):
-        offset = (max - min) * random.random()
-        return round(min + offset, 4)
+    def getPositionRadians(self) -> float:
+        return self.position
 
+    def getVelocityRadians(self) -> float:
+        return self.velocity
+
+    def getSupplyCurrent(self) -> float:
+        return self.motor.getCurrentDraw()
 
     # For viewing and testings purposes
     def getSimulatedPosition(self) -> float:

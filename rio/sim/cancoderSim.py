@@ -12,28 +12,25 @@ class CancoderSim():
         self.sensorPhase = sensorPhase
         self.velocity = 0.0
         self.position = 0.0
-        self.last = None
+        self.encoder.getSimCollection().setRawPosition(self.radiansToEncoderTicks(0, "position"))
     
-    def update(self, period : float, deltaPositionRadians : float, velocityRadians : float):
+    def update(self, period : float, velocityRadians : float):
         if self.sensorPhase:
-            deltaPositionRadians *= -1
             velocityRadians *= -1
-        self.position += deltaPositionRadians
+        self.position = velocityRadians * period
         self.velocity = velocityRadians
         
         # Update the encoder sensors on the motor
         self.encoderSim = self.encoder.getSimCollection()
-        self.encoderSim.setRawPosition(self.radiansToEncoderTicks(self.position, "position"))
+        self.encoderSim.addPosition(self.radiansToEncoderTicks(self.position, "position"))
         self.encoderSim.setVelocity(self.radiansToEncoderTicks(self.velocity, "velocity"))
     
     def radiansToEncoderTicks(self, radians : float, displacementType : str) -> int:
         ticks = radians * CANCODER_TICKS_PER_REV / (2 * math.pi)
         if displacementType == "position":
             return int(ticks)
-        elif displacementType == "velocity":
-            return int(ticks / 10)
         else:
-            return 0
+            return int(ticks / 10)
 
     def getSimulatedPosition(self):
         return math.radians( self.encoder.getAbsolutePosition() )
