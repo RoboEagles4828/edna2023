@@ -43,7 +43,7 @@ class PublishJointCmd(Node):
             0.0, #ignore
             0.0, #ignore
             0.0, #ignore
-            2*rad,
+            rad,
             0.0,
             0.0,
             0.0

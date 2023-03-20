@@ -28,8 +28,8 @@
         <xacro:insert_block name="origin" />
         <parent link="${parent}"/>
         <child link="${prefix}_intake_link"/>
-        <axis xyz = "0 -1 0"/>
-        <limit effort = "100.0" lower = "0" upper = "1.42" velocity = "1"/>
+        <axis xyz = "0 1 0"/>
+        <limit effort = "100.0" lower = "0" upper = "${pi/2 - 0.05}" velocity = "1"/>
     </joint>
 
     <!-- <xacro:gripper prefix="${prefix}" parent="${prefix}_intake_link">
