@@ -46,8 +46,7 @@ PNEUMATICS_JOINTS = [
     'arm_roller_bar_joint', 
     'top_slider_joint',
     'top_gripper_left_arm_joint',
-    'bottom_intake_left_arm_joint',
-    'bottom_gripper_left_arm_joint'
+    'bottom_intake_joint'
 ]
 
 class Button(QWidget):

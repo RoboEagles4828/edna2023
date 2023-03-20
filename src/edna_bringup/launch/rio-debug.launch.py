@@ -10,17 +10,17 @@ def generate_launch_description():
     bringup_path = get_package_share_directory("edna_bringup")
     rviz_file = os.path.join(bringup_path, 'config', 'riodebug.rviz')
     
-    common = { 'use_sim_time': 'false', 'namespace': NAMESPACE }
+    common = { 'use_sim_time': 'false', 'namespace': 'real' }
 
     control_launch_args = common | {
         'use_ros2_control': 'true',
         'load_controllers': 'false',
         'forward_command_controller': 'true',
-        'hardware_plugin': 'swerve_hardware/IsaacDriveHardware', # Change back to RealDriveHardware!
+        'hardware_plugin': 'swerve_hardware/RealDriveHardware', # Change back to RealDriveHardware!
     }
     
     debug_launch_args = common | {
-        'enable_rviz': 'true',
+        'enable_rviz': 'false',
         'enable_foxglove': 'false',
         'enable_debugger_gui': 'true',
         'rviz_file': rviz_file
