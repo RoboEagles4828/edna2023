@@ -44,6 +44,29 @@ from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 import sensor_msgs.msg
 import std_msgs.msg
 
+POSITION_JOINTS = {
+    'arm_roller_bar_joint',
+    'elevator_center_joint',
+    'elevator_outer_1_joint',
+    'elevator_outer_2_joint',
+    'top_gripper_right_arm_joint',
+    'top_gripper_left_arm_joint',
+    'top_slider_joint',
+    'bottom_intake_joint',
+    'bottom_gripper_right_arm_joint',
+    'bottom_gripper_left_arm_joint',
+    'front_left_axle_joint',
+    'front_right_axle_joint',
+    'rear_left_axle_joint',
+    'rear_right_axle_joint',
+}
+    
+VELOCITY_JOINTS = [
+    'front_left_wheel_joint',
+    'front_right_wheel_joint',
+    'rear_left_wheel_joint',
+    'rear_right_wheel_joint',
+]
 
 class JointStatePublisher(rclpy.node.Node):
     def get_param(self, name):
@@ -97,9 +120,13 @@ class JointStatePublisher(rclpy.node.Node):
                     continue
                 name = child.getAttribute('name')
                 self.joint_list.append(name)
-                if jtype == 'continuous':
-                    minval = -math.pi
-                    maxval = math.pi
+                if jtype == 'continuous': 
+                    if name in VELOCITY_JOINTS:
+                        minval = -39.4 # this is not a good number i pulled it out of thin air
+                        maxval = 39.4  # please someone calculate the actual thing using the circumference of the wheels and that stuff
+                    else:
+                        minval = -math.pi
+                        maxval = math.pi
                 else:
                     try:
                         limit = child.getElementsByTagName('limit')[0]
@@ -326,11 +353,12 @@ class JointStatePublisher(rclpy.node.Node):
     def timer_callback(self):
         # Publish Joint States
         msg = sensor_msgs.msg.JointState()
+        msg.header.stamp = self.get_clock().now().to_msg()
         if self.delta > 0:
             self.update(self.delta)
 
         # Initialize msg.position, msg.velocity, and msg.effort.
-
+        has_position = False
         has_velocity = False
         has_effort = False
         for name, joint in self.free_joints_pub.items():
@@ -343,12 +371,12 @@ class JointStatePublisher(rclpy.node.Node):
         num_joints = (len(self.free_joints_pub.items()) +
                       len(self.dependent_joints.items()))
         if has_position:
-            msg.position = num_joints * [0.0]
+            msg.position = []
         if has_velocity:
-            msg.velocity = num_joints * [0.0]
+            msg.velocity = []
         if has_effort:
             msg.effort = num_joints * [0.0]
-
+        
         for i, name in enumerate(self.joint_list):
             msg.name.append(str(name))
             joint = None
@@ -378,16 +406,19 @@ class JointStatePublisher(rclpy.node.Node):
                     factor *= param.get('factor', 1)
                 joint = self.free_joints_pub[parent]
 
-            if has_position and 'position' in joint:
-                msg.position[i] = float(joint['position']) * factor + offset
-            if has_velocity and 'velocity' in joint:
-                msg.velocity[i] = float(joint['velocity']) * factor
+            # the issue here is that its setting [i] either to the joint, or its skipping i in the list when we need it to be the next value.
+            # For some reason, [list].append() ends up putting way too many empty values that come from nowhere into the list.
+            # The best thing to do here would be having two separate iterators which only increment if the variable has a position or a velocity.
+            if has_position and 'position' in joint and name in POSITION_JOINTS:
+                msg.position.append(float(joint['position']) * factor + offset)
+            if has_velocity and 'velocity' in joint and name in VELOCITY_JOINTS:
+                msg.velocity.append(float(joint['velocity']) * factor)
             if has_effort and 'effort' in joint:
                 msg.effort[i] = float(joint['effort'])
+            
 
         # Only publish non-empty messages
         if not (msg.name or msg.position or msg.velocity or msg.effort):
-            self.get_logger().info("ret")
             return
 
         pos_msg = std_msgs.msg.Float64MultiArray()
