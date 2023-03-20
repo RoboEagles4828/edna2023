@@ -10,7 +10,7 @@ CMD_TIMEOUT_SECONDS = 1
 MOTOR_TIMEOUT = 30 # 0 means do not use the timeout
 TICKS_PER_REVOLUTION = 2048.0
 TOTAL_ELEVATOR_REVOLUTIONS = 160
-
+TOTAL_INTAKE_REVOLUTIONS = 6
 SCALING_FACTOR_FIX = 10000
 
 # Port Numbers for all of the Solenoids and other connected things
@@ -171,10 +171,10 @@ class Intake():
         self.motor.setNeutralMode(ctre.NeutralMode.Brake)
     
     def getPosition(self):
-        return float(self.state)
+        return (self.motor.getSelectedSensorPosition() / (-TICKS_PER_REVOLUTION * TOTAL_INTAKE_REVOLUTIONS))
 
     def getVelocity(self):
-        return 0.0
+        return (self.motor.getSelectedSensorVelocity() * 10) / (-TICKS_PER_REVOLUTION * TOTAL_INTAKE_REVOLUTIONS)
 
     def stop(self):
         self.motor.set(ctre.TalonFXControlMode.PercentOutput, 0)

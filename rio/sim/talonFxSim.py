@@ -21,7 +21,11 @@ class TalonFxSim:
         self.motor = wpilib.simulation.DCMotorSim(self.gearbox, self.gearRatio, self.moi, [0.0, 0.0])
         self.velocity = 0.0
         self.position = 0.0
-    
+        self.fwdLimitEnabled = False
+        self.fwdLimit = 0.0
+        self.revLimitEnabled = False
+        self.revLimit = 0.0
+
     # Simulates the movement of falcon 500 motors by getting the voltages from the
     # the motor model that is being controlled by the robot code.
     def update(self, period : float):
@@ -35,6 +39,18 @@ class TalonFxSim:
         self.deltaPosition = newPosition - self.position
         self.position = newPosition
         self.velocity = self.motor.getAngularVelocity()
+
+        if self.fwdLimitEnabled and self.position >= self.fwdLimit:
+            self.talonSim.setLimitFwd(True)
+            self.position = self.fwdLimit
+        else:
+            self.talonSim.setLimitFwd(False)
+        
+        if self.revLimitEnabled and self.position <= self.revLimit:
+            self.talonSim.setLimitRev(True)
+            self.position = self.revLimit
+        else:
+            self.talonSim.setLimitRev(False)
 
         # Update the encoder sensors on the motor
         positionShaftTicks = int(self.radiansToSensorTicks(self.position * self.gearRatio, "position"))
@@ -61,3 +77,13 @@ class TalonFxSim:
 
     def getSupplyCurrent(self) -> float:
         return self.motor.getCurrentDraw()
+    
+    def addLimitSwitch(self, limitType: str, positionRadians: float):
+        if limitType == "fwd":
+            self.fwdLimitEnabled = True
+            self.fwdLimit = positionRadians
+        elif limitType == "rev":
+            self.revLimitEnabled = True
+            self.revLimit = positionRadians
+        else:
+            print("Invalid limit type")

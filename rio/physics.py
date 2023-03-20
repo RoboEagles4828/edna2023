@@ -8,7 +8,7 @@ from pyfrc.physics.core import PhysicsInterface
 from sim.talonFxSim import TalonFxSim
 from sim.cancoderSim import CancoderSim
 from hardware_interface.drivetrain import getAxleRadians, getWheelRadians, SwerveModule, AXLE_JOINT_GEAR_RATIO
-from hardware_interface.armcontroller import PORTS
+from hardware_interface.armcontroller import PORTS, TOTAL_INTAKE_REVOLUTIONS
 from hardware_interface.joystick import CONTROLLER_PORT
 
 import math
@@ -45,6 +45,9 @@ class PhysicsEngine:
 
         self.elevator = TalonFxSim(robot.arm_controller.elevator.motor, 0.0004, 1, False)
         self.intake = TalonFxSim(robot.arm_controller.bottom_gripper_lift.motor, 0.0004, 1, False)
+        self.intake.addLimitSwitch("fwd", 0)
+        self.intake.addLimitSwitch("rev", TOTAL_INTAKE_REVOLUTIONS * -2 * math.pi)
+
         self.pneumaticHub = wpilib.simulation.REVPHSim(PORTS['HUB'])
         self.armRollerBar = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['ARM_ROLLER_BAR'])
         self.topGripperSlider = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER_SLIDER'])
