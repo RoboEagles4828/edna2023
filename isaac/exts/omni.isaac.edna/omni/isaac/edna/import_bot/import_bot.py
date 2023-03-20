@@ -7,7 +7,7 @@ from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils import prims
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
-from omni.kit.viewport_legacy import get_default_viewport_window
+# from omni.kit.viewport_legacy import get_default_viewport_window
 # from omni.isaac.sensor import IMUSensor
 from pxr import UsdPhysics, UsdShade, Sdf, Gf
 import omni.kit.commands
@@ -65,7 +65,7 @@ class ImportBot(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
-        world.get_physics_context().enable_gpu_dynamics(False)
+        world.get_physics_context().enable_gpu_dynamics(True)
         world.scene.add_default_ground_plane()
         self.setup_field()
         # self.setup_perspective_cam()
@@ -76,10 +76,10 @@ class ImportBot(BaseSample):
         world = self.get_world()
         self.extension_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
-        field = os.path.join(self.project_root_path, "assets/2023_field_cpu/FE-2023.usd")
+        field = os.path.join(self.project_root_path, "assets/2023_field_gpu/FE-2023.usd")
         add_reference_to_stage(usd_path=field,prim_path="/World/Field")
-        cone = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23700_JFH.usd")
-        cube = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23701_JFL.usd")
+        cone = os.path.join(self.project_root_path, "assets/2023_field_gpu/parts/GE-23700_JFH.usd")
+        cube = os.path.join(self.project_root_path, "assets/2023_field_gpu/parts/GE-23701_JFL.usd")
         chargestation = os.path.join(self.project_root_path, "assets/ChargeStation-Copy/Assembly-1.usd")
         add_reference_to_stage(chargestation, "/World/ChargeStation_1")
         add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
@@ -198,7 +198,7 @@ class ImportBot(BaseSample):
         set_drive_params(top_slider_joint, 10000000, 100000, 98.0)
         set_drive_params(bottom_intake_joint, 10000000, 100000, 98.0)
         
-        self.create_lidar(robot_prim_path)
+        # self.create_lidar(robot_prim_path)
         self.create_imu(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
         self.setup_camera_action_graph(robot_prim_path)
