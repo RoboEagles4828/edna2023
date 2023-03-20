@@ -1,7 +1,7 @@
 
 [bookmarks]
-IsaacAssets = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.2.0/Isaac"
-Scenarios = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.2.0/Isaac/Samples/ROS2/Scenario"
+IsaacAssets = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.2.1/Isaac"
+Scenarios = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.2.1/Isaac/Samples/ROS2/Scenario"
 edna = "/workspaces/edna2023"
 localhost = "omniverse://localhost"
 
