@@ -9,6 +9,7 @@ from sim.talonFxSim import TalonFxSim
 from sim.cancoderSim import CancoderSim
 from hardware_interface.drivetrain import getAxleRadians, getWheelRadians, SwerveModule, AXLE_JOINT_GEAR_RATIO
 from hardware_interface.armcontroller import PORTS
+from hardware_interface.joystick import CONTROLLER_PORT
 
 import math
 import typing
@@ -32,6 +33,7 @@ class PhysicsEngine:
         
         self.physics_controller = physics_controller
         
+        self.xbox = wpilib.simulation.XboxControllerSim(CONTROLLER_PORT)
         self.roborio = wpilib.simulation.RoboRioSim()
         self.battery = wpilib.simulation.BatterySim()
         self.roborio.setVInVoltage(self.battery.calculate([0.0]))
@@ -41,8 +43,8 @@ class PhysicsEngine:
         self.rearLeftModuleSim = SwerveModuleSim(robot.drive_train.rear_left)
         self.rearRightModuleSim = SwerveModuleSim(robot.drive_train.rear_right)
 
-        self.elevator = TalonFxSim(robot.arm_controller.elevator.motor, 0.001, 1, False)
-        self.intake = TalonFxSim(robot.arm_controller.bottom_gripper_lift.motor, 0.003, 1, False)
+        self.elevator = TalonFxSim(robot.arm_controller.elevator.motor, 0.0004, 1, False)
+        self.intake = TalonFxSim(robot.arm_controller.bottom_gripper_lift.motor, 0.0004, 1, False)
         self.pneumaticHub = wpilib.simulation.REVPHSim(PORTS['HUB'])
         self.armRollerBar = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['ARM_ROLLER_BAR'])
         self.topGripperSlider = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER_SLIDER'])

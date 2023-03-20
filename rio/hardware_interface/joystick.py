@@ -4,11 +4,28 @@ import logging
 CONTROLLER_PORT = 0
 SCALING_FACTOR_FIX = 10000
 
-DPAD_REF = {
-    "up": 0,
-    "down": 180,
-    "left": 270,
-    "right": 90,
+pov_x_map = {
+    -1: 0.0,
+    0: 0.0,
+    45: -1.0,
+    90: -1.0,
+    135: -1.0,
+    180: 0.0,
+    225: 1.0,
+    270: 1.0,
+    315: 1.0,
+}
+
+pov_y_map = {
+    -1: 0.0,
+    0: 1.0,
+    45: 1.0,
+    90: 0.0,
+    135: -1.0,
+    180: -1.0,
+    225: -1.0,
+    270: 0.0,
+    315: 1.0,
 }
 
 class Joystick:
@@ -16,48 +33,54 @@ class Joystick:
         self.joystick = wpilib.XboxController(CONTROLLER_PORT)
         self.deadzone = 0.15
 
+    def scaleAxis(self, axis):
+        return int(axis * SCALING_FACTOR_FIX * -1)
+    
+    def scaleTrigger(self, trigger):
+        return int(trigger * SCALING_FACTOR_FIX * -1)
+    
+    def getEmptyData(self):
+        return {
+            "axes": [0.0] * 8,
+            "buttons": [0] * 11,
+        }
+    
     def getData(self):
-        
-        def scale(a):
-            return int(a * SCALING_FACTOR_FIX * -1)
-        def toInt(b):
-            return int(b)
-        def scaleTrigger(c):
-            return int((c * -2 + 1) * SCALING_FACTOR_FIX)
-        
+        pov = self.joystick.getPOV(0)
+        leftX = self.joystick.getLeftX()
+        leftY = self.joystick.getLeftY()
+        rightX = self.joystick.getRightX()
+        rightY = self.joystick.getRightY()
+        leftTrigger = self.joystick.getLeftTriggerAxis()
+        rightTrigger = self.joystick.getRightTriggerAxis()
+
         axes = [
-            scale(self.joystick.getLeftX()) if abs(self.joystick.getLeftX()) > self.deadzone else 0.0,
-            scale(self.joystick.getLeftY()) if abs(self.joystick.getLeftY()) > self.deadzone else 0.0,
-            scaleTrigger(self.joystick.getLeftTriggerAxis()) if abs(self.joystick.getLeftTriggerAxis()) > self.deadzone else 0.0,
-            scale(self.joystick.getRightX()) if abs(self.joystick.getRightX()) > self.deadzone else 0.0,
-            scale(self.joystick.getRightY()) if abs(self.joystick.getRightY()) > self.deadzone else 0.0,
-            scaleTrigger(self.joystick.getRightTriggerAxis()) if abs(self.joystick.getRightTriggerAxis()) > self.deadzone else 0.0
+            self.scaleAxis(leftX) if abs(leftX) > self.deadzone else 0.0,
+            self.scaleAxis(leftY) if abs(leftY) > self.deadzone else 0.0,
+            self.scaleTrigger(leftTrigger),
+            self.scaleAxis(rightX) if abs(rightX) > self.deadzone else 0.0,
+            
+            self.scaleAxis(rightY) if abs(rightY) > self.deadzone else 0.0,
+            self.scaleTrigger(rightTrigger),
+            
+            pov_x_map[pov], # left 1.0 right -1.0
+            pov_y_map[pov], # up 1.0 down -1.0
         ]
         buttons = [
-            self.joystick.getAButton(),
-            self.joystick.getBButton(),
-            self.joystick.getXButton(),
-            self.joystick.getYButton(),
-            self.joystick.getLeftBumper(),
-            self.joystick.getRightBumper(),
-            self.joystick.getBackButton(),
-            self.joystick.getStartButton(),
-            self.getDPAD("up"),
-            self.getDPAD("down"),
-            self.getDPAD("left"),
-            self.getDPAD("right"),
-            self.joystick.getLeftStickButton(),
-            self.joystick.getRightStickButton()
+            int(self.joystick.getAButton()),
+            int(self.joystick.getBButton()),
+            int(self.joystick.getXButton()),
+            int(self.joystick.getYButton()),
+            int(self.joystick.getLeftBumper()),
+            int(self.joystick.getRightBumper()),
+            int(self.joystick.getBackButton()),
+            int(self.joystick.getStartButton()),
+            0,
+            int(self.joystick.getLeftStickButton()),
+            int(self.joystick.getRightStickButton())
         ]
-        buttons = map(toInt, buttons)
-
-        return {"axes": list(axes), "buttons": list(buttons)}
+        
+        return {"axes": axes, "buttons": buttons}
     
-    def getDPAD(self, dir):
-        pov = self.joystick.getPOV()
-
-        if pov == -1:
-            return 0.0
-        else:
-            return 1.0 if self.joystick.getPOV() == DPAD_REF(dir) else 0.0
+    
 
