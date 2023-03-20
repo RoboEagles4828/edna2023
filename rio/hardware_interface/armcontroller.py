@@ -202,7 +202,7 @@ class Elevator():
 
         # Motion Magic
         self.motor.configMotionCruiseVelocity(MOTOR_PID_CONFIG['MAX_SPEED'], MOTOR_TIMEOUT) # Sets the maximum speed of motion magic (ticks/100ms)
-        self.motor.configMotionAcceleration(MOTOR_PID_CONFIG['MAX_SPEED'], MOTOR_TIMEOUT) # Sets the maximum acceleration of motion magic (ticks/100ms)
+        self.motor.configMotionAcceleration(MOTOR_PID_CONFIG['TARGET_ACCELERATION'], MOTOR_TIMEOUT) # Sets the maximum acceleration of motion magic (ticks/100ms)
     
     def getPosition(self) -> float:
         return (self.motor.getSelectedSensorPosition() / (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
@@ -213,5 +213,5 @@ class Elevator():
     def stop(self):
         self.motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
-    def setPosition(self, position : float): # Position should be between 0.0 and 2.0
+    def setPosition(self, position : float): # Position should be between 0.0 and 1.0
         self.motor.set(ctre.TalonFXControlMode.MotionMagic, position * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
