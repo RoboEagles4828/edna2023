@@ -14,14 +14,14 @@ ENABLE_JOY = True
 ENABLE_DRIVE =  True
 ENABLE_ARM = True
 ENABLE_STAGE_BROADCASTER = True
-FRC_STAGE = "DISABLED"
-FMS_ATTACHED = False
-STOP_THREADS = False
 
-# Locks
-rti_init_lock = threading.Lock()
-drive_train_lock = threading.Lock()
-arm_controller_lock = threading.Lock()
+# Global Variables
+frc_stage = "DISABLED"
+fms_attached = False
+stop_threads = False
+drive_train : DriveTrain = None
+joystick : Joystick = None
+arm_controller : ArmController = None
 
 # Logging
 format = "%(asctime)s: %(message)s"
@@ -35,7 +35,6 @@ xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
 
 ############################################
 ## Hardware
-drive_train : DriveTrain = None
 def initDriveTrain():
     global drive_train
     if drive_train == None:
@@ -43,7 +42,6 @@ def initDriveTrain():
         logging.info("Success: DriveTrain created")
     return drive_train
 
-joystick : Joystick = None
 def initJoystick():
     global joystick
     if joystick == None:
@@ -51,7 +49,6 @@ def initJoystick():
         logging.info("Success: Joystick created")
     return joystick
 
-arm_controller : ArmController = None
 def initArmController():
     global arm_controller
     if arm_controller == None:
@@ -59,19 +56,25 @@ def initArmController():
         logging.info("Success: ArmController created")
     return arm_controller
 
+def initDDS(ddsAction, participantName, actionName):
+    dds = None
+    with rti_init_lock:
+        dds = ddsAction(xml_path, participantName, actionName)
+    return dds
+
 ############################################
 
 
 
 ############################################
-## Generic Loop that is used for all threads
+## Threads
 def threadLoop(name, dds, action):
     logging.info(f"Starting {name} thread")
-    global STOP_THREADS
-    global FRC_STAGE
+    global stop_threads
+    global frc_stage
     try:
-        while STOP_THREADS == False:
-            if FRC_STAGE in ["TELEOP", "AUTON"] or name in ["encoder", "stage-broadcaster"]:
+        while stop_threads == False:
+            if frc_stage in ["TELEOP", "AUTON"] or name in ["encoder", "stage-broadcaster"]:
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
@@ -100,19 +103,21 @@ def startThread(name) -> threading.Thread | None:
     thread.start()
     return thread
 
+# Locks
+rti_init_lock = threading.Lock()
+drive_train_lock = threading.Lock()
+arm_controller_lock = threading.Lock()
 ############################################
 
 
 
 
-######### Encoder Thread and Action #########
+################## ENCODER ##################
 ENCODER_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::encoder_info"
 ENCODER_WRITER_NAME = "encoder_info_publisher::encoder_info_writer"
 
 def encoderThread():
-    encoder_publisher = None
-    with rti_init_lock:
-        encoder_publisher = DDS_Publisher(xml_path, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
+    encoder_publisher = initDDS(DDS_Publisher, ENCODER_PARTICIPANT_NAME, ENCODER_WRITER_NAME)
     threadLoop('encoder', encoder_publisher, encoderAction)
 
 def encoderAction(publisher):
@@ -140,18 +145,16 @@ def encoderAction(publisher):
             data['velocity'] += arm_data['velocity']
 
     publisher.write(data)
+############################################
 
 
 
-
-######### Command Thread and Action #########
+################## COMMAND ##################
 COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::joint_commands"
 COMMAND_WRITER_NAME = "isaac_joint_commands_subscriber::joint_commands_reader"
 
 def commandThread():
-    command_subscriber = None
-    with rti_init_lock:
-        command_subscriber = DDS_Subscriber(xml_path, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
+    command_subscriber = initDDS(DDS_Subscriber, COMMAND_PARTICIPANT_NAME, COMMAND_WRITER_NAME)
     threadLoop('command', command_subscriber, commandAction)
 
 def commandAction(subscriber : DDS_Subscriber):
@@ -159,18 +162,16 @@ def commandAction(subscriber : DDS_Subscriber):
     global drive_train
     with drive_train_lock:
         drive_train.sendCommands(data)
+############################################
 
 
 
-
-######### Arm Thread and Action #########
+################## ARM ##################
 ARM_COMMAND_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::arm_commands"
 ARM_COMMAND_WRITER_NAME = "isaac_arm_commands_subscriber::arm_commands_reader"
 
 def armThread():
-    arm_command_subscriber = None
-    with rti_init_lock:
-        arm_command_subscriber = DDS_Subscriber(xml_path, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
+    arm_command_subscriber = initDDS(DDS_Subscriber, ARM_COMMAND_PARTICIPANT_NAME, ARM_COMMAND_WRITER_NAME)
     threadLoop('arm', arm_command_subscriber, armAction)
 
 def armAction(subscriber : DDS_Subscriber):
@@ -178,22 +179,20 @@ def armAction(subscriber : DDS_Subscriber):
     global arm_controller
     with arm_controller_lock:
         arm_controller.sendCommands(data)
+############################################
 
 
 
-
-######### Joystick Thread and Action #########
+################## JOYSTICK ##################
 JOYSTICK_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::joystick"
 JOYSTICK_WRITER_NAME = "joystick_data_publisher::joystick_data_writer"
 
 def joystickThread():
-    joystick_publisher = None
-    with rti_init_lock:
-        joystick_publisher = DDS_Publisher(xml_path, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
+    joystick_publisher = initDDS(DDS_Publisher, JOYSTICK_PARTICIPANT_NAME, JOYSTICK_WRITER_NAME)
     threadLoop('joystick', joystick_publisher, joystickAction)
 
 def joystickAction(publisher : DDS_Publisher):
-    if FRC_STAGE == "TELEOP":
+    if frc_stage == "TELEOP":
         global joystick
         data = None
         try:
@@ -202,25 +201,23 @@ def joystickAction(publisher : DDS_Publisher):
             logging.warn("No joystick data could be fetched!")
             initJoystick()
         publisher.write(data)
+############################################
 
 
 
-
-######### STAGE BROADCASTER THREAD and ACTION #########
+################## STAGE ##################
 STAGE_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::stage_broadcaster"
 STAGE_WRITER_NAME = "stage_publisher::stage_writer"
 
 def stageBroadcasterThread():
-    stage_publisher = None
-    with rti_init_lock:
-        stage_publisher = DDS_Publisher(xml_path, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
+    stage_publisher = initDDS(DDS_Publisher, STAGE_PARTICIPANT_NAME, STAGE_WRITER_NAME)
     threadLoop('stage-broadcaster', stage_publisher, stageBroadcasterAction)
 
 def stageBroadcasterAction(publisher : DDS_Publisher):
-    global FRC_STAGE
-    global FMS_ATTACHED
-    publisher.write({ "data": f"{FRC_STAGE}|{FMS_ATTACHED}" })
-
+    global frc_stage
+    global fms_attached
+    publisher.write({ "data": f"{frc_stage}|{fms_attached}" })
+############################################
 
 
 
@@ -240,8 +237,8 @@ class EdnaRobot(wpilib.TimedRobot):
         self.threads = []
         if self.use_threading:
             logging.info("Initializing Threads")
-            global STOP_THREADS
-            STOP_THREADS = False
+            global stop_threads
+            stop_threads = False
             if ENABLE_DRIVE: self.threads.append({"name": "command", "thread": startThread("command") })
             if ENABLE_ARM: self.threads.append({"name": "arm-command", "thread": startThread("arm-command")})
             if ENABLE_JOY: self.threads.append({"name": "joystick", "thread": startThread("joystick") })
@@ -259,13 +256,13 @@ class EdnaRobot(wpilib.TimedRobot):
     # Auton
     def autonomousInit(self):
         logging.info("Entering Auton")
-        global FRC_STAGE
-        FRC_STAGE = "AUTON"
+        global frc_stage
+        frc_stage = "AUTON"
 
 
     def autonomousPeriodic(self):
-        global FMS_ATTACHED
-        FMS_ATTACHED = wpilib.DriverStation.isFMSAttached()
+        global fms_attached
+        fms_attached = wpilib.DriverStation.isFMSAttached()
         if self.use_threading:
             self.manageThreads()
         else:
@@ -273,19 +270,19 @@ class EdnaRobot(wpilib.TimedRobot):
 
     def autonomousExit(self):
         logging.info("Exiting Auton")
-        global FRC_STAGE
-        FRC_STAGE = "AUTON"
+        global frc_stage
+        frc_stage = "AUTON"
 
 
     # Teleop
     def teleopInit(self):
         logging.info("Entering Teleop")
-        global FRC_STAGE
-        FRC_STAGE = "TELEOP"
+        global frc_stage
+        frc_stage = "TELEOP"
     
     def teleopPeriodic(self):
-        global FMS_ATTACHED
-        FMS_ATTACHED = wpilib.DriverStation.isFMSAttached()
+        global fms_attached
+        fms_attached = wpilib.DriverStation.isFMSAttached()
         if self.use_threading:
             self.manageThreads()
         else:
@@ -293,8 +290,8 @@ class EdnaRobot(wpilib.TimedRobot):
 
     def teleopExit(self):
         logging.info("Exiting Teleop")
-        global FRC_STAGE
-        FRC_STAGE = "DISABLED"
+        global frc_stage
+        frc_stage = "DISABLED"
         with drive_train_lock:
             drive_train.stop()
         with arm_controller_lock:
@@ -323,8 +320,8 @@ class EdnaRobot(wpilib.TimedRobot):
 
     # Is this needed?
     def stopThreads(self):
-        global STOP_THREADS
-        STOP_THREADS = True
+        global stop_threads
+        stop_threads = True
         for thread in self.threads:
             thread.join()
         logging.info('All Threads Stopped')

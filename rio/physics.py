@@ -8,17 +8,13 @@ from pyfrc.physics.core import PhysicsInterface
 from sim.talonFxSim import TalonFxSim
 from sim.cancoderSim import CancoderSim
 from hardware_interface.drivetrain import getAxleRadians, getWheelRadians, SwerveModule, AXLE_JOINT_GEAR_RATIO
+from hardware_interface.armcontroller import PORTS
 
 import math
 import typing
 
 if typing.TYPE_CHECKING:
     from robot import EdnaRobot
-
-WHEEL_MOTOR_MAX_VEL = 20900
-WHEEL_MOTOR_ACCEL_TIME = 0.25
-AXLE_MOTOR_MAX_VEL = 20900
-AXLE_MOTOR_ACCEL_TIME = 0.25
 
 # Calculations
 axle_radius = 0.05
@@ -40,48 +36,67 @@ class PhysicsEngine:
         self.battery = wpilib.simulation.BatterySim()
         self.roborio.setVInVoltage(self.battery.calculate([0.0]))
 
-        self.frontLeftModuleSim = self.setupSwerveModuleSim(robot.drive_train.front_left)
-        self.frontRightModuleSim = self.setupSwerveModuleSim(robot.drive_train.front_right)
-        self.rearLeftModuleSim = self.setupSwerveModuleSim(robot.drive_train.rear_left)
-        self.rearRightModuleSim = self.setupSwerveModuleSim(robot.drive_train.rear_right)
-        
+        self.frontLeftModuleSim = SwerveModuleSim(robot.drive_train.front_left)
+        self.frontRightModuleSim = SwerveModuleSim(robot.drive_train.front_right)
+        self.rearLeftModuleSim = SwerveModuleSim(robot.drive_train.rear_left)
+        self.rearRightModuleSim = SwerveModuleSim(robot.drive_train.rear_right)
 
-    def setupSwerveModuleSim(self, module: "SwerveModule"):
-        ModuleObejectSim = {}
-        wheelMOI = center_wheel_moi
-        axleMOI = center_axle_moi + center_side_wheel_moi
-        # There is a bad feedback loop between controller and the rio code
-        # It will create oscillations in the simulation when the robot is not being commanded to move
-        # The issue is from the controller commanding the axle position to stay at the same position
-        ModuleObejectSim["wheelMotorSim"] = TalonFxSim(module.wheel_motor, wheelMOI, 1, False)
-        ModuleObejectSim["axleMotorSim"] = TalonFxSim(module.axle_motor, axleMOI, AXLE_JOINT_GEAR_RATIO, False)
-        ModuleObejectSim["encoderSim"] = CancoderSim(module.encoder, module.encoder_offset, True)
-        return ModuleObejectSim
-    
-    def updateSwerveModuleSim(self, moduleSim, tm_diff):
-        moduleSim["wheelMotorSim"].update(tm_diff)
-        moduleSim["axleMotorSim"].update(tm_diff)
-        moduleSim["encoderSim"].update(tm_diff, moduleSim["axleMotorSim"].getVelocityRadians())
+        self.elevator = TalonFxSim(robot.arm_controller.elevator.motor, 0.3, 1, False)
+        self.intake = TalonFxSim(robot.arm_controller.bottom_gripper_lift.motor, 0.3, 1, False)
+        self.pneumaticHub = wpilib.simulation.REVPHSim(PORTS['HUB'])
+        self.armRollerBar = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['ARM_ROLLER_BAR'])
+        self.topGripperSlider = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER_SLIDER'])
+        self.topGripper = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER'])
 
-    # Useful for debugging the simulation or code
-    def printSwerveModuleSim(self, moduleSim):
-        wheelPos = round(getWheelRadians(moduleSim["wheelMotorSim"].getSimulatedPosition(), "position"), 2)
-        wheelVel = round(getWheelRadians(moduleSim["wheelMotorSim"].getSimulatedVelocity(), "velocity"), 2)
-        axlePos = round(getAxleRadians(moduleSim["axleMotorSim"].getSimulatedPosition(), "position"), 2)
-        axleVel = round(getAxleRadians(moduleSim["axleMotorSim"].getSimulatedVelocity(), "velocity"), 2)
-        encoderPos = round(moduleSim["encoderSim"].getSimulatedPosition(), 2)
-        encoderVel = round(moduleSim["encoderSim"].getSimulatedVelocity(), 2)
-        print(f"Wheel POS: {wheelPos} VEL: {wheelVel}\t\tEncoder POS: {encoderPos} VEL: {encoderVel}\t\tAxle POS: {axlePos} VEL: {axleVel}")
-        # print(moduleSim["wheelMotorSim"].talon.getSimCollection().getMotorOutputLeadVoltage())
-    
+
     def update_sim(self, now: float, tm_diff: float) -> None:
 
-        # Simulate the motor
-        self.updateSwerveModuleSim(self.frontLeftModuleSim, tm_diff)
-        self.updateSwerveModuleSim(self.frontRightModuleSim, tm_diff)
-        self.updateSwerveModuleSim(self.rearLeftModuleSim, tm_diff)
-        self.updateSwerveModuleSim(self.rearRightModuleSim, tm_diff)
-        self.printSwerveModuleSim(self.frontLeftModuleSim)
+        # Simulate Swerve Modules
+        self.frontLeftModuleSim.update(tm_diff)
+        self.frontRightModuleSim.update(tm_diff)
+        self.rearLeftModuleSim.update(tm_diff)
+        self.rearRightModuleSim.update(tm_diff)
+
+        # Simulate Arm
+        self.elevator.update(tm_diff)
+        self.intake.update(tm_diff)
 
         # Add Currents into Battery Simulation
         self.roborio.setVInVoltage(self.battery.calculate([0.0]))
+
+
+class SwerveModuleSim():
+    wheel : TalonFxSim = None
+    axle : TalonFxSim = None
+    encoder : CancoderSim = None
+
+    def __init__(self, module: "SwerveModule"):
+        wheelMOI = center_wheel_moi
+        axleMOI = center_axle_moi + center_side_wheel_moi
+        self.wheel = TalonFxSim(module.wheel_motor, wheelMOI, 1, False)
+        self.axle = TalonFxSim(module.axle_motor, axleMOI, AXLE_JOINT_GEAR_RATIO, False)
+        self.encoder = CancoderSim(module.encoder, module.encoder_offset, True)
+        # There is a bad feedback loop between controller and the rio code
+        # It will create oscillations in the simulation when the robot is not being commanded to move
+        # The issue is from the controller commanding the axle position to stay at the same position when idle
+        # but if the axle is moving during that time it will constantly overshoot the idle position
+    
+    def update(self, tm_diff):
+        self.wheel.update(tm_diff)
+        self.axle.update(tm_diff)
+        self.encoder.update(tm_diff, self.axle.getVelocityRadians())
+    
+    # Useful for debugging the simulation or code
+    def __str__(self) -> str:
+        wheelPos = getWheelRadians(self.wheel.talon.getSelectedSensorPosition(), "position")
+        wheelVel = getWheelRadians(self.wheel.talon.getSelectedSensorVelocity(), "velocity")
+        stateStr = f"Wheel POS: {wheelPos:5.2f} VEL: {wheelVel:5.2f} "
+        
+        axlePos = getAxleRadians(self.axle.talon.getSelectedSensorPosition(), "position")
+        axleVel = getAxleRadians(self.axle.talon.getSelectedSensorVelocity(), "velocity")
+        stateStr += f"Axle POS: {axlePos:5.2f} VEL: {axleVel:5.2f} "
+        
+        encoderPos = math.radians(self.encoder.cancoder.getAbsolutePosition())
+        encoderVel = math.radians(self.encoder.cancoder.getVelocity())
+        stateStr += f"Encoder POS: {encoderPos:5.2f} VEL: {encoderVel:5.2f}"
+        return stateStr

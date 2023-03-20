@@ -21,8 +21,6 @@ class TalonFxSim:
         self.motor = wpilib.simulation.DCMotorSim(self.gearbox, self.gearRatio, self.moi, [0.0, 0.0])
         self.velocity = 0.0
         self.position = 0.0
-        self.supplyCurrent = 0.0
-    
     
     # Simulates the movement of falcon 500 motors by getting the voltages from the
     # the motor model that is being controlled by the robot code.
@@ -63,10 +61,3 @@ class TalonFxSim:
 
     def getSupplyCurrent(self) -> float:
         return self.motor.getCurrentDraw()
-
-    # For viewing and testings purposes
-    def getSimulatedPosition(self) -> float:
-        return self.talon.getSelectedSensorPosition()
-
-    def getSimulatedVelocity(self) -> float:
-        return self.talon.getSelectedSensorVelocity()
