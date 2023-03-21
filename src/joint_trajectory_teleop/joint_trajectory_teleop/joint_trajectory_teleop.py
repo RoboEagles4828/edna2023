@@ -93,8 +93,8 @@ class PublishTrajectoryMsg(Node):
         #TODO: Tweak the values
 
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.3
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.3
+            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.1
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.1
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
         elif button_val == 0.0:
             self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.0
@@ -117,8 +117,8 @@ class PublishTrajectoryMsg(Node):
         
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.22
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.22
+            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.60
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.60
             self.publisher_.publish(self.cmds)
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
         
@@ -130,13 +130,10 @@ class PublishTrajectoryMsg(Node):
         
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.5
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.5
+            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 1.04
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 1.04
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
-            self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 1.0
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.2
         elif button_val == 0.0:
-            self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 0.0
             self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
         
         
@@ -163,6 +160,9 @@ class PublishTrajectoryMsg(Node):
         if button_val == 1.0:
             self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 1.0
             self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.2
+        else:
+            self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 0.0
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
         
         
         self.cmds.points = [self.position_cmds]
