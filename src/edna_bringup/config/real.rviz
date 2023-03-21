@@ -86,21 +86,6 @@ Visualization Manager:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      bottom_gripper_bar_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_left_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_right_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
       bottom_intake_link:
         Alpha: 1
         Show Axes: false
@@ -232,12 +217,6 @@ Visualization Manager:
         Value: false
       real/base_link:
         Value: true
-      real/bottom_gripper_bar_link:
-        Value: false
-      real/bottom_gripper_left_arm_link:
-        Value: false
-      real/bottom_gripper_right_arm_link:
-        Value: false
       real/bottom_intake_link:
         Value: false
       real/elevator_center_link:
@@ -302,10 +281,7 @@ Visualization Manager:
                       real/top_gripper_right_arm_link: {}
           real/arm_elevator_leg_link:
             real/arm_roller_bar_link: {}
-            real/bottom_intake_link:
-              real/bottom_gripper_bar_link:
-                real/bottom_gripper_left_arm_link: {}
-                real/bottom_gripper_right_arm_link: {}
+            real/bottom_intake_link: {}
           real/front_left_axle_link:
             real/front_left_wheel_link: {}
           real/front_right_axle_link:
@@ -368,7 +344,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/ThirdPersonFollower
-      Distance: 2.1470446586608887
+      Distance: 2.082409143447876
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -383,10 +359,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5102026462554932
+      Pitch: 0.15020251274108887
       Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz_default_plugins)
-      Yaw: 3.5954172611236572
+      Yaw: 0.7022544741630554
     Saved: null
 Window Geometry:
   Displays:
@@ -404,5 +380,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1846
-  X: 74
-  Y: 27
+  X: 345
+  Y: 265

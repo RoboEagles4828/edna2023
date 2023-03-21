@@ -95,12 +95,16 @@ private:
   };
   std::vector<MimicJoint> mimic_joints_;
   double parse_double(const std::string & text);
+  bool parse_bool(const std::string & text);
 
   // Keep Track of Arm vs Drive Joints
   struct JointGroupMember
   {
     std::size_t joint_index;
     std::string joint_name;
+    bool percent = false;
+    double min = -1.0;
+    double max = 1.0;
   };
   std::vector<JointGroupMember> drive_joints_;
   std::vector<JointGroupMember> arm_joints_;

@@ -98,19 +98,19 @@ accelerationConstant = 0.25
 positionCoefficient = 2.0 * math.pi / TICKS_PER_REV / AXLE_JOINT_GEAR_RATIO
 velocityCoefficient = positionCoefficient * 10.0
 # axle (radians) -> shaft (ticks)
-def getShaftTicks(radians, type) -> int:
-    if type == "position":
+def getShaftTicks(radians, displacementType) -> int:
+    if displacementType == "position":
         return int(radians / positionCoefficient)
-    elif type == "velocity":
+    elif displacementType == "velocity":
         return int(radians / velocityCoefficient)
     else:
         return 0
 
 # shaft (ticks) -> axle (radians)
-def getAxleRadians(ticks, type):
-    if type == "position":
+def getAxleRadians(ticks, displacementType):
+    if displacementType == "position":
         return ticks * positionCoefficient
-    elif type == "velocity":
+    elif displacementType == "velocity":
         return ticks * velocityCoefficient
     else:
         return 0
@@ -118,19 +118,19 @@ def getAxleRadians(ticks, type):
 wheelPositionCoefficient = 2.0 * math.pi / TICKS_PER_REV / WHEEL_JOINT_GEAR_RATIO
 wheelVelocityCoefficient = wheelPositionCoefficient * 10.0
 # wheel (radians) -> shaft (ticks)
-def getWheelShaftTicks(radians, type) -> int:
-    if type == "position":
+def getWheelShaftTicks(radians, displacementType) -> int:
+    if displacementType == "position":
         return int(radians / wheelPositionCoefficient)
-    elif type == "velocity":
+    elif displacementType == "velocity":
         return int(radians / wheelVelocityCoefficient)
     else:
         return 0
 
 # shaft (ticks) -> wheel (radians)
-def getWheelRadians(ticks, type):
-    if type == "position":
+def getWheelRadians(ticks, displacementType):
+    if displacementType == "position":
         return ticks * wheelPositionCoefficient
-    elif type == "velocity":
+    elif displacementType == "velocity":
         return ticks * wheelVelocityCoefficient
     else:
         return 0
@@ -256,9 +256,6 @@ class SwerveModule():
         else:
             self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
         self.last_wheel_vel_cmd = wheel_vel
-        
-        if abs(wheel_motor_vel) > 0:
-            print(wheel_vel)
 
         # MOTION MAGIC CONTROL FOR AXLE POSITION
         axle_motorPosition = getAxleRadians(self.axle_motor.getSelectedSensorPosition(), "position")
@@ -312,9 +309,6 @@ class SwerveModule():
         self.axle_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def getEncoderData(self):
-        # value = self.getEncoderPosition()
-        # if self.axle_joint_name == "front_left_axle_joint":
-        #     print(value)
         output = [
             {
                 "name": self.wheel_joint_name,

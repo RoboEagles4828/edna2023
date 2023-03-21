@@ -369,14 +369,18 @@ double correct_joystick_pos(const std::map<std::string, double>& scale_map,const
 {
   if(sqrt(pow(lin_x_vel,2)+pow(lin_y_vel,2))>1)
   {
+    double scale = scale_map.at(fieldname);
+    if(scale<0.001){
+      scale*=10000;
+    }
     if(fieldname=="x")
     {
-      double vel_to_correct = sin(atan2(lin_x_vel,lin_y_vel))*scale_map.at(fieldname);
+      double vel_to_correct = sin(atan2(lin_x_vel,lin_y_vel))*scale;
       return vel_to_correct;
     }
     else if(fieldname=="y")
     {
-      double vel_to_correct = cos(atan2(lin_x_vel,lin_y_vel))*scale_map.at(fieldname);
+      double vel_to_correct = cos(atan2(lin_x_vel,lin_y_vel))*scale;
       return vel_to_correct;
     }
   }

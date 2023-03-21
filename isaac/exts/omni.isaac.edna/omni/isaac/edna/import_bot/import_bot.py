@@ -7,7 +7,7 @@ from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils import prims
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
-from omni.kit.viewport_legacy import get_default_viewport_window
+# from omni.kit.viewport_legacy import get_default_viewport_window
 # from omni.isaac.sensor import IMUSensor
 from pxr import UsdPhysics, UsdShade, Sdf, Gf
 import omni.kit.commands
@@ -198,7 +198,7 @@ class ImportBot(BaseSample):
         set_drive_params(top_slider_joint, 10000000, 100000, 98.0)
         set_drive_params(bottom_intake_joint, 10000000, 100000, 98.0)
         
-        self.create_lidar(robot_prim_path)
+        # self.create_lidar(robot_prim_path)
         self.create_imu(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
         self.setup_camera_action_graph(robot_prim_path)
