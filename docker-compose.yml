@@ -2,10 +2,11 @@ version: "3.6"
 services:
   main_control:
     # image: "ghcr.io/roboeagles4828/developer-environment:6"
-    image: "ghcr.io/roboeagles4828/jetson:2"
+    image: "ghcr.io/roboeagles4828/jetson:3"
     network_mode: "host"
     environment:
       - ROS_DOMAIN_ID=0
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml
     deploy:
       restart_policy:
         condition: on-failure

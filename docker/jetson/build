@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "ONLY USE THIS SCRIPT ON THE JETSON"
-VERSION=2 # Increment manually for now
+VERSION=3 # Increment manually for now
 PREV_VERSION="$((VERSION-1))"
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
 IMAGE_NAME="jetson"
