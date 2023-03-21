@@ -1,7 +1,7 @@
-version: "3.9"
+version: "3.6"
 services:
   humble2204:
-    image: "ghcr.io/roboeagles4828/jetson:2023"
+    image: "ghcr.io/roboeagles4828/jetson:2"
     network_mode: "host"
     environment:
       - ROS_DOMAIN_ID=0
