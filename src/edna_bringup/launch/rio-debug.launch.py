@@ -20,7 +20,7 @@ def generate_launch_description():
     }
     
     debug_launch_args = common | {
-        'enable_rviz': 'false',
+        'enable_rviz': 'true',
         'enable_foxglove': 'false',
         'enable_debugger_gui': 'true',
         'rviz_file': rviz_file
