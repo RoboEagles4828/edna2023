@@ -1,6 +1,7 @@
 version: "3.6"
 services:
-  humble2204:
+  main_control:
+    # image: "ghcr.io/roboeagles4828/developer-environment:6"
     image: "ghcr.io/roboeagles4828/jetson:2"
     network_mode: "host"
     environment:
@@ -11,10 +12,11 @@ services:
         delay: 2s
         max_attempts: 3
         window: 120s
+    entrypoint: ["/bin/bash", "-c", "/opt/workspace/docker/jetson/entrypoint.sh"]
+    working_dir: /opt/workspace
+    user: admin
     volumes:
-    - ./:/opt/workspace
-    ports:
-    - "1-65535:1-65535"
+    - ${HOME}/edna2023:/opt/workspace
   # zed_cam:
   #   image: ghcr.io/roboeagles4828/jetson-zed:1
   #   network_mode: "host"
