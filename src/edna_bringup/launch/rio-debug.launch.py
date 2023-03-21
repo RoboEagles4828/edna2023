@@ -15,8 +15,8 @@ def generate_launch_description():
     control_launch_args = common | {
         'use_ros2_control': 'true',
         'load_controllers': 'false',
-        'forward_command_controller': 'true',
-        'hardware_plugin': 'swerve_hardware/RealDriveHardware', # Change back to RealDriveHardware!
+        'forward_command_controller': 'true', # Change to false in order to disable publishing
+        'hardware_plugin': 'swerve_hardware/RealDriveHardware', # Use IsaacDriveHardware for isaac or RealDriveHardware for real.
     }
     
     debug_launch_args = common | {

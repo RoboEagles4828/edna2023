@@ -53,8 +53,6 @@ POSITION_JOINTS = {
     'top_gripper_left_arm_joint',
     'top_slider_joint',
     'bottom_intake_joint',
-    'bottom_gripper_right_arm_joint',
-    'bottom_gripper_left_arm_joint',
     'front_left_axle_joint',
     'front_right_axle_joint',
     'rear_left_axle_joint',
