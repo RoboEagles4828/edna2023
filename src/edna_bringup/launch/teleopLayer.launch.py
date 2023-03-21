@@ -19,13 +19,20 @@ def generate_launch_description():
         package = "frc_auton",
         namespace=namespace,
         executable= "reader",
-        name = "frc_auton_node"
+        name = "frc_auton_node",
+        parameters=[{
+            "auton_name": "24",   
+        }]
     )
     frc_teleop_writer = Node(
         package = "frc_auton",
         namespace=namespace,
         executable= "writer",
-        name = "frc_auton_node"
+        name = "frc_auton_node",
+        parameters=[{
+            "record_auton": False,
+            "record_without_fms": True,    
+        }]
     )
     joy = Node(
             package='joy',

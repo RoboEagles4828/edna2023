@@ -22,8 +22,12 @@
       "/SmartDashboard/Field": "Field2d"
     }
   },
-  "NetworkTables View": {
-    "visible": false
+  "NetworkTables": {
+    "transitory": {
+      "FMSInfo": {
+        "open": true
+      }
+    }
   },
   "Plot": {
     "Plot <0>": {

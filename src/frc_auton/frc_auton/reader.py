@@ -15,14 +15,16 @@ class StageSubscriber(Node):
 
     def __init__(self):
         super().__init__('stage_subscriber')
-
+        #get parameters
+        self.declare_parameter('auton_name', '24')
+        self.auton_name = self.get_parameter('auton_name').value
         # self.subscription  # prevent unused variable warning
         self.reader = rosbag2_py.SequentialReader()
-        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/swerve_bag_24', storage_id='sqlite3') #change this to the bag you want to read
+        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/swerve_bag_'+self.auton_name, storage_id='sqlite3') #change this to the bag you want to read
         self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
         self.reader.open(self.storage_options,self.converter_options)
         self.reader_2 = rosbag2_py.SequentialReader()
-        self.storage_options_2 = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/arm_bag_24', storage_id='sqlite3') #change this to the bag you want to read
+        self.storage_options_2 = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/arm_bag_'+self.auton_name, storage_id='sqlite3') #change this to the bag you want to read
         self.converter_options_2 = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
         self.reader_2.open(self.storage_options_2,self.converter_options_2)
         self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
@@ -35,8 +37,9 @@ class StageSubscriber(Node):
     def listener_callback(self, msg):
         stage = str(msg.data).split("|")[0]
         fms = str(msg.data).split("|")[1]
+        disabled = str(msg.data).split("|")[2]
         # self.get_logger().info('Subscription_stage: %b' % stage.lower() == 'auton' and fms)
-        if(stage.lower() == 'auton'):# and fms == 'True' ):
+        if(stage.lower() == 'auton' and disabled == "False"):# and fms == 'True' ):
             # self.get_logger().info('Subscription_stage: %s' % 'auton')
             if(self.reader.has_next()):
                 (topic, data, t)=self.reader.read_next()
