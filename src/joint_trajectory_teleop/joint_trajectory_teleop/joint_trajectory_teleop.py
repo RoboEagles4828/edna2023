@@ -71,6 +71,12 @@ class PublishTrajectoryMsg(Node):
 
         self.toggle_buttons = {}
 
+        self.arm_roller_bar_limits = (0.0, 0.07)
+        self.top_slider_limits = (0.0, 0.30)
+        self.elevator_limits = (0.0, 0.56)
+        self.bottom_intake_limits = (0.0, (math.pi/2.0) - 0.05)
+        self.top_gripper_limits = (0.0, 1.0)
+
         for function in self.functions:
             button = self.yaml['controller_mapping'][self.yaml['function_mapping'][function.__name__]['button']]
             toggle = self.yaml['function_mapping'][function.__name__]['toggle']
@@ -93,9 +99,9 @@ class PublishTrajectoryMsg(Node):
         #TODO: Tweak the values
 
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.1
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.1
-            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
+            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = self.convertPercentToRaw(0.1, self.elevator_limits)
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = self.convertPercentToRaw(0.1, self.elevator_limits)
+            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.convertPercentToRaw(1.0, self.top_slider_limits)
         elif button_val == 0.0:
             self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.0
             self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.0
@@ -117,10 +123,9 @@ class PublishTrajectoryMsg(Node):
         
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.60
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.60
-            self.publisher_.publish(self.cmds)
-            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
+            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = self.convertPercentToRaw(0.60, self.elevator_limits)
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = self.convertPercentToRaw(0.60, self.elevator_limits)
+            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.convertPercentToRaw(1.0, self.top_slider_limits)
         
         
         self.cmds.points = [self.position_cmds]
@@ -130,9 +135,9 @@ class PublishTrajectoryMsg(Node):
         
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 1.04
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 1.04
-            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
+            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = self.convertPercentToRaw(1.0, self.elevator_limits)
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = self.convertPercentToRaw(1.0, self.elevator_limits)
+            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.convertPercentToRaw(1.0, self.top_slider_limits)
         elif button_val == 0.0:
             self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
         
@@ -144,8 +149,8 @@ class PublishTrajectoryMsg(Node):
 
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = 1.0
-            self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = 1.0
+            self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.convertPercentToRaw(1.0, self.top_gripper_limits)
+            self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] =self.convertPercentToRaw(1.0, self.top_gripper_limits)
         elif button_val == 0.0:
             self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = 0.0
             self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = 0.0
@@ -158,8 +163,8 @@ class PublishTrajectoryMsg(Node):
 
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 1.0
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.2
+            self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = self.convertPercentToRaw(1.0, self.arm_roller_bar_limits)
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = self.convertPercentToRaw(0.2, self.arm_roller_bar_limits)
         else:
             self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 0.0
             self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
@@ -172,10 +177,14 @@ class PublishTrajectoryMsg(Node):
 
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 1.0
+            self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.convertPercentToRaw(1.0, self.top_slider_limits)
         
         self.cmds.points = [self.position_cmds]
         self.publisher_.publish(self.cmds)
+
+    def convertPercentToRaw(self, percent: float, limits: tuple):
+        raw = (percent*(limits[1] - limits[0])) + limits[0]
+        return float(raw)
 
 def main(args=None):
     rclpy.init(args=args)

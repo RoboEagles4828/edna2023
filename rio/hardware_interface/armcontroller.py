@@ -4,6 +4,7 @@ import ctre
 import ctre.sensors
 import time
 import logging
+import math
 
 NAMESPACE = 'real'
 CMD_TIMEOUT_SECONDS = 1
@@ -56,11 +57,21 @@ class ArmController():
         self.hub = wpilib.PneumaticHub(PORTS['HUB'])
         self.compressor = self.hub.makeCompressor()
 
+        self.arm_roller_bar_limits = (0.0, 0.07)
+        self.top_gripper_slider_limits = (0.0, 0.30)
+        self.elevator_limits = (0.0, 0.56)
+        self.bottom_gripper_lift_limits = (0.0, (math.pi/2.0) - 0.05)
+
         self.arm_roller_bar = Piston(self.hub, PORTS['ARM_ROLLER_BAR']) 
         self.top_gripper_slider = Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'])
         self.top_gripper = Piston(self.hub, PORTS['TOP_GRIPPER'])
         self.elevator = Elevator(PORTS['ELEVATOR'])
         self.bottom_gripper_lift = Intake(PORTS['BOTTOM_GRIPPER_LIFT'])
+
+        self.arm_roller_bar.setLimits(self.arm_roller_bar_limits)
+        self.top_gripper_slider.setLimits(self.top_gripper_slider_limits)
+        self.elevator.setLimits(self.elevator_limits)
+        self.bottom_gripper_lift.setLimits(self.bottom_gripper_lift_limits)
 
         self.JOINT_MAP = {
             # Pneumatics
@@ -109,6 +120,9 @@ class Piston():
         self.solenoid = hub.makeDoubleSolenoid(ports[0], ports[1])
         self.state = 0
 
+        self.min = 0.0
+        self.max = 1.0
+
     def getPosition(self):
         return float(self.state)
     
@@ -120,12 +134,18 @@ class Piston():
         self.solenoid.set(wpilib.DoubleSolenoid.Value.kOff)
 
     def setPosition(self, position : float):
-        if position >= 0.5 and self.state == 0:
+        set_pos = commonRawToPercent(position, self.min, self.max)
+        if set_pos >= 0.5 and self.state == 0:
             self.solenoid.set(wpilib.DoubleSolenoid.Value.kForward)
             self.state = 1
-        elif position < 0.5 and self.state == 1:
+        elif set_pos < 0.5 and self.state == 1:
             self.solenoid.set(wpilib.DoubleSolenoid.Value.kReverse)
             self.state = 0
+
+    def setLimits(self, limit: tuple):
+        self.min = limit[0]
+        self.max = limit[1]
+
 
 def commonTalonSetup(talon : ctre.WPI_TalonFX):
     talon.configFactoryDefault(MOTOR_TIMEOUT)
@@ -153,6 +173,14 @@ def commonTalonSetup(talon : ctre.WPI_TalonFX):
     talon.configPeakOutputReverse(-1, MOTOR_TIMEOUT)
     return
 
+def commonRawToPercent(raw: float, min: float, max: float) -> float:
+    percent = (raw - min) / (max - min)
+    if percent > 1.0:
+        percent = 1.0
+    elif percent < 0.0:
+        percent = 0.0
+    return percent
+
 
 class Intake():
     def __init__(self, port : int):
@@ -169,6 +197,11 @@ class Intake():
 
         # Brake
         self.motor.setNeutralMode(ctre.NeutralMode.Brake)
+
+        self.min = 0.0
+        self.max = (math.pi/2.0) - 0.05
+
+
     
     def getPosition(self):
         return (self.motor.getSelectedSensorPosition() / (-TICKS_PER_REVOLUTION * TOTAL_INTAKE_REVOLUTIONS))
@@ -180,13 +213,17 @@ class Intake():
         self.motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def setPosition(self, position : float): 
-        if position >= 0.5 and self.state == 0:
+        set_pos = commonRawToPercent(position, self.min, self.max)
+        if set_pos >= 0.5 and self.state == 0:
             self.motor.set(ctre.TalonFXControlMode.Velocity, -TICKS_PER_REVOLUTION/2)
             self.state = 1
-        elif position < 0.5 and self.state == 1:
+        elif set_pos < 0.5 and self.state == 1:
             self.motor.set(ctre.TalonFXControlMode.Velocity, TICKS_PER_REVOLUTION/2)
             self.state = 0
 
+    def setLimits(self, limit: tuple):
+        self.min = limit[0]
+        self.max = limit[1]
 
 class Elevator():
     def __init__(self, port : int):
@@ -203,6 +240,9 @@ class Elevator():
         # Motion Magic
         self.motor.configMotionCruiseVelocity(MOTOR_PID_CONFIG['MAX_SPEED'], MOTOR_TIMEOUT) # Sets the maximum speed of motion magic (ticks/100ms)
         self.motor.configMotionAcceleration(MOTOR_PID_CONFIG['TARGET_ACCELERATION'], MOTOR_TIMEOUT) # Sets the maximum acceleration of motion magic (ticks/100ms)
+        
+        self.min = 0.0
+        self.max = 0.56
     
     def getPosition(self) -> float:
         return (self.motor.getSelectedSensorPosition() / (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
@@ -214,4 +254,11 @@ class Elevator():
         self.motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def setPosition(self, position : float): # Position should be between 0.0 and 1.0
-        self.motor.set(ctre.TalonFXControlMode.MotionMagic, position * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
+        logging.info('Elevator Position incoming: ' + str(position))
+        set_pos = commonRawToPercent(position, self.min, self.max)
+        logging.info('Elevator Position set_pos: ' + str(set_pos))
+        self.motor.set(ctre.TalonFXControlMode.MotionMagic, set_pos * (TICKS_PER_REVOLUTION * TOTAL_ELEVATOR_REVOLUTIONS))
+
+    def setLimits(self, limit: tuple):
+        self.min = limit[0]
+        self.max = limit[1]
