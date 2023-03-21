@@ -44,6 +44,27 @@ from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 import sensor_msgs.msg
 import std_msgs.msg
 
+POSITION_JOINTS = {
+    'arm_roller_bar_joint',
+    'elevator_center_joint',
+    'elevator_outer_1_joint',
+    'elevator_outer_2_joint',
+    'top_gripper_right_arm_joint',
+    'top_gripper_left_arm_joint',
+    'top_slider_joint',
+    'bottom_intake_joint',
+    'front_left_axle_joint',
+    'front_right_axle_joint',
+    'rear_left_axle_joint',
+    'rear_right_axle_joint',
+}
+    
+VELOCITY_JOINTS = [
+    'front_left_wheel_joint',
+    'front_right_wheel_joint',
+    'rear_left_wheel_joint',
+    'rear_right_wheel_joint',
+]
 
 class JointStatePublisher(rclpy.node.Node):
     def get_param(self, name):
@@ -82,7 +103,8 @@ class JointStatePublisher(rclpy.node.Node):
                 self.joint_list.append(name)
                 minval *= math.pi/180.0
                 maxval *= math.pi/180.0
-                self.free_joints[name] = self._init_joint(minval, maxval, 0.0)
+                self.free_joints_sub[name] = self._init_joint(minval, maxval, 0.0)
+                self.free_joints_pub[name] = self.free_joints_sub[name]
 
     def init_urdf(self, robot):
         robot = robot.getElementsByTagName('robot')[0]
@@ -96,9 +118,13 @@ class JointStatePublisher(rclpy.node.Node):
                     continue
                 name = child.getAttribute('name')
                 self.joint_list.append(name)
-                if jtype == 'continuous':
-                    minval = -math.pi
-                    maxval = math.pi
+                if jtype == 'continuous': 
+                    if name in VELOCITY_JOINTS:
+                        minval = -39.4 # this is not a good number i pulled it out of thin air
+                        maxval = 39.4  # please someone calculate the actual thing using the circumference of the wheels and that stuff
+                    else:
+                        minval = -math.pi
+                        maxval = math.pi
                 else:
                     try:
                         limit = child.getElementsByTagName('limit')[0]
@@ -142,7 +168,8 @@ class JointStatePublisher(rclpy.node.Node):
 
                 if jtype == 'continuous':
                     joint['continuous'] = True
-                self.free_joints[name] = joint
+                self.free_joints_sub[name] = joint
+                self.free_joints_pub[name] = joint.copy()
 
     def configure_robot(self, description):
         self.get_logger().debug('Got description, configuring robot')
@@ -158,7 +185,8 @@ class JointStatePublisher(rclpy.node.Node):
 
         # Make sure to clear out the old joints so we don't get duplicate joints
         # on a new robot description.
-        self.free_joints = {}
+        self.free_joints_sub = {}
+        self.free_joints_pub = {}
         self.joint_list = [] # for maintaining the original order of the joints
 
         if robot.getElementsByTagName('COLLADA'):
@@ -229,7 +257,9 @@ class JointStatePublisher(rclpy.node.Node):
         # letting 'automatically_declare_parameters_from_overrides' declare
         # any parameters for us.
 
-        self.free_joints = {}
+        self.free_joints_sub = {}
+        self.free_joints_pub = {}
+
         self.joint_list = [] # for maintaining the original order of the joints
         self.dependent_joints = self.parse_dependent_joints()
         self.use_mimic = self.get_param('use_mimic_tags')
@@ -265,23 +295,26 @@ class JointStatePublisher(rclpy.node.Node):
 
         source_list = self.get_param('source_list')
         self.sources = []
-        for source in source_list:
-            self.sources.append(self.create_subscription(sensor_msgs.msg.JointState, source, self.source_cb, 10))
+        # for source in source_list:
+        #     self.sources.append(self.create_subscription(sensor_msgs.msg.JointState, source, self.source_cb, 10))
 
         # The source_update_cb will be called at the end of self.source_cb.
         # The main purpose is to allow external observers (such as the
         # joint_state_publisher_gui) to be notified when things are updated.
         self.source_update_cb = None
 
-        # Override topic name here
-        self.pub = self.create_publisher(sensor_msgs.msg.JointState, 'real_joint_commands', 10)
 
+        # Override topic name here
+        self.pub_pos = self.create_publisher(std_msgs.msg.Float64MultiArray, 'forward_position_controller/commands', 10)
+        self.pub_vel = self.create_publisher(std_msgs.msg.Float64MultiArray, 'forward_velocity_controller/commands', 10)
+        self.create_subscription(sensor_msgs.msg.JointState, 'joint_states', self.source_cb, 10)
         self.timer = self.create_timer(1.0 / self.get_param('rate'), self.timer_callback)
 
     def source_cb(self, msg):
+        # self.get_logger().info("ran source callback")
         for i in range(len(msg.name)):
             name = msg.name[i]
-            if name not in self.free_joints:
+            if name not in self.free_joints_sub:
                 continue
 
             if msg.position:
@@ -297,7 +330,7 @@ class JointStatePublisher(rclpy.node.Node):
             else:
                 effort = None
 
-            joint = self.free_joints[name]
+            joint = self.free_joints_sub[name]
             if position is not None:
                 joint['position'] = position
             if velocity is not None:
@@ -305,6 +338,7 @@ class JointStatePublisher(rclpy.node.Node):
             if effort is not None:
                 joint['effort'] = effort
 
+        
         if self.source_update_cb is not None:
             self.source_update_cb()
 
@@ -318,37 +352,36 @@ class JointStatePublisher(rclpy.node.Node):
         # Publish Joint States
         msg = sensor_msgs.msg.JointState()
         msg.header.stamp = self.get_clock().now().to_msg()
-
         if self.delta > 0:
             self.update(self.delta)
 
         # Initialize msg.position, msg.velocity, and msg.effort.
-        has_position = len(self.dependent_joints.items()) > 0
+        has_position = False
         has_velocity = False
         has_effort = False
-        for name, joint in self.free_joints.items():
+        for name, joint in self.free_joints_pub.items():
             if not has_position and 'position' in joint:
                 has_position = True
             if not has_velocity and 'velocity' in joint:
                 has_velocity = True
             if not has_effort and 'effort' in joint:
                 has_effort = True
-        num_joints = (len(self.free_joints.items()) +
+        num_joints = (len(self.free_joints_pub.items()) +
                       len(self.dependent_joints.items()))
         if has_position:
-            msg.position = num_joints * [0.0]
+            msg.position = []
         if has_velocity:
-            msg.velocity = num_joints * [0.0]
+            msg.velocity = []
         if has_effort:
             msg.effort = num_joints * [0.0]
-
+        
         for i, name in enumerate(self.joint_list):
             msg.name.append(str(name))
             joint = None
 
             # Add Free Joint
-            if name in self.free_joints:
-                joint = self.free_joints[name]
+            if name in self.free_joints_pub:
+                joint = self.free_joints_pub[name]
                 factor = 1
                 offset = 0
             # Add Dependent Joint
@@ -369,21 +402,34 @@ class JointStatePublisher(rclpy.node.Node):
                     parent = param['parent']
                     offset += factor * param.get('offset', 0)
                     factor *= param.get('factor', 1)
-                joint = self.free_joints[parent]
+                joint = self.free_joints_pub[parent]
 
-            if has_position and 'position' in joint:
-                msg.position[i] = float(joint['position']) * factor + offset
-            if has_velocity and 'velocity' in joint:
-                msg.velocity[i] = float(joint['velocity']) * factor
+            # the issue here is that its setting [i] either to the joint, or its skipping i in the list when we need it to be the next value.
+            # For some reason, [list].append() ends up putting way too many empty values that come from nowhere into the list.
+            # The best thing to do here would be having two separate iterators which only increment if the variable has a position or a velocity.
+            if has_position and 'position' in joint and name in POSITION_JOINTS:
+                msg.position.append(float(joint['position']) * factor + offset)
+            if has_velocity and 'velocity' in joint and name in VELOCITY_JOINTS:
+                msg.velocity.append(float(joint['velocity']) * factor)
             if has_effort and 'effort' in joint:
                 msg.effort[i] = float(joint['effort'])
+            
 
-        if msg.name or msg.position or msg.velocity or msg.effort:
-            # Only publish non-empty messages
-            self.pub.publish(msg)
+        # Only publish non-empty messages
+        if not (msg.name or msg.position or msg.velocity or msg.effort):
+            return
+
+        pos_msg = std_msgs.msg.Float64MultiArray()
+        vel_msg = std_msgs.msg.Float64MultiArray()
+
+        pos_msg.data = msg.position
+        vel_msg.data = msg.velocity
+
+        self.pub_pos.publish(pos_msg)
+        self.pub_vel.publish(vel_msg)
 
     def update(self, delta):
-        for name, joint in self.free_joints.items():
+        for name, joint in self.free_joints_sub.items():
             forward = joint.get('forward', True)
             if forward:
                 joint['position'] += delta

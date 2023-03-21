@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch.event_handlers import OnProcessExit
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler
 from launch.conditions import IfCondition
@@ -14,6 +14,7 @@ def generate_launch_description():
     enable_rviz = LaunchConfiguration('enable_rviz')
     enable_foxglove = LaunchConfiguration('enable_foxglove')
     enable_debugger_gui = LaunchConfiguration('enable_debugger_gui')
+    enable_joint_state_publisher = LaunchConfiguration('enable_joint_state_publisher')
     rviz_file = LaunchConfiguration('rviz_file')
 
 
@@ -60,6 +61,19 @@ def generate_launch_description():
         }],
         condition=IfCondition(enable_debugger_gui),
     )
+
+    # Starts Joint State Publisher GUI for rviz (conflicts with edna_debugger)
+    joint_state_publisher_gui = Node (
+        package='joint_state_publisher_gui',
+        namespace=namespace,
+        executable='joint_state_publisher_gui',
+        output='screen',
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'publish_default_velocities':  True,
+        }],
+        condition=IfCondition(enable_joint_state_publisher),
+    )
     
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -86,8 +100,13 @@ def generate_launch_description():
             'enable_debugger_gui',
             default_value='false',
             description='enables the debugger gui tool'),
-            foxglove,
-            parseRvizFile,
-            rviz2_delay,
-            debugger_gui
+        DeclareLaunchArgument(
+            'enable_joint_state_publisher',
+            default_value='false',
+            description='enables the joint state publisher tool'),
+        foxglove,
+        parseRvizFile,
+        rviz2_delay,
+        debugger_gui,
+        joint_state_publisher_gui,
     ])
