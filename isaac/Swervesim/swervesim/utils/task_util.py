@@ -42,6 +42,8 @@ def initialize_task(config, env, init_sim=True):
         # "SwerveF": Swerve_Field_Task,
         "SwerveMAA": Swerve_Multi_Action_Task,
         "SwerveCS": Swerve_Charge_Station_Task,
+        "EdnaPickup": Edna_Pickup,
+        "EndaPlace": Enda_Place,
 
     }
 

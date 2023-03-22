@@ -34,6 +34,7 @@ from swervesim.robots.articulations.views.charge_station_view import ChargeStati
 from swervesim.tasks.utils.usd_utils import set_drive
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.prims import GeometryPrim
 
 
 from omni.isaac.core.utils.prims import get_prim_at_path
@@ -44,6 +45,7 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 import numpy as np
 import torch
 import math
+import os
 
 from shapely.geometry import Polygon
 
@@ -85,7 +87,7 @@ class Enda_Place(RLTask):
         # starting position of the swerve module
         self.swerve_position = torch.tensor([0, 0, 0])
         # starting position of the target
-        self._chargestation_part_1_position = torch.tensor([1, 1, 0])
+        self._loading_station_position = torch.tensor([1, 1, 0])
 
 
         self.swerve_initia_pos = []
@@ -104,7 +106,7 @@ class Enda_Place(RLTask):
         # Adds USD of swerve to stage
         self.get_swerve()
         # Adds ball to stage
-        self.get_charge_station()
+        self.get_loading_station()
         super().set_up_scene(scene)
         # Sets up articluation controller for swerve
         self._swerve = SwerveView(
@@ -129,13 +131,67 @@ class Enda_Place(RLTask):
                         "swerve", self._swerve_translation)
         self._sim_config.apply_articulation_settings("swerve", get_prim_at_path(
             swerve.prim_path), self._sim_config.parse_actor_config("swerve"))
+        
+    def setup_scene(self):
+        world = self.get_world()
+        world.get_physics_context().enable_gpu_dynamics(False)
+        world.scene.add_default_ground_plane()
+        self.setup_field()
+        # self.setup_perspective_cam()
+        self.setup_world_action_graph()
+        return
+   
+    def get_field(self):
+        self.extension_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
+        field = os.path.join(self.project_root_path, "assets/2023_field_cpu/FE-2023.usd")
+        add_reference_to_stage(usd_path=field,prim_path="/World/Field")
+        cone = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23700_JFH.usd")
+        cube = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23701_JFL.usd")
+        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation-Copy/Assembly-1.usd")
+        substation = os.path.join(self.project_root_path, "assets/te-23060/te_23060.usd")
+        add_reference_to_stage(chargestation, "/World/ChargeStation_1")
+        add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
+        add_reference_to_stage(substation, "/World/Substation_1")
+        add_reference_to_stage(substation, "/World/Substation_2")
+        add_reference_to_stage(substation, "/World/Substation_3")
+        add_reference_to_stage(substation, "/World/Substation_4")
+        add_reference_to_stage(cone, "/World/Cone_1")
+        add_reference_to_stage(cone, "/World/Cone_2")
+        add_reference_to_stage(cone, "/World/Cone_3")
+        add_reference_to_stage(cone, "/World/Cone_4")
+        add_reference_to_stage(cone, "/World/Cone_5")
+        add_reference_to_stage(cone, "/World/Cone_6")
+        # add_reference_to_stage(cone, "/World/Cone_7")
+        # add_reference_to_stage(cone,  "/World/Cone_8")
+        cone_1 = GeometryPrim("/World/Cone_1","cone_1_view",position=np.array([1.20298,-0.56861,0.0]))
+        cone_2 = GeometryPrim("/World/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0]))
+        cone_3 = GeometryPrim("/World/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0]))
+        cone_4 = GeometryPrim("/World/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0]))
+        cone_5 = GeometryPrim("/World/Cone_5","cone_5_view",position=np.array([-8.17,-2.65,1.0]))
+        cone_6 = GeometryPrim("/World/Cone_6","cone_6_view",position=np.array([8.17,-2.65,1.0]))
+        chargestation_1 = GeometryPrim("/World/ChargeStation_1","chargestation_1_view",position=np.array([-4.20298,-0.56861,0.0]))
+        chargestation_2 = GeometryPrim("/World/ChargeStation_2","chargesation_2_view",position=np.array([4.20298,0.56861,0.0]))
+        substation_1 = GeometryPrim("/World/Substation_1","substation_1_view",position=np.array([-8,-3.4,0.0]))
+        substation_2 = GeometryPrim("/World/Substation_2","substation_2_view",position=np.array([8,-3.4,0.0]))
+        substation_3 = GeometryPrim("/World/Substation_3","substation_3_view",position=np.array([-8,-2.2,0.0]))
+        substation_4 = GeometryPrim("/World/Substation_4","substation_4_view",position=np.array([8,-2.2,0.0]))
 
-    def get_charge_station(self):
-        chargestation = "/root/edna/isaac/assets/ChargeStation-Copy/Assembly-1.usd"
-        add_reference_to_stage(chargestation, self.default_zero_env_path+"/ChargeStation")
-        charge_station_1 = Articulation(prim_path=self.default_zero_env_path+"/ChargeStation",name="ChargeStation")
-        self._sim_config.apply_articulation_settings("ChargeStation", get_prim_at_path(
-            charge_station_1.prim_path), self._sim_config.parse_actor_config("ChargeStation"))
+
+        add_reference_to_stage(cube, "/World/Cube_1")
+        add_reference_to_stage(cube, "/World/Cube_2")
+        add_reference_to_stage(cube, "/World/Cube_3")
+        add_reference_to_stage(cube, "/World/Cube_4")
+        add_reference_to_stage(cube, "/World/Cube_5")
+        add_reference_to_stage(cube, "/World/Cube_6")
+        # add_reference_to_stage(cube, "/World/Cube_7")
+        # add_reference_to_stage(cube, "/World/Cube_8")
+        cube_1 = GeometryPrim("/World/Cube_1","cube_1_view",position=np.array([1.20298,0.65059,0.121]))
+        cube_2 = GeometryPrim("/World/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121]))
+        cube_3 = GeometryPrim("/World/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121]))
+        cube_4 = GeometryPrim("/World/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121]))
+        cube_5 = GeometryPrim("/World/Cube_5","cube_5_view",position=np.array([-8.17,-3.65,1.15]))
+        cube_6 = GeometryPrim("/World/Cube_6","cube_6_view",position=np.array([8.17,-3.65,1.15]))
 
     def get_observations(self) -> dict:
         # Gets various positions and velocties to observations

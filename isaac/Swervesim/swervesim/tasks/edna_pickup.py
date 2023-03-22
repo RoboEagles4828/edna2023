@@ -43,6 +43,7 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 import numpy as np
 import torch
 import math
+import os
 
 
 class Edna_Pickup(RLTask):
