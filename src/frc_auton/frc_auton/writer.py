@@ -20,7 +20,8 @@ class BagWriter(Node):
         self.declare_parameter('record_without_fms', value=False)
         self.record_without_fms = self.get_parameter('record_without_fms').value
         self.stage = ""
-        self.fms = False
+        self.fms = "False"
+        self.is_disabled = "True"
 
         self.subscription_arm = self.create_subscription(JointTrajectory,'joint_trajectory_controller/joint_trajectory',self.arm_callback,10)
         self.subscription_swerve = self.create_subscription(Twist,'swerve_controller/cmd_vel_unstamped',self.swerve_callback,10)
@@ -38,8 +39,9 @@ class BagWriter(Node):
         storage_options_arm = rosbag2_py._storage.StorageOptions(uri=self.arm_path,storage_id='sqlite3')
         converter_options_arm = rosbag2_py._storage.ConverterOptions('', '')
         self.writer_arm.open(storage_options_arm, converter_options_arm)
-        topic_info_arm = rosbag2_py._storage.TopicMetadata(name=self.subscription_arm.topic_name,type='trajectory_msgs/msg/JOintTrajectory',serialization_format='cdr')
+        topic_info_arm = rosbag2_py._storage.TopicMetadata(name=self.subscription_arm.topic_name,type='trajectory_msgs/msg/JointTrajectory',serialization_format='cdr')
         self.writer_arm.create_topic(topic_info_arm)
+
 
         #creates writer for swerve bag
         self.writer_swerve=rosbag2_py.SequentialWriter()
@@ -50,7 +52,7 @@ class BagWriter(Node):
         self.writer_swerve.create_topic(topic_info_swerve)
         
     def swerve_callback(self, msg):
-        if((self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.record_without_fms=='True') ):
+        if((self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.record_without_fms) and self.is_disabled=='False'):
             # self.get_logger().info('Subscription_stage: %s' % self.subscription_swerve.topic_name)
 
             self.writer_swerve.write(
@@ -59,7 +61,9 @@ class BagWriter(Node):
                 self.get_clock().now().nanoseconds)
                 
     def arm_callback(self, msg):
-        if((self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.record_without_fms=='True')):
+        if((self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.record_without_fms) and self.is_disabled=='False'):
+            # self.get_logger().info('arm_callback: %s' % msg.points[0].positions)
+
             self.writer_arm.write(
                 self.subscription_arm.topic_name,
                 serialize_message(msg),
@@ -71,6 +75,7 @@ class BagWriter(Node):
         data = str(msg.data).split('|')
         self.stage = (data[0])
         self.fms = str(data[1])
+        self.is_disabled = str(data[2])
         # self.get_logger().info(f'Stage: {self.stage} FMS: {self.fms}')
 
 

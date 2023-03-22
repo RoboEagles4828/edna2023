@@ -21,7 +21,7 @@ def generate_launch_description():
         executable= "reader",
         name = "frc_auton_node",
         parameters=[{
-            "auton_name": "24",   
+            "auton_name": "10",   
         }]
     )
     frc_teleop_writer = Node(
@@ -31,7 +31,7 @@ def generate_launch_description():
         name = "frc_auton_node",
         parameters=[{
             "record_auton": False,
-            "record_without_fms": True,    
+            "record_without_fms": False,    
         }]
     )
     joy = Node(
