@@ -30,8 +30,8 @@ PORTS = {
 
 MOTOR_PID_CONFIG = {
     'SLOT': 2,
-    'MAX_SPEED': 15000,             # Ticks/100ms 
-    'TARGET_ACCELERATION': 6000,    # Ticks/100ms
+    'MAX_SPEED': 18000,             # Ticks/100ms 
+    'TARGET_ACCELERATION': 8000,    # Ticks/100ms
     "kP": 0.2,
     "kI": 0.0,
     "kD": 0.1,
