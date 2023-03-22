@@ -161,11 +161,11 @@ class PublishTrajectoryMsg(Node):
 
         #TODO: Tweak the values
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_left_arm_joint"]["max"]
-            self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
+            self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_left_arm_joint"]["min"]
+            self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["min"]
         elif button_val == 0.0:
-            self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = 0.0
-            self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = 0.0
+            self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
+            self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
         
         
         self.cmds.points = [self.position_cmds]
