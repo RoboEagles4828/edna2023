@@ -8,11 +8,16 @@ def generate_launch_description():
     bringup_path = get_package_share_directory("edna_bringup")
     rviz_file = os.path.join(bringup_path, 'config', 'real.rviz')
     
-    common = { 'use_sim_time': 'false', 'namespace': 'real' }
+    common = { 
+        'use_sim_time': 'false', 
+        'namespace': 'real',
+        'forward_command_controller': 'false',
+    }
     
     debug_launch_args = common | {
         'enable_rviz': 'true',
         'enable_foxglove': 'false',
+        'enable_debugger_gui': 'true',
         'rviz_file': rviz_file
     }
 

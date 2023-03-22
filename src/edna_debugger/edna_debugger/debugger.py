@@ -42,7 +42,14 @@ DEFAULT_SLIDER_HEIGHT = 64  # Is the combination of default heights in Slider
 MIN_WIDTH = SLIDER_WIDTH + DEFAULT_CHILD_MARGIN * 4 + DEFAULT_WINDOW_MARGIN * 2
 MIN_HEIGHT = DEFAULT_BTN_HEIGHT * 2 + DEFAULT_WINDOW_MARGIN * 2 + DEFAULT_CHILD_MARGIN * 2
 
-class Slider(QWidget):
+PNEUMATICS_JOINTS = [
+    'arm_roller_bar_joint', 
+    'top_slider_joint',
+    'top_gripper_left_arm_joint',
+    'bottom_intake_joint'
+]
+
+class Button(QWidget):
     def __init__(self, name):
         super().__init__()
 
@@ -54,22 +61,81 @@ class Slider(QWidget):
         self.label.setFont(font)
         self.row_layout.addWidget(self.label)
 
-        self.display = QLineEdit("0.00")
-        self.display.setAlignment(Qt.AlignRight)
-        self.display.setFont(font)
-        self.display.setReadOnly(True)
-        self.display.setFixedWidth(LINE_EDIT_WIDTH)
-        self.row_layout.addWidget(self.display)
 
         self.joint_layout.addLayout(self.row_layout)
 
-        self.slider = QSlider(Qt.Horizontal)
-        self.slider.setFont(font)
-        self.slider.setRange(0, RANGE)
-        self.slider.setValue(int(RANGE / 2))
-        self.slider.setFixedWidth(SLIDER_WIDTH)
+        self.button = QPushButton('toggle', self)
+        self.button.setCheckable(True)
+        self.joint_layout.addWidget(self.button)
 
-        self.joint_layout.addWidget(self.slider)
+        self.setLayout(self.joint_layout)
+    
+
+    def remove(self):
+        self.joint_layout.remove_widget(self.button)
+        self.button.setParent(None)
+
+        self.row_layout.removeWidget(self.display)
+        self.display.setParent(None)
+
+        self.row_layout.removeWidget(self.label)
+        self.label.setParent(None)
+
+        self.row_layout.setParent(None)
+
+class Slider(QWidget):
+    def __init__(self, name):
+        super().__init__()
+
+        self.joint_layout = QVBoxLayout()
+
+        # top row
+        self.row_layout_top = QHBoxLayout()
+        
+        font = QFont("Helvetica", 9, QFont.Bold)
+        self.label = QLabel(name)
+        self.label.setFont(font)
+        self.row_layout_top.addWidget(self.label)
+
+        self.joint_layout.addLayout(self.row_layout_top)
+
+        # subscribing row
+        self.row_layout_sub = QHBoxLayout()
+        
+        self.display_sub = QLineEdit("0.00")
+        self.display_sub.setAlignment(Qt.AlignRight)
+        self.display_sub.setFont(font)
+        self.display_sub.setReadOnly(True)
+        self.display_sub.setFixedWidth(LINE_EDIT_WIDTH)
+        self.row_layout_sub.addWidget(self.display_sub)
+
+        self.slider_sub = QSlider(Qt.Horizontal)
+        self.slider_sub.setFont(font)
+        self.slider_sub.setRange(0, RANGE)
+        self.slider_sub.setValue(int(RANGE / 2))
+        self.slider_sub.setFixedWidth(SLIDER_WIDTH)
+        self.row_layout_sub.addWidget(self.slider_sub)
+
+        self.joint_layout.addLayout(self.row_layout_sub)
+
+        # publishing row
+        self.row_layout_pub = QHBoxLayout()
+
+        self.display_pub = QLineEdit("0.00")
+        self.display_pub.setAlignment(Qt.AlignRight)
+        self.display_pub.setFont(font)
+        self.display_pub.setReadOnly(False)
+        self.display_pub.setFixedWidth(LINE_EDIT_WIDTH)
+        self.row_layout_pub.addWidget(self.display_pub)
+
+        self.slider_pub = QSlider(Qt.Horizontal)
+        self.slider_pub.setFont(font)
+        self.slider_pub.setRange(0, RANGE)
+        self.slider_pub.setValue(int(RANGE / 2))
+        self.slider_pub.setFixedWidth(SLIDER_WIDTH)
+        self.row_layout_pub.addWidget(self.slider_pub)
+
+        self.joint_layout.addLayout(self.row_layout_pub)
 
         self.setLayout(self.joint_layout)
 
@@ -90,7 +156,7 @@ class JointStatePublisherGui(QMainWindow):
     sliderUpdateTrigger = Signal()
     initialize = Signal()
 
-    def __init__(self, title, jsp):
+    def __init__(self, title, jsp : JointStatePublisher):
         super(JointStatePublisherGui, self).__init__()
 
         self.joint_map = {}
@@ -104,6 +170,10 @@ class JointStatePublisherGui(QMainWindow):
         # Button for centering the sliders
         self.ctr_button = QPushButton('Center', self)
         self.ctr_button.clicked.connect(self.centerEvent)
+
+        # Button for resetting the joint butttons
+        self.reset_button = QPushButton('Reset Pistons', self)
+        self.reset_button.clicked.connect(self.resetButtons)
 
         # Scroll area widget contents - layout
         self.scroll_layout = FlowLayout()
@@ -123,6 +193,7 @@ class JointStatePublisherGui(QMainWindow):
         # Add buttons and scroll area to main layout
         self.main_layout.addWidget(self.rand_button)
         self.main_layout.addWidget(self.ctr_button)
+        self.main_layout.addWidget(self.reset_button)
         self.main_layout.addWidget(self.scroll_area)
 
         # central widget
@@ -136,6 +207,7 @@ class JointStatePublisherGui(QMainWindow):
 
         self.running = True
         self.sliders = {}
+        self.buttons = {}
 
         # Setup signal for initializing the window
         self.initialize.connect(self.initializeSliders)
@@ -154,22 +226,32 @@ class JointStatePublisherGui(QMainWindow):
 
         ### Generate sliders ###
         for name in self.jsp.joint_list:
-            if name not in self.jsp.free_joints:
+            if name not in self.jsp.free_joints_sub:
                 continue
-            joint = self.jsp.free_joints[name]
+            joint = self.jsp.free_joints_sub[name]
 
             if joint['min'] == joint['max']:
                 continue
+            
+            if (name in PNEUMATICS_JOINTS):
+                button = Button(name)
 
-            slider = Slider(name)
+                self.joint_map[name] = {'button': button.button, 'joint': joint}
 
-            self.joint_map[name] = {'display': slider.display, 'slider': slider.slider, 'joint': joint}
+                self.scroll_layout.addWidget(button)
+                button.button.toggled.connect(lambda event,name=name: self.onInputValueChanged(name))
 
-            self.scroll_layout.addWidget(slider)
-            # Connect to the signal provided by QSignal
-            slider.slider.valueChanged.connect(lambda event,name=name: self.onSliderValueChangedOne(name))
+                self.buttons[button] = button
+            else:
+                slider = Slider(name)
 
-            self.sliders[slider] = slider
+                self.joint_map[name] = {'display_sub': slider.display_sub, 'slider_sub': slider.slider_sub, 'display_pub': slider.display_pub, 'slider_pub': slider.slider_pub, 'joint': joint}
+
+                self.scroll_layout.addWidget(slider)
+                slider.display_pub.textEdited.connect(lambda event,name=name: self.makeSliderEqualToText(name))
+                slider.slider_pub.valueChanged.connect(lambda event,name=name: self.makeTextEqualToSlider(name))
+
+                self.sliders[slider] = slider
 
         # Set zero positions read from parameters
         self.centerEvent(None)
@@ -191,42 +273,92 @@ class JointStatePublisherGui(QMainWindow):
     def initializeCb(self):
         self.initialize.emit()
 
-    def onSliderValueChangedOne(self, name):
+    # def onButtonClicked(self, name):
+    #     # self.jsp.get_logger().info("button changed")
+    #     joint_info = self.joint_map[name]
+    #     buttonValue = 1 if joint_info['button'].isChecked() == True else 0
+    #     joint_info['joint']['position'] = buttonValue
+    #     joint_info['display'].setText(str(buttonValue))
+
+    # def onSliderTextEdited(self, slider, joint):
+        # self.jsp.get_logger().info(slider.display.text())
+        # slider.slider1.setSliderPosition(self.valueToSlider(float(slider.display.displayText()), joint))
+    
+    
+    def makeSliderEqualToText(self, name):
+        joint_info = self.joint_map[name]
+        textvalue = joint_info['display_pub'].text()
+        try:
+            joint_info['slider_pub'].setValue(self.valueToSlider(float(textvalue), joint_info['joint']))
+            self.onInputValueChanged(name)
+        except:
+            pass
+
+    def makeTextEqualToSlider(self, name):
+        joint_info = self.joint_map[name]
+        slidervalue = joint_info['slider_pub'].value()
+        joint_info['display_pub'].setText(str(round(self.sliderToValue(slidervalue, joint_info['joint']), 2)))
+        self.onInputValueChanged(name)
+
+    def onInputValueChanged(self, name):
         # A slider value was changed, but we need to change the joint_info metadata.
         joint_info = self.joint_map[name]
-        slidervalue = joint_info['slider'].value()
-        joint = joint_info['joint']
-        if 'wheel' in name:
-            joint['velocity'] = self.sliderToValue(slidervalue, joint)
-            joint_info['display'].setText("%.3f" % joint['velocity'])
-        else:
-            joint['position'] = self.sliderToValue(slidervalue, joint)
-            joint_info['display'].setText("%.3f" % joint['position'])
 
+        if ('slider_pub' in joint_info):
+            slidervalue = joint_info['slider_pub'].value()
+            joint = joint_info['joint']
+            if 'wheel' in name:
+                self.jsp.free_joints_pub[name]['velocity'] = self.sliderToValue(slidervalue, joint)
+            else:
+                self.jsp.free_joints_pub[name]['position'] = self.sliderToValue(slidervalue, joint)
+        elif ('button' in joint_info):
+            buttonValue = joint_info['joint']['max'] if joint_info['button'].isChecked() == True else joint_info['joint']['min']
+            self.jsp.free_joints_pub[name]['position'] = buttonValue
+            
     @pyqtSlot()
     def updateSliders(self):
         for name, joint_info in self.joint_map.items():
             joint = joint_info['joint']
-            if 'wheel' in name:
-                slidervalue = self.valueToSlider(joint['velocity'], joint)
-            else:
-                slidervalue = self.valueToSlider(joint['position'], joint)
-            joint_info['slider'].setValue(slidervalue)
+            if ('slider_sub' in joint_info):
+                if 'wheel' in name:
+                    slidervalue = self.valueToSlider(joint['velocity'], joint)
+                else:
+                    slidervalue = self.valueToSlider(joint['position'], joint)
+                joint_info['slider_sub'].setValue(slidervalue)
+                joint_info['display_sub'].setText(str(round(self.sliderToValue(slidervalue, joint), 2)))
+            elif ('button' in joint_info):
+                buttonvalue = True if joint['position'] == joint['max'] else False
+                if (joint_info['button'].isChecked() == buttonvalue):
+                    joint_info['button'].setStyleSheet('background-color: green')
+                else:
+                    joint_info['button'].setStyleSheet('background-color: yellow')
+
+    
+    def resetButtons(self, event):
+        self.jsp.get_logger().info("Toggling off")
+        for name, joint_info in self.joint_map.items():
+            if('button' in joint_info):
+                if(joint_info['button'].isChecked()):
+                    joint_info['button'].setChecked(False)
+
 
     def centerEvent(self, event):
         self.jsp.get_logger().info("Centering")
         for name, joint_info in self.joint_map.items():
-            joint = joint_info['joint']
-            joint_info['slider'].setValue(self.valueToSlider(joint['zero'], joint))
+            if('slider' in joint_info):
+                joint = joint_info['joint']
+                joint_info['slider'].setValue(self.valueToSlider(joint['zero'], joint))
 
     def randomizeEvent(self, event):
         self.jsp.get_logger().info("Randomizing")
         for name, joint_info in self.joint_map.items():
-            joint = joint_info['joint']
-            joint_info['slider'].setValue(
-                self.valueToSlider(random.uniform(joint['min'], joint['max']), joint))
+            if('slider' in joint_info):
+                joint = joint_info['joint']
+                joint_info['slider'].setValue(
+                    self.valueToSlider(random.uniform(joint['min'], joint['max']), joint))
 
     def valueToSlider(self, value, joint):
+        # return int(value * 5000)
         return int((value - joint['min']) * float(RANGE) / (joint['max'] - joint['min']))
 
     def sliderToValue(self, slider, joint):

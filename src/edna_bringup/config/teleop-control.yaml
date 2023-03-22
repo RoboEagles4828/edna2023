@@ -30,7 +30,7 @@ function_mapping:
     button: "LB"
     toggle: true
   elevator_high_level:
-    button: "squares"
+    button: "X"
     toggle: true
   top_gripper_control:
     button: "A"
