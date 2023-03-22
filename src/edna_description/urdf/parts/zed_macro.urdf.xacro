@@ -120,36 +120,11 @@
       <child link="${prefix}_right_camera_optical_frame"/>
     </joint>
 
-
-    <!-- ZED2 Sensors -->
-    <xacro:if value="${model == 'zed2'}">
-      <link name="${prefix}_mag_link" />
-      <joint name="${prefix}_mag_joint" type="fixed">
-        <parent link="${prefix}_camera_center"/>
-        <child link="${prefix}_mag_link"/>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-      </joint>
-
-      <link name="${prefix}_baro_link" />
-      <joint name="${prefix}_baro_joint" type="fixed">
-        <parent link="${prefix}_camera_center"/>
-        <child link="${prefix}_baro_link"/>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-      </joint>
-
-      <link name="${prefix}_temp_left_link" />
-      <joint name="${prefix}_temp_left_joint" type="fixed">
-        <parent link="${prefix}_left_camera_frame"/>
-        <child link="${prefix}_temp_left_link"/>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-      </joint>
-
-      <link name="${prefix}_temp_right_link" />
-      <joint name="${prefix}_temp_right_joint" type="fixed">
-        <parent link="${prefix}_right_camera_frame"/>
-        <child link="${prefix}_temp_right_link"/>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-      </joint>
-    </xacro:if>
+    <link name="${prefix}_imu_link" />
+    <joint name="${prefix}_imu_joint" type="fixed">
+      <parent link="${prefix}_left_camera_frame"/>
+      <child link="${prefix}_imu_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
   </xacro:macro>
 </robot>

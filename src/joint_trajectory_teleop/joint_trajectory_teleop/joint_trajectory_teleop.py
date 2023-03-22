@@ -64,7 +64,9 @@ class PublishTrajectoryMsg(Node):
         self.timer_period = 0.5  # seconds
 
         # Load yaml
-        self.yaml_path = '/workspaces/edna2023/src/edna_bringup/config/teleop-control.yaml'
+        self.curr_file_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
+        self.yaml_path = os.path.join(self.project_root_path, 'src/edna_bringup/config/teleop-control.yaml')
         with open(self.yaml_path, 'r') as f:
             self.yaml = yaml.safe_load(f)
 

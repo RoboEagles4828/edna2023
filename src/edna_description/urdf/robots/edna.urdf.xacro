@@ -55,7 +55,7 @@
   
 
   <!-- Sensors -->
-  <xacro:zed_camera prefix="zed" model="zed2i" parent="swerve_chassis_link">
+  <xacro:zed_camera prefix="zed2i" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera>
 
