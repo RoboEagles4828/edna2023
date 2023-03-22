@@ -22,6 +22,7 @@ services:
     image: ghcr.io/roboeagles4828/jetson-zed:1
     network_mode: "host"
     privileged: true
+    runtime: nvidia
     environment:
       - ROS_DOMAIN_ID=0
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
