@@ -205,7 +205,7 @@ class SwerveModule():
         self.wheel_motor.config_kD(0, wheel_pid_constants["kD"], timeout_ms)
         
         # Brake
-        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Coast)
+        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
         # Velocity Ramp
         # TODO: Tweak this value

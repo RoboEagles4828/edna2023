@@ -58,7 +58,6 @@
           <param name="min">0</param>
           <param name="max">0.07</param>
         </command_interface>
-        <param name="percent">false</param>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
         <param name="arm_group">true</param>
@@ -79,7 +78,6 @@
             <param name="min">0</param>
             <param name="max">0.56</param>
           </command_interface>
-          <param name="percent">false</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
@@ -99,7 +97,6 @@
             <param name="min">0</param>
             <param name="max">0.30</param>
           </command_interface>
-          <param name="percent">false</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
@@ -110,7 +107,6 @@
             <param name="min">0</param>
             <param name="max">0.90</param>
           </command_interface>
-          <param name="percent">false</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
@@ -131,7 +127,6 @@
             <param name="min">0</param>
             <param name="max">${pi/2 - 0.05}</param>
           </command_interface>
-          <param name="percent">false</param>
           <state_interface name="position"/>
           <state_interface name="velocity"/>
           <param name="arm_group">true</param>
