@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo "ONLY USE THIS SCRIPT ON THE JETSON"
-VERSION=2 # Increment manually for now
+VERSION=3 # Increment manually for now
 PREV_VERSION="$((VERSION-1))"
 GITHUB_REGISTRY="ghcr.io/roboeagles4828"
 IMAGE_NAME="jetson"
 
-# Build Intermediate Image
-echo "Building base intermediate image : jetson-base:$VERSION"
+# Build Image
+echo "Building image : jetson-base:$VERSION"
 cd ../developer
 
 rm -rf ./src
@@ -16,25 +16,14 @@ cp -r ../../src .
 touch ./src/requirements.txt
 
 # Build from the Dockerfile in the developer folder making an intermediate image
-docker build -t jetson-base:$VERSION \
-    --cache-from jetson-base:$PREV_VERSION \
+docker build -t $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION \
+    --cache-from $GITHUB_REGISTRY/$IMAGE_NAME:$PREV_VERSION \
     --build-arg BASE_IMAGE=ros:humble-ros-base \
     --build-arg INSTALL_RTAB="false" \
     --build-arg INSTALL_DOCKER="false" .
 
-echo "Build finished for base intermediate"
-
-
-# Build Final Image
-echo "Building final image : $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION"
+echo "Build finished"
 cd ../jetson
-
-docker build -t $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION \
-    --cache-from $GITHUB_REGISTRY/$IMAGE_NAME:$PREV_VERSION \
-    --build-arg VERSION=$VERSION .
-
-echo "Build finished for final image"
-
 
 echo "Would you like to run the image in interactive mode? (y/n)"
 read INTERACTIVE
@@ -50,4 +39,4 @@ if [ "$PUSH" = "y" ]; then
     docker push $GITHUB_REGISTRY/$IMAGE_NAME:$VERSION
 fi
 
-rm -rf src
+rm -rf ../developer/src

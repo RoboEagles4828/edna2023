@@ -26,7 +26,7 @@
   <xacro:property name= "chassis_side_width" value = ".0254" />
 
   <!-- Camera Position Variables -->
-  <xacro:property name="cam_pos" value="0.2 0 0.3"/> <!-- Made up values, replace with real ones later. -->
+  <xacro:property name="cam_pos" value="0.2 0 0.35"/> <!-- Made up values, replace with real ones later. -->
 
   <!-- X IS FORWARD -->
   <!-- Y IS LEFT -->
