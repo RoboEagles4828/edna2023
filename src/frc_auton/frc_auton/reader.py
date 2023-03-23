@@ -17,9 +17,9 @@ class StageSubscriber(Node):
     def __init__(self):
         super().__init__('stage_subscriber')
 
-        file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))
+        file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))-1
         self.reader = rosbag2_py.SequentialReader()
-        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/swerve_bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
         self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
         self.reader.open(self.storage_options,self.converter_options)
         self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
