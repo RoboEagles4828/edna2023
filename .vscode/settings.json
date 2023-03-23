@@ -87,7 +87,6 @@
         "regex": "cpp"
     },
     "python.autoComplete.extraPaths": [
-        "/home/admin/workspaces/rtab_ws/install/rtabmap_ros/local/lib/python3.10/dist-packages",
         "/opt/ros/humble/lib/python3.10/site-packages",
         "/opt/ros/humble/local/lib/python3.10/dist-packages"
     ],

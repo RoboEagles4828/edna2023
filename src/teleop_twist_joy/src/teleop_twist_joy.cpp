@@ -28,16 +28,18 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include <memory>
 #include <set>
 #include <string>
-
 #include <geometry_msgs/msg/twist.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 #include <rcutils/logging_macros.h>
 #include <sensor_msgs/msg/joy.hpp>
 #include "nav_msgs/msg/odometry.hpp"
-                              
+
 
 #include "teleop_twist_joy/teleop_twist_joy.hpp"
+#include "writer_srv/srv/start_writer.hpp" 
+#include <functional> // for bind()
+using namespace std;
 
 #define ROS_INFO_NAMED RCUTILS_LOG_INFO_NAMED
 #define ROS_INFO_COND_NAMED RCUTILS_LOG_INFO_EXPRESSION_NAMED
@@ -55,20 +57,27 @@ struct TeleopTwistJoy::Impl
   void joyCallback( const sensor_msgs::msg::Joy::SharedPtr joy);
   void sendCmdVelMsg( const sensor_msgs::msg::Joy::SharedPtr&, const std::string& which_map);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg);
+  void timerCallback();
+
 
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub;
+  rclcpp::Client<writer_srv::srv::StartWriter>::SharedPtr client;
+  rclcpp::TimerBase::SharedPtr timer_callback_;
+  rclcpp::Client<writer_srv::srv::StartWriter>::SharedPtr service_client_;
   nav_msgs::msg::Odometry::SharedPtr last_msg;
 
   bool require_enable_button;
   int64_t enable_button;
   int64_t enable_turbo_button;
   int64_t enable_field_oriented_button;
+  int64_t start_writer_button;
 
   int fieldOrientationButtonLastState = 0;
   bool fieldOrientationEnabled = false;
-
+  int serviceButtonLastState = 0;
+  bool serviceEnabled = false;
   std::map<std::string, int64_t> axis_linear_map;
   std::map<std::string, std::map<std::string, double>> scale_linear_map;
 
@@ -90,7 +99,15 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
     std::bind(&TeleopTwistJoy::Impl::odomCallback, this->pimpl_, std::placeholders::_1));
   pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10).best_effort(),
     std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
+  // pimpl_->client = this->create_client<writer_srv::srv::StartWriter>("start_writer");
+  pimpl_->timer_callback_ = this->create_wall_timer(std::chrono::duration<double>(0.1), std::bind(&TeleopTwistJoy::Impl::timerCallback,this->pimpl_));
 
+  // pimpl_->client = create_client<writer_srv::srv::StartWriter>("start_writer",
+  //                             [this](std::shared_ptr<writer_srv::srv::StartWriter::Request> /*request*/,  // NOLINT
+  //                                    std::shared_ptr<writer_srv::srv::StartWriter::Response> response) {  // NOLINT
+  //                               return startServiceCallback(std::move(response));     // NOLINT
+  //                             });
+  pimpl_->service_client_ = create_client<writer_srv::srv::StartWriter>("start_writer");
 
   pimpl_->require_enable_button = this->declare_parameter("require_enable_button", true);
 
@@ -98,6 +115,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
 
   pimpl_->enable_turbo_button = this->declare_parameter("enable_turbo_button", -1);
   pimpl_->enable_field_oriented_button = this->declare_parameter("enable_field_oriented_button", 8);
+  pimpl_->start_writer_button = this->declare_parameter("start_writer_button", 2);
 
   std::map<std::string, int64_t> default_linear_map{
     {"x", 5L},
@@ -177,7 +195,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   {
     static std::set<std::string> intparams = {"axis_linear.x", "axis_linear.y", "axis_linear.z",
                                               "axis_angular.yaw", "axis_angular.pitch", "axis_angular.roll",
-                                              "enable_button", "enable_turbo_button", "enable_field_oriented_button"};
+                                              "enable_button", "enable_turbo_button", "enable_field_oriented_button","start_writer_button"};
     static std::set<std::string> doubleparams = {"scale_linear.x", "scale_linear.y", "scale_linear.z",
                                                  "scale_linear_turbo.x", "scale_linear_turbo.y", "scale_linear_turbo.z",
                                                  "scale_angular.yaw", "scale_angular.pitch", "scale_angular.roll",
@@ -240,6 +258,10 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
       else if (parameter.get_name() == "enable_field_oriented_button")
       {
         this->pimpl_->enable_field_oriented_button = parameter.get_value<rclcpp::PARAMETER_INTEGER>();
+      }
+      else if (parameter.get_name() == "start_writer_button")
+      {
+        this->pimpl_->start_writer_button = parameter.get_value<rclcpp::PARAMETER_INTEGER>();
       }
       else if (parameter.get_name() == "axis_linear.x")
       {
@@ -336,6 +358,7 @@ double getVal(sensor_msgs::msg::Joy::SharedPtr joy_msg, const std::map<std::stri
     return 0.0;
   }
 
+
   return joy_msg->axes[axis_map.at(fieldname)] * scale_map.at(fieldname);
 }
 double get_scale_val(const std::map<std::string, int64_t>& axis_map,
@@ -402,6 +425,60 @@ double correct_joystick_pos(const std::map<std::string, double>& scale_map,const
   return 0.0;
 
 }
+// void TeleopTwistJoy::startServiceCallBack(const std::shared_ptr<writer_srv::srv::StartWriter::Response> response)
+// {
+//   if(joy){
+
+//   }
+// }
+void TeleopTwistJoy::Impl::timerCallback()
+  {
+    // it's good to firstly check if the service server is even ready to be called
+    RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "%d|%d|%d", service_client_->service_is_ready(),serviceEnabled,serviceButtonLastState);
+
+    if (service_client_->service_is_ready()&& serviceEnabled && serviceButtonLastState==1)
+    {
+      auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
+      request->record = true;
+      while (!service_client_->wait_for_service(1s)) {
+        if (!rclcpp::ok()) {
+          RCLCPP_ERROR(rclcpp::get_logger("teleop_twist_joy"), "Interrupted while waiting for the service. Exiting.");
+          break;
+        }
+        RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "service not available, waiting again...");
+      }
+
+      auto result = service_client_->async_send_request(request);
+      RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Working on it...");
+
+      // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Bag recording started: %d", result.get()->recording);
+      // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Path of Bag: %s", result.get()->path.c_str());
+
+
+    }
+    else if(service_client_->service_is_ready()&& !serviceEnabled && serviceButtonLastState==1){
+      auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
+      request->record = false;
+      while (!service_client_->wait_for_service(1s)) {
+        if (!rclcpp::ok()) {
+          RCLCPP_ERROR(rclcpp::get_logger("teleop_twist_joy"), "Interrupted while waiting for the service. Exiting.");
+          break;
+        }
+        RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "service not available, waiting again...");
+      }
+
+      auto result = service_client_->async_send_request(request);
+      
+      // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Bag recording stopped: %d", !result.get()->recording);
+      // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Path of Bag: %s", result.get()->path.c_str());
+    }
+
+    else if(!service_client_->service_is_ready())
+      RCLCPP_WARN(rclcpp::get_logger("teleop_twist_joy"), "[ServiceClientExample]: not calling service using callback, service not ready!");
+  RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Working on it...");
+
+  }
+  
 
 void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr& joy_msg,
                                          const std::string& which_map)
@@ -427,6 +504,14 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
       RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "Field Oriented: %d",fieldOrientationEnabled);
     }
     fieldOrientationButtonLastState = state;
+  }
+  if (start_writer_button >= 0 && static_cast<int>(joy_msg->buttons.size()) > start_writer_button) {
+    auto state = joy_msg->buttons[start_writer_button];
+    if (state == 1 && serviceButtonLastState == 0) {
+      serviceEnabled = !serviceEnabled;
+      RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "Writer State: %d",serviceEnabled);
+    }
+    serviceButtonLastState = state;
   }
 
   // Math for field oriented drive

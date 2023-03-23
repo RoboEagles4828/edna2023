@@ -16,7 +16,7 @@ class StageSubscriber(Node):
     def __init__(self):
         super().__init__('stage_subscriber')
         #get parameters
-        self.declare_parameter('auton_name', value='24')
+        self.declare_parameter('auton_name', value='10')
         self.auton_name = self.get_parameter('auton_name').value
         # self.subscription  # prevent unused variable warning
         self.reader = rosbag2_py.SequentialReader()
