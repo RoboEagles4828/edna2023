@@ -87,6 +87,7 @@ COPY src /tmp/src
 USER ${USERNAME}
 RUN /opt/install-scripts/install-rosdeps
 USER root
+RUN mkdir -p /opt/workspace
 
 ######################
 # Docker Permissions #
