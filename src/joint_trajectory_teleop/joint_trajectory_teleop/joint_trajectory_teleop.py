@@ -12,6 +12,9 @@ from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSReliabilityPolic
 import time
 import yaml
 
+
+ENABLE_THROTTLE = True
+
 class toggleButton():
     def __init__(self, button, isAxis=False):
         self.last_button = 0.0
@@ -109,10 +112,13 @@ class PublishTrajectoryMsg(Node):
             else:
                 button = joystick.buttons[button]
             function(button)
-            if not self.is_equal(self.cmds, self.last_cmd):
+            if ENABLE_THROTTLE:
+                if not self.is_equal(self.cmds, self.last_cmd):
+                    self.publisher_.publish(self.cmds)
+                    self.get_logger().info('Publishing...')
+                    self.last_cmd = self.cmds
+            else:
                 self.publisher_.publish(self.cmds)
-                self.get_logger().info('Publishing...')
-                self.last_cmd = self.cmds
 
 
 
