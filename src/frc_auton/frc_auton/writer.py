@@ -17,26 +17,25 @@ class StartWriting(Node):
         super().__init__('start_writer')
         self.subscription_stage =self.create_subscription(String, 'frc_stage', self.stage_callback, 10)
         self.srv = self.create_service(StartWriter, 'start_writer', self.service_callback)
-        self.bag_writer = BagWriter()
+        
         self.stage = ""
         self.fms = "False"
         self.is_disabled = "True"
         self.service_enabled = False
 
     def service_callback(self, request, response):
+        self.bag_writer = BagWriter()
         self.service_enabled = request.record
         if(self.service_enabled):
             self.start_bag_writer()
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
         response.recording = True
-        response.path = self.arm_path
+        response.path = self.bag_writer.path
         return response
     def start_bag_writer(self):
         
         if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False':
-            rclpy.spin_once(self.bag_writer)
-
-        else:
+            rclpy.spin(self.bag_writer)
             self.bag_writer.destroy_node()
             rclpy.shutdown()
     def stage_callback(self, msg):

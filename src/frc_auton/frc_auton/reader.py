@@ -8,6 +8,7 @@ from pathlib import Path
 from rclpy.serialization import deserialize_message
 import rosbag2_py
 from std_msgs.msg import String
+import os
 
 
 
@@ -15,18 +16,12 @@ class StageSubscriber(Node):
 
     def __init__(self):
         super().__init__('stage_subscriber')
-        #get parameters
-        self.declare_parameter('auton_name', value='10')
-        self.auton_name = self.get_parameter('auton_name').value
-        # self.subscription  # prevent unused variable warning
+
+        file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))
         self.reader = rosbag2_py.SequentialReader()
-        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/swerve_bag_'+self.auton_name, storage_id='sqlite3') #change this to the bag you want to read
+        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/swerve_bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
         self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
         self.reader.open(self.storage_options,self.converter_options)
-        self.reader_2 = rosbag2_py.SequentialReader()
-        self.storage_options_2 = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/arm_bag_'+self.auton_name, storage_id='sqlite3') #change this to the bag you want to read
-        self.converter_options_2 = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
-        self.reader_2.open(self.storage_options_2,self.converter_options_2)
         self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
         self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
         self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
@@ -44,14 +39,12 @@ class StageSubscriber(Node):
             if(self.reader.has_next()):
                 (topic, data, t)=self.reader.read_next()
                 msg2 = deserialize_message(data,Twist)
+                msg3 = deserialize_message(data,JointTrajectory)
                 self.get_logger().info('Reader1: %f' % msg2.linear.x)
                 self.publish_twist.publish(msg2)
-            
-            if(self.reader_2.has_next()):
-                (topic, data, t)=self.reader_2.read_next()
-                msg3 = deserialize_message(data,JointTrajectory)
                 self.publish_trajectory.publish(msg3)
-                self.get_logger().info('Reader2: %s' % str(msg3.points[0].positions))
+            
+
 
 
 
