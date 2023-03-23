@@ -89,7 +89,7 @@ edna-restart() {
 
 edna-log() {
     echo "Checking edna.service status..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT 'sudo systemctl status edna.service'
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT 'sudo journalctl -u edna.service -b'
 }
 
 help() {
