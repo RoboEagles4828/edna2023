@@ -15,9 +15,59 @@ deploy-git() {
     git push $MACHINE_NAME main
 }
 
+# deploy-rsync() {
+#     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
+#     rsync -azP -e "ssh -p $PORT" \
+#         --exclude .git/ \
+#         --exclude .vscode/ \
+#         --exclude .devcontainer/ \
+#         --exclude build/ \
+#         --exclude install/ \
+#         --exclude log/ \
+#         --exclude rio/ \
+#         --exclude isaac/ \
+#         --exclude *.rviz \
+#         --exclude __pycache__ \
+#         --exclude edna_tests \
+#         --exclude joy \
+#     /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+# }
+
 deploy-rsync() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
-    rsync -azP -e "ssh -p $PORT" --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude *.rviz --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+
+    echo "Generating rsync metadata..."
+    rsync -azPin -e "ssh -p $PORT" \
+        --exclude .git/ \
+        --exclude .vscode/ \
+        --exclude .devcontainer/ \
+        --exclude build/ \
+        --exclude install/ \
+        --exclude log/ \
+        --exclude rio/ \
+        --exclude isaac/ \
+        --exclude *.rviz \
+        --exclude __pycache__ \
+        --exclude edna_tests \
+        --exclude joy \
+    /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH \
+        | egrep -v "sending incremental file list" | egrep -v "^\." | awk '{print $2}' | tr ' ' '\n' > /workspaces/edna2023/.rsyncmetadata
+
+    echo "Syncing files..."
+    rsync -azP -e "ssh -p $PORT" \
+        --exclude .git/ \
+        --exclude .vscode/ \
+        --exclude .devcontainer/ \
+        --exclude build/ \
+        --exclude install/ \
+        --exclude log/ \
+        --exclude rio/ \
+        --exclude isaac/ \
+        --exclude *.rviz \
+        --exclude __pycache__ \
+        --exclude edna_tests \
+        --exclude joy \
+    /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
 }
 
 rebuild() {
