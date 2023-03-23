@@ -4,6 +4,8 @@ import logging
 CONTROLLER_PORT = 0
 SCALING_FACTOR_FIX = 10000
 
+ENABLE_THROTTLE = True
+
 pov_x_map = {
     -1: 0.0,
     0: 0.0,
@@ -32,6 +34,8 @@ class Joystick:
     def __init__(self):
         self.joystick = wpilib.XboxController(CONTROLLER_PORT)
         self.deadzone = 0.15
+        self.last_joystick_data = self.getEmptyData()
+        self.count = 0
 
     def scaleAxis(self, axis):
         return int(axis * SCALING_FACTOR_FIX * -1)
@@ -79,8 +83,24 @@ class Joystick:
             int(self.joystick.getLeftStickButton()),
             int(self.joystick.getRightStickButton())
         ]
-        
-        return {"axes": axes, "buttons": buttons}
+
+        data = {"axes": axes, "buttons": buttons}
+
+        if ENABLE_THROTTLE:
+            if self.is_equal(data, self.last_joystick_data):
+                self.count += 1
+                if self.count >= 10:
+                    return None
+            else:
+                self.count = 0
+                self.last_joystick_data = data
+                return data
+        else:
+            return data
+
+    def is_equal(self, d, d1):
+        res = all((d1.get(k) == v for k, v in d.items()))
+        return res
     
     
 
