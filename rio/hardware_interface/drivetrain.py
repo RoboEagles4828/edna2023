@@ -205,7 +205,7 @@ class SwerveModule():
         self.wheel_motor.config_kD(0, wheel_pid_constants["kD"], timeout_ms)
         
         # Brake
-        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Coast)
+        self.wheel_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
         # Velocity Ramp
         # TODO: Tweak this value
@@ -246,13 +246,15 @@ class SwerveModule():
         # Braking
         self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
-    def neutralize_wheel(self):
+    def neutralize_module(self):
         self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
+        self.axle_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
         if wheel_motor_vel == 0.0:
-            self.neutralize_wheel()
+            self.neutralize_module()
+            return
         else:
             self.wheel_motor.set(ctre.TalonFXControlMode.Velocity, wheel_vel)
         self.last_wheel_vel_cmd = wheel_vel

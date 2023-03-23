@@ -27,6 +27,7 @@ services:
       - ROS_DOMAIN_ID=0
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       - FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml
+      - ROS_NAMESPACE=real
     volumes:
       - /usr/bin/tegrastats:/usr/bin/tegrastats
       - /tmp/argus_socket:/tmp/argus_socket
@@ -43,6 +44,9 @@ services:
       - /usr/share/vpi2:/usr/share/vpi2
       - /run/jtop.sock:/run/jtop.sock:ro
       - /dev/*:/dev/*
+      - ${HOME}/edna2023/src/edna_bringup/launch/zed2i.launch.py:/root/ros2_ws/src/zed-ros2-wrapper/zed_wrapper/launch/zed2i.launch.py
+    depends_on:
+      - main_control
     deploy:
       resources:
           reservations:
