@@ -1,12 +1,5 @@
 {
   "HALProvider": {
-    "Other Devices": {
-      "Talon FX[3]": {
-        "header": {
-          "open": true
-        }
-      }
-    },
     "RoboRIO": {
       "RoboRIO Input": {
         "open": true
