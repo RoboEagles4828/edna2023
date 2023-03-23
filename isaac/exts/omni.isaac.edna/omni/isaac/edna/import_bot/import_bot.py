@@ -14,6 +14,7 @@ import omni.kit.commands
 import os
 import numpy as np
 import math
+from random import randint, choice
 import carb
 
 NAMESPACE = f"{os.environ.get('ROS_NAMESPACE')}" if 'ROS_NAMESPACE' in os.environ else 'default'
@@ -33,6 +34,8 @@ def add_physics_material_to_prim(prim, materialPath):
 class ImportBot(BaseSample):
     def __init__(self) -> None:
         super().__init__()
+        self.game_piece_list = []
+
         return
 
 
@@ -71,6 +74,62 @@ class ImportBot(BaseSample):
         # self.setup_perspective_cam()
         self.setup_world_action_graph()
         return
+    def add_game_piece(self):
+        print("asdklj;f;asdjdfdl;asdjfkl;asdjfkl;asdjfkl;asfjkla;sdjkflka;k")
+        self.extension_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
+        cone = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23700_JFH.usd")
+        cube = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23701_JFL.usd")
+        add_reference_to_stage(cone, "/World/Cone_1")
+        substation_empty = [True, True, True, True]
+        for game_piece in self.game_piece_list:
+            pose, orienation = game_piece.get_world_pose()
+            print(pose)
+            if(pose[0]<8.17+0.25 and pose[0]>8.17-0.25):
+                if(pose[1]<-2.65+0.25 and pose[1]>-2.65-0.25):
+                    substation_empty[0]=False
+                    print("substation_empty[0]=False")
+                elif pose[1]<-3.65+0.25 and pose[1]>-3.65-0.25:
+                    substation_empty[1]=False
+                    print("substation_empty[1]=False")
+
+            elif (pose[0]<-8.17+0.25 and pose[0]>-8.17-0.25):
+                if(pose[1]<-2.65+0.25 and pose[1]>-2.65-0.25):
+                    substation_empty[2]=False
+                    print("substation_empty[2]=False")
+
+                elif pose[1]<-3.65+0.25 and pose[1]>-3.65-0.25:
+                    substation_empty[3]=False
+                    print("substation_empty[3]=False")
+        for i in range(4):
+            if substation_empty[i]:
+                num = (int(len(self.game_piece_list)+1)/2)
+                if(i==0):
+                    position = [8.17, -2.65, 0.0]
+                elif(i==1):
+                    position = [-8.17, -2.65, 0.0]
+                elif(i==2):
+                    position = [8.17, -3.65, 0.0]
+                else:
+                    position = [-8.17, -3.65, 0.0]
+                if choice([True, False]):
+                    print("yes")
+                    name = "/World/Cube_"+str(num)
+                    view = "cube_"+str(num)+"_view"
+                    add_reference_to_stage(cube, "/World/Cube_"+str(num))
+                    self.game_piece_list.append(GeometryPrim(name, view, position=position))
+                else:
+                    print("yesss")
+                    name = "/World/Cone_"+str(num)
+                    view = "cone_"+str(num)+"_view" 
+                    add_reference_to_stage(cone, "/World/Cone_"+str((int(len(self.game_piece_list)+1)/2)))
+                    self.game_piece_list.append(GeometryPrim(name, view, position=position))
+
+            
+
+            
+
+        return
    
     def setup_field(self):
         world = self.get_world()
@@ -96,12 +155,12 @@ class ImportBot(BaseSample):
         add_reference_to_stage(cone, "/World/Cone_6")
         # add_reference_to_stage(cone, "/World/Cone_7")
         # add_reference_to_stage(cone,  "/World/Cone_8")
-        cone_1 = GeometryPrim("/World/Cone_1","cone_1_view",position=np.array([1.20298,-0.56861,0.0]))
-        cone_2 = GeometryPrim("/World/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0]))
-        cone_3 = GeometryPrim("/World/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0]))
-        cone_4 = GeometryPrim("/World/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0]))
-        cone_5 = GeometryPrim("/World/Cone_5","cone_5_view",position=np.array([-8.17,-2.65,1.0]))
-        cone_6 = GeometryPrim("/World/Cone_6","cone_6_view",position=np.array([8.17,-2.65,1.0]))
+        self.game_piece_list.append( GeometryPrim("/World/Cone_1","cone_1_view",position=np.array([1.20298,-0.56861,0.0])))
+        self.game_piece_list.append( GeometryPrim("/World/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0])))
+        self.game_piece_list.append( GeometryPrim("/World/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0])))
+        self.game_piece_list.append( GeometryPrim("/World/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0])))
+        self.game_piece_list.append( GeometryPrim("/World/Cone_5","cone_5_view",position=np.array([-8.17,-2.65,1.15])))
+        self.game_piece_list.append( GeometryPrim("/World/Cone_6","cone_6_view",position=np.array([8.17,-2.65,1.15])))
         chargestation_1 = GeometryPrim("/World/ChargeStation_1","chargestation_1_view",position=np.array([-4.20298,-0.56861,0.0]))
         chargestation_2 = GeometryPrim("/World/ChargeStation_2","chargesation_2_view",position=np.array([4.20298,0.56861,0.0]))
         substation_1 = GeometryPrim("/World/Substation_1","substation_1_view",position=np.array([-8,-3.4,0.0]))
@@ -118,12 +177,13 @@ class ImportBot(BaseSample):
         add_reference_to_stage(cube, "/World/Cube_6")
         # add_reference_to_stage(cube, "/World/Cube_7")
         # add_reference_to_stage(cube, "/World/Cube_8")
-        cube_1 = GeometryPrim("/World/Cube_1","cube_1_view",position=np.array([1.20298,0.65059,0.121]))
-        cube_2 = GeometryPrim("/World/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121]))
-        cube_3 = GeometryPrim("/World/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121]))
-        cube_4 = GeometryPrim("/World/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121]))
-        cube_5 = GeometryPrim("/World/Cube_5","cube_5_view",position=np.array([-8.17,-3.65,1.15]))
-        cube_6 = GeometryPrim("/World/Cube_6","cube_6_view",position=np.array([8.17,-3.65,1.15]))
+        self.game_piece_list.append( GeometryPrim("/World/Cube_1","cube_1_view",position=np.array([1.20298,0.65059,0.121])))
+        self.game_piece_list.append( GeometryPrim("/World/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121])))
+        self.game_piece_list.append( GeometryPrim("/World/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121])))
+        self.game_piece_list.append( GeometryPrim("/World/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121])))
+        self.game_piece_list.append( GeometryPrim("/World/Cube_5","cube_5_view",position=np.array([-8.17,-3.65,1.15])))
+        self.game_piece_list.append( GeometryPrim("/World/Cube_6","cube_6_view",position=np.array([8.17,-3.65,1.15])))
+
 
     async def setup_post_load(self):
         self._world = self.get_world()

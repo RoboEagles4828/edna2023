@@ -50,6 +50,11 @@ class BaseSample(object):
         if len(self._current_tasks) > 0:
             self._world.add_physics_callback("tasks_step", self._world.step_async)
         return
+    async def load_game_piece_async(self):
+        """Function called when clicking load buttton
+        """
+        self.add_game_piece()
+        return
 
     async def reset_async(self):
         """Function called when clicking reset buttton
