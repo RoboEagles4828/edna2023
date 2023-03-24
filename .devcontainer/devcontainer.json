@@ -12,7 +12,8 @@
         "OMNI_SERVER": "omniverse://127.0.0.1/NVIDIA/Assets/Isaac/2022.2.0",
         "FASTRTPS_DEFAULT_PROFILES_FILE": "/usr/local/share/middleware_profiles/rtps_udp_profile.xml",
         "WORKSPACE_LOCAL_PATH": "${localWorkspaceFolder}",
-        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim"
+        "ISAAC_LOCAL_STORAGE": "${localEnv:HOME}/docker/isaac-sim",
+        "PYTHONWARNINGS": "ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources"
     },
     "remoteEnv": {
         "XAUTHORITY": "/tmp/.docker.xauth",
@@ -28,7 +29,8 @@
     "capAdd": ["SYS_PTRACE"],
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind", // docker
-        "source=${localEnv:HOME}/docker/vscode,target=/home/admin/.vscode-server,type=bind" // vscode
+        "source=${localEnv:HOME}/docker/vscode,target=/home/admin/.vscode-server,type=bind", // vscode
+        "source=${localEnv:HOME}/.ssh,target=/home/admin/.ssh,type=bind" // vscode
     ],
     "runArgs": [
         "--env-file", "${localWorkspaceFolder}/.devcontainer/.env",

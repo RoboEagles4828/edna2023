@@ -1,5 +1,5 @@
-USERNAME="roboeagles"
-IP_ADDRESS="10.48.28.22"
+USERNAME="sorineagle"
+IP_ADDRESS="192.168.1.171"
 PORT="22"
 REMOTE_PATH="/home/$USERNAME/edna2023"
 
