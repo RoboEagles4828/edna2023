@@ -115,8 +115,8 @@ class PublishTrajectoryMsg(Node):
         #TODO: Tweak the values
 
         if button_val == 1.0:
-            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.56
-            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.56
+            self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.056
+            self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.056
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.joint_limits["top_slider_joint"]["max"]
         elif button_val == 0.0:
             self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.0
