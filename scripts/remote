@@ -84,7 +84,7 @@ rebuild() {
 
 edna-restart() {
     echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl restart edna.service"
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "cd /home/$USERNAME/edna2023 && docker compose restart"
 }
 
 edna-log() {

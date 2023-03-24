@@ -14,9 +14,6 @@ if test -f ".rsyncmetadata"; then
         echo "No critical source files changed, not rebuilding."
     fi 
     rm .rsyncmetadata
-else
-    echo "RSync metadata not found, rebuilding all packages..."
-    colcon build --symlink-install --paths src/*
 fi
 
 source install/setup.bash
