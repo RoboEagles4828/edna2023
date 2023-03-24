@@ -434,7 +434,6 @@ double correct_joystick_pos(const std::map<std::string, double>& scale_map,const
 void TeleopTwistJoy::Impl::timerCallback()
   {
     // it's good to firstly check if the service server is even ready to be called
-    RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "%d|%d|%d", service_client_->service_is_ready(),serviceEnabled,serviceButtonLastState);
 
     if (service_client_->service_is_ready()&& serviceEnabled && serviceButtonLastState==1)
     {
@@ -449,7 +448,6 @@ void TeleopTwistJoy::Impl::timerCallback()
       }
 
       auto result = service_client_->async_send_request(request);
-      RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Working on it...");
 
       // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Bag recording started: %d", result.get()->recording);
       // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Path of Bag: %s", result.get()->path.c_str());
@@ -475,7 +473,6 @@ void TeleopTwistJoy::Impl::timerCallback()
 
     else if(!service_client_->service_is_ready())
       RCLCPP_WARN(rclcpp::get_logger("teleop_twist_joy"), "[ServiceClientExample]: not calling service using callback, service not ready!");
-  RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Working on it...");
 
   }
   
