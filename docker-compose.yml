@@ -44,6 +44,7 @@ services:
       - /usr/share/vpi2:/usr/share/vpi2
       - /run/jtop.sock:/run/jtop.sock:ro
       - /dev/*:/dev/*
+      - ${HOME}/edna2023/scripts/config/SN39192289.conf:/usr/local/zed/settings/SN39192289.conf
       - ${HOME}/edna2023/src/edna_bringup/launch/zed2i.launch.py:/root/ros2_ws/src/zed-ros2-wrapper/zed_wrapper/launch/zed2i.launch.py
     depends_on:
       - main_control

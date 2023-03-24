@@ -1,11 +1,12 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler, DeclareLaunchArgument, SetEnvironmentVariable
+from launch.actions import RegisterEventHandler, DeclareLaunchArgument, SetEnvironmentVariable, LogInfo, EmitEvent
 from launch.substitutions import LaunchConfiguration, Command, PythonExpression, TextSubstitution
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
 from launch.conditions import IfCondition
+from launch.events import Shutdown
 
 # Easy use of namespace since args are not strings
 # NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
@@ -52,6 +53,15 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             }, controllers_file],
         output="both",
+    )
+    control_node_require = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=control_node,
+            on_exit=[
+                LogInfo(msg="Listener exited; tearing down entire system."),
+                EmitEvent(event=Shutdown())
+            ],
+        )
     )
 
     # Starts ROS2 Control Joint State Broadcaster
@@ -152,5 +162,6 @@ def generate_launch_description():
         joint_trajectory_controller_spawner,
         swerve_drive_controller_delay,
         forward_position_controller_delay,
-        forward_velocity_controller_delay
+        forward_velocity_controller_delay,
+        control_node_require
     ])
