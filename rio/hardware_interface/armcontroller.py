@@ -31,7 +31,7 @@ PORTS = {
 MOTOR_PID_CONFIG = {
     'SLOT': 2,
     'MAX_SPEED': 18000,             # Ticks/100ms 
-    'TARGET_ACCELERATION': 12000,    # Ticks/100ms
+    'TARGET_ACCELERATION': 14000,    # Ticks/100ms
     "kP": 0.2,
     "kI": 0.0,
     "kD": 0.1,
@@ -200,6 +200,8 @@ class Intake():
         if position != self.lastCommand:
             logging.info(f"Intake Position: {position}")
         self.lastCommand = position
+        
+        # Moves the intake
         center = (self.max - self.min) / 2 + self.min
         if position >= center and self.state == 0:
             self.motor.set(ctre.TalonFXControlMode.Velocity, -TICKS_PER_REVOLUTION/2)
@@ -207,6 +209,11 @@ class Intake():
         elif position < center and self.state == 1:
             self.motor.set(ctre.TalonFXControlMode.Velocity, TICKS_PER_REVOLUTION/2)
             self.state = 0
+        
+        if self.state == 0 and not self.motor.isFwdLimitSwitchClosed():
+            self.motor.set(ctre.TalonFXControlMode.Velocity, TICKS_PER_REVOLUTION/2)
+        elif self.state == 1 and not self.motor.isRevLimitSwitchClosed():
+            self.motor.set(ctre.TalonFXControlMode.Velocity, -TICKS_PER_REVOLUTION/2)
 
 class Elevator():
     def __init__(self, port : int, min : float = 0.0, max : float = 1.0):

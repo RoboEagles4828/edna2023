@@ -109,6 +109,7 @@ class PublishTrajectoryMsg(Node):
             else:
                 button = joystick.buttons[button]
             function(button)
+        self.publisher_.publish(self.cmds)
 
     def elevator_loading_station(self, button_val: int):
         
@@ -124,14 +125,12 @@ class PublishTrajectoryMsg(Node):
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = 0.0
         
         self.cmds.points = [self.position_cmds]
-        self.publisher_.publish(self.cmds)
 
     def skis_up(self, button_val: int):
 
         #TODO: Tweak the values
         self.position_cmds.positions[int(self.joint_map['bottom_intake_joint'])] = button_val
         self.cmds.points = [self.position_cmds]
-        self.publisher_.publish(self.cmds)
 
     def elevator_mid_level(self, button_val: int):
         
@@ -143,7 +142,6 @@ class PublishTrajectoryMsg(Node):
         
         
         self.cmds.points = [self.position_cmds]
-        self.publisher_.publish(self.cmds)
 
     def elevator_high_level(self, button_val: int):
         
@@ -157,7 +155,6 @@ class PublishTrajectoryMsg(Node):
         
         
         self.cmds.points = [self.position_cmds]
-        self.publisher_.publish(self.cmds)
 
     def top_gripper_control(self, button_val: int):
 
@@ -171,7 +168,6 @@ class PublishTrajectoryMsg(Node):
         
         
         self.cmds.points = [self.position_cmds]
-        self.publisher_.publish(self.cmds)
 
     def elevator_pivot_control(self, button_val: int):
 
@@ -185,7 +181,6 @@ class PublishTrajectoryMsg(Node):
         
         
         self.cmds.points = [self.position_cmds]
-        self.publisher_.publish(self.cmds)
 
     def top_slider_control(self, button_val: int):
 
@@ -194,7 +189,6 @@ class PublishTrajectoryMsg(Node):
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.joint_limits["top_slider_joint"]["max"]
         
         self.cmds.points = [self.position_cmds]
-        self.publisher_.publish(self.cmds)
 
 def main(args=None):
     rclpy.init(args=args)
