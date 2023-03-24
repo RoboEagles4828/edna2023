@@ -1,37 +1,13 @@
 #!/bin/bash
 
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+PURPLE='\033[0;35m'
+NC='\033[0m'
+
 # Check /scripts/config/remote-config for script configuration
-source /workspaces/edna2023/scripts/config/remote-config
-
-deploy-git() {
-    echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via git..."
-    if [[ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]]; then # Add it as a remote
-            if [ $(git remote | grep "$MACHINE_NAME") ]; then # Remove the old jetson remote
-                    git remote remove $MACHINE_NAME
-            fi
-            git remote add $MACHINE_NAME "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
-    fi
-
-    git push $MACHINE_NAME main
-}
-
-# deploy-rsync() {
-#     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
-#     rsync -azP -e "ssh -p $PORT" \
-#         --exclude .git/ \
-#         --exclude .vscode/ \
-#         --exclude .devcontainer/ \
-#         --exclude build/ \
-#         --exclude install/ \
-#         --exclude log/ \
-#         --exclude rio/ \
-#         --exclude isaac/ \
-#         --exclude *.rviz \
-#         --exclude __pycache__ \
-#         --exclude edna_tests \
-#         --exclude joy \
-#     /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
-# }
+source /workspaces/edna2023/scripts/config/remote-config-orin
 
 deploy-rsync() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
@@ -48,10 +24,12 @@ deploy-rsync() {
         --exclude isaac/ \
         --exclude *.rviz \
         --exclude __pycache__ \
-        --exclude edna_tests \
         --exclude joy \
+        --exclude edna_debugger \
+        --exclude edna_tests \
+        --exclude .rsyncmetadata \
     /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH \
-        | egrep -v "sending incremental file list" | egrep -v "^\." | awk '{print $2}' | tr ' ' '\n' > /workspaces/edna2023/.rsyncmetadata
+        | egrep -v "sending incremental file list" | egrep -v "^\." | awk '{print $2}' | tr ' ' '\n' >> /workspaces/edna2023/.rsyncmetadata
 
     echo "Syncing files..."
     rsync -azP -e "ssh -p $PORT" \
@@ -65,31 +43,69 @@ deploy-rsync() {
         --exclude isaac/ \
         --exclude *.rviz \
         --exclude __pycache__ \
-        --exclude edna_tests \
         --exclude joy \
+        --exclude edna_debugger \
+        --exclude edna_tests \
     /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    echo -e "${GREEN}Done deploying files to remote${NC}"
 }
 
-rebuild() {
-    echo "Disabling edna.service for speed..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
-    echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) and building..."
-    if [ -z "$2" ]; then
-        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*";
-    else
-        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}";
-    fi
-    edna-restart
+sshCommand() {
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "$@"
+}
+
+edna-stop() {
+    sshCommand "cd $REMOTE_PATH && docker compose stop"
 }
 
 edna-restart() {
-    echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "cd /home/$USERNAME/edna2023 && docker compose restart"
+    sshCommand "cd $REMOTE_PATH && docker compose restart"
 }
 
 edna-log() {
-    echo "Checking edna.service status..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT 'sudo journalctl -u edna.service -b'
+    sshCommand "cd $REMOTE_PATH && docker compose logs -f"
+}
+
+edna-setup() {
+    if [ ! -f ~/.ssh/robot_deploy ]; then
+        ssh-keygen -b 2048 -t rsa -f ~/.ssh/robot_deploy -q -N ""
+        echo -e "${GREEN}robot_deploy key created${NC}"
+    fi
+    echo -e "${ORANGE}Copying robot_deploy public key to $USERNAME@$IP_ADDRESS:$PORT...${NC}"
+    ssh-copy-id -p $PORT -i ~/.ssh/robot_deploy.pub $USERNAME@$IP_ADDRESS 
+}
+
+smart-build() {
+    echo -e "${PURPLE}Generating a plan for a smart build${NC}"
+    smartPlan=`sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild plan"`
+    if [ -z "$smartPlan" ]; then
+        echo -e "${GREEN}No packages to rebuild${NC}"
+    else
+        # Show the Plan
+        echo -e "${ORANGE}$(echo $smartPlan | wc -w) Packages to rebuild:${NC}"
+        printf '%s\n' $smartPlan
+
+        # Ask if the user wants to apply the plan
+        read -p "Would you like to apply this plan? (y/n) " response
+        if [ "$response" == "y" ]; then
+            sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild apply $smartPlan"
+        fi
+    fi
+}
+
+complete-build() {
+    ehco -e "${ORANGE}WARNING: DOING COMPLETE REBUILD, THIS WILL TAKE A WHILE${NC}"
+    echo "Stopping containers to save resources during rebuild..."
+    edna-stop
+    echo "Removing old build files..."
+    sshCommand "cd $REMOTE_PATH && sudo rm -rf build/ install/ log/"
+    echo "Starting rebuild container..."
+    # if [ -z "$2" ]; then
+    #     ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*";
+    # else
+    #     ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}";
+    # fi
+    # edna-restart
 }
 
 help() {
@@ -119,8 +135,7 @@ case $1 in
     ;;
 
     "setup")
-        echo "Copying public key to $USERNAME@$IP_ADDRESS:$PORT..."
-        ssh-copy-id -p $PORT -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS 
+        edna-setup
     ;;
         
     "connect") ;&
@@ -134,10 +149,6 @@ case $1 in
             "") ;&
             "rsync")
                 deploy-rsync
-            ;;
-            
-            "git")
-                deploy-git
             ;;
 
             *)
@@ -159,10 +170,10 @@ case $1 in
         esac
         ;;
 
-    "run")
-        ssh -t $USERNAME@$IP_ADDRESS -p $PORT "${@:2}";
+    "exec")
+        sshCommand "${@:2}";
         ;;
-
+    
     "log")
         edna-log
         ;;
@@ -170,9 +181,13 @@ case $1 in
     "restart")
         edna-restart
         ;;
+    
+    "stop")
+        edna-stop
+        ;;
 
-    "rebuild")
-        rebuild $@
+    "build")
+        smart-build $@
         ;;
     
     

@@ -1,5 +1,5 @@
 [Unit]
-Description=edna docker service
+Description=edna docker compose service
 Requires=docker.service
 After=docker.service
 
@@ -7,8 +7,7 @@ After=docker.service
 Type=oneshot
 WorkingDirectory=/home/roboeagles/edna2023
 Environment=HOME=/home/roboeagles
-ExecStart=/usr/bin/env /usr/bin/docker compose -f docker-compose.yml up --force-recreate
-ExecStop=/usr/bin/env /usr/bin/docker compose -f docker-compose.yml stop
+ExecStart=/usr/bin/env /usr/bin/docker compose up -d
 StandardOutput=syslog
 RemainAfterExit=yes
 

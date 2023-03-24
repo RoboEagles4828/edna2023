@@ -1,0 +1,42 @@
+#!/bin/bash
+
+plan() {
+    if test -f ".rsyncmetadata"; then
+        CHANGED_FILES=$(<.rsyncmetadata)
+        if egrep -q "\.cpp\b|\.hpp\b|\.c\b|\.h\b|\.yaml\b" <<< $CHANGED_FILES; then
+            # Figure out what packages to rebuild...
+            grep 'src/' <<< "$CHANGED_FILES" | tr '/' ' ' | awk '{print $2}' | nl | sort -u -k2 | sort -n | cut -f2- | tr '\n' ' '
+        else
+            echo ""
+        fi
+    fi
+    echo ""
+}
+
+apply() {
+    packages=$@
+    docker run --rm -it -u admin\
+        -v ${HOME}/edna2023:/opt/workspace \
+        --entrypoint "" \
+        ghcr.io/roboeagles4828/jetson:3 \
+        "/usr/bin/bash -c ls"
+        # "source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select $packages"
+    # rm .rsyncmetadata
+    # echo "Rebuilding Packages: $REBUILD_PACKAGES"
+}
+
+case $1 in
+    "plan")
+        plan
+    ;;
+
+    "apply")
+        apply "${@:2}";
+    ;;
+
+    *)
+        echo "Unknown option: $1"
+        help
+        ;;
+esac
+

@@ -1,0 +1,6 @@
+USERNAME="sorineagle"
+IP_ADDRESS="192.168.1.89"
+PORT="22"
+REMOTE_PATH="/home/$USERNAME/edna2023"
+
+MACHINE_NAME=${5:-""}
