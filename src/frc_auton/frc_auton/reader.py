@@ -53,10 +53,15 @@ class StageSubscriber(Node):
         # self.get_logger().info('Subscription_stage: %b' % stage.lower() == 'auton' and fms)
 
         if(stage.lower() == 'auton' and disabled == "False" and self.changed_stage and not self.has_bag_played ):# and fms == 'True' ):
-            # self.get_logger().info('Subscription_stage: %s' % 'auton')
+            
+            #check if new bag
+            file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))-1
+            self.get_logger().info(f'file counter:{file_counter}' )
+            storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+
             self.has_bag_played = True
             self.playerOptions
-            self.player.play(self.storage_options,self.playerOptions)
+            self.player.play(storage_options,self.playerOptions)
 
     
     

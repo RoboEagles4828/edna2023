@@ -216,9 +216,9 @@ def stageBroadcasterThread():
 def stageBroadcasterAction(publisher : DDS_Publisher):
     global frc_stage
     global fms_attached
-    is_enabled = wpilib.DriverStation.isDisabled()
+    is_disabled = wpilib.DriverStation.isDisabled()
     
-    publisher.write({ "data": f"{frc_stage}|{fms_attached}|{is_enabled}" })
+    publisher.write({ "data": f"{frc_stage}|{fms_attached}|{is_disabled}" })
 ############################################
 
 
