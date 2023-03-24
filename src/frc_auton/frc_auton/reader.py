@@ -17,33 +17,47 @@ class StageSubscriber(Node):
     def __init__(self):
         super().__init__('stage_subscriber')
 
+        
+
         file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))-1
-        self.reader = rosbag2_py.SequentialReader()
+        # self.reader = rosbag2_py.SequentialReader()
+        # self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
+        # self.reader.open(self.storage_options,self.converter_options)
         self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
-        self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
-        self.reader.open(self.storage_options,self.converter_options)
+        self.playerOptions = rosbag2_py.PlayOptions()
+        self.player = rosbag2_py.Player()
+
         self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
         self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
         self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
 
-           
+        
+        self.changed_stage = False
+        self.stage= "Teleop"
+        self.fms = "False"
+        self.disabled = "True"
+        self.has_bag_played = False
 
 
     def listener_callback(self, msg):
+    
         stage = str(msg.data).split("|")[0]
+        if stage != self.stage:
+            self.changed_stage = True
+            self.stage = stage
+            self.has_bag_played = False
         fms = str(msg.data).split("|")[1]
         disabled = str(msg.data).split("|")[2]
         # self.get_logger().info('Subscription_stage: %b' % stage.lower() == 'auton' and fms)
-        if(stage.lower() == 'auton' and disabled == "False"):# and fms == 'True' ):
+
+        if(stage.lower() == 'auton' and disabled == "False" and self.changed_stage and not self.has_bag_played ):# and fms == 'True' ):
             # self.get_logger().info('Subscription_stage: %s' % 'auton')
-            if(self.reader.has_next()):
-                (topic, data, t)=self.reader.read_next()
-                msg2 = deserialize_message(data,Twist)
-                msg3 = deserialize_message(data,JointTrajectory)
-                self.get_logger().info('Reader1: %f' % msg2.linear.x)
-                self.publish_twist.publish(msg2)
-                self.publish_trajectory.publish(msg3)
-            
+            self.has_bag_played = True
+            self.playerOptions
+            self.player.play(self.storage_options,self.playerOptions)
+
+    
+    
 
 
 

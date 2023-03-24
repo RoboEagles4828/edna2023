@@ -115,7 +115,7 @@ class PublishTrajectoryMsg(Node):
             if ENABLE_THROTTLE:
                 if not self.is_equal(self.cmds, self.last_cmd):
                     self.publisher_.publish(self.cmds)
-                    self.get_logger().info('Publishing...')
+                    # self.get_logger().info('Publishing...')
                     self.last_cmd = self.cmds
             else:
                 self.publisher_.publish(self.cmds)
