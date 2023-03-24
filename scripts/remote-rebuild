@@ -15,23 +15,43 @@ plan() {
 
 apply() {
     packages=$@
-    docker run --rm -it -u admin\
-        -v ${HOME}/edna2023:/opt/workspace \
-        --entrypoint "" \
-        ghcr.io/roboeagles4828/jetson:3 \
-        "/usr/bin/bash -c ls"
-        # "source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select $packages"
-    # rm .rsyncmetadata
-    # echo "Rebuilding Packages: $REBUILD_PACKAGES"
+    if [[ "$packages" == *"all"* ]]; then
+        echo "FOUND ALL IN APPLY"
+        packages=$(find src -maxdepth 1 -type d \
+            -not -path "src/edna_debugger*" \
+            -printf '%f\n' | tr '\n' ' ')
+        echo $packages
+    fi
+
+    docker run --rm -it \
+        -v $HOME/edna2023:/opt/workspace:rw \
+        --user admin \
+        --entrypoint /opt/workspace/scripts/remote-rebuild \
+        ghcr.io/roboeagles4828/jetson:3 build $packages
+    if [ -f "./.rsyncmetadata" ]; then rm .rsyncmetadata; fi
+}
+
+build() {
+    packages=$@
+    source /opt/ros/humble/setup.bash
+    cd /opt/workspace
+    colcon build --symlink-install --paths src/* --packages-select $@
 }
 
 case $1 in
+    # This does the plan on the remote destination
     "plan")
         plan
     ;;
 
+    # This will run a plan on the remote destination and apply it with docker
     "apply")
         apply "${@:2}";
+    ;;
+
+    # This is for the container to use on builds
+    "build")
+        build "${@:2}";
     ;;
 
     *)
