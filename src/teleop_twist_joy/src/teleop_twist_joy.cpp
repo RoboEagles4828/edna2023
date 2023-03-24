@@ -115,7 +115,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
 
   pimpl_->enable_turbo_button = this->declare_parameter("enable_turbo_button", -1);
   pimpl_->enable_field_oriented_button = this->declare_parameter("enable_field_oriented_button", 8);
-  pimpl_->start_writer_button = this->declare_parameter("start_writer_button", 2);
+  pimpl_->start_writer_button = this->declare_parameter("start_writer_button", 6);
 
   std::map<std::string, int64_t> default_linear_map{
     {"x", 5L},
