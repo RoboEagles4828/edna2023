@@ -1,0 +1,32 @@
+rosbag2_bagfile_information:
+  version: 5
+  storage_identifier: sqlite3
+  duration:
+    nanoseconds: 33616431360
+  starting_time:
+    nanoseconds_since_epoch: 1679698398612800019
+  message_count: 72
+  topics_with_message_count:
+    - topic_metadata:
+        name: /real/swerve_controller/cmd_vel_unstamped
+        type: geometry_msgs/msg/Twist
+        serialization_format: cdr
+        offered_qos_profiles: ""
+      message_count: 9
+    - topic_metadata:
+        name: /real/joint_trajectory_controller/joint_trajectory
+        type: trajectory_msgs/msg/JointTrajectory
+        serialization_format: cdr
+        offered_qos_profiles: ""
+      message_count: 63
+  compression_format: ""
+  compression_mode: ""
+  relative_file_paths:
+    - bag_0_0.db3
+  files:
+    - path: bag_0_0.db3
+      starting_time:
+        nanoseconds_since_epoch: 1679698398612800019
+      duration:
+        nanoseconds: 33616431360
+      message_count: 72

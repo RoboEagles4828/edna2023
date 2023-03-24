@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'reader = frc_auton.reader:main',
+            'writer = frc_auton.writer:main',
         ],
     },
 )

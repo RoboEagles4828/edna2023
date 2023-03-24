@@ -15,11 +15,24 @@ def generate_launch_description():
     joystick_file = LaunchConfiguration('joystick_file')
     enable_joy = LaunchConfiguration('enable_joy')
     
-    frc_auton = Node(
+    frc_auton_reader = Node(
         package = "frc_auton",
         namespace=namespace,
         executable= "reader",
-        name = "frc_auton_node"
+        name = "frc_auton_node",
+        parameters=[{
+            "auton_name": "24",   
+        }]
+    )
+    frc_teleop_writer = Node(
+        package = "frc_auton",
+        namespace=namespace,
+        executable= "writer",
+        name = "frc_auton_node",
+        parameters=[{
+            "record_auton": False,
+            "record_without_fms": False,    
+        }]
     )
     joy = Node(
             package='joy',
@@ -73,5 +86,6 @@ def generate_launch_description():
         joy,
         joy_teleop_twist,
         joint_trajectory_teleop,
-        frc_auton
+        frc_auton_reader,
+        frc_teleop_writer
     ])
