@@ -12,6 +12,9 @@ from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSReliabilityPolic
 import time
 import yaml
 
+
+ENABLE_THROTTLE = True
+
 class toggleButton():
     def __init__(self, button, isAxis=False):
         self.last_button = 0.0
@@ -45,6 +48,7 @@ class PublishTrajectoryMsg(Node):
     def __init__(self):
         super().__init__('publish_trajectory_msg')
 
+        # Joint Map
         self.joints = [
             'arm_roller_bar_joint',
             'elevator_center_joint',
@@ -56,9 +60,8 @@ class PublishTrajectoryMsg(Node):
             'bottom_intake_joint',
         ]
 
-        self.pos = 0.0
-        self.rot = 0.0
 
+        # Publishers and Subscribers
         self.publisher_ = self.create_publisher(JointTrajectory, 'joint_trajectory_controller/joint_trajectory', 10)
         self.subscriber = self.create_subscription(Joy, 'joy', self.controller_callback, 10)
         self.timer_period = 0.5  # seconds
@@ -70,21 +73,21 @@ class PublishTrajectoryMsg(Node):
         with open(self.yaml_path, 'r') as f:
             self.yaml = yaml.safe_load(f)
 
+        # Macros
         self.functions = [self.elevator_loading_station, self.skis_up, self.elevator_mid_level, self.elevator_high_level, self.top_gripper_control, self.elevator_pivot_control, self.top_slider_control]
+
+        # Variables
         self.cmds: JointTrajectory = JointTrajectory()
         self.position_cmds: JointTrajectoryPoint = JointTrajectoryPoint()
         self.position_cmds.positions = [0.0] * len(self.joints)
-
         self.cmds.joint_names = self.joints
-
         self.joint_map = self.yaml['joint_mapping']
-
         self.logger = logging.get_logger('JOINT-TRAJCECTORY-TELEOP')
-
         self.toggle_buttons = {}
-
+        self.last_cmd = JointTrajectory()
         self.joint_limits = self.yaml["joint_limits"]
 
+        # Create Toggle Buttons
         for function in self.functions:
             buttonName = self.yaml['function_mapping'][function.__name__]['button']
             button = self.yaml['controller_mapping'][buttonName]
@@ -111,10 +114,15 @@ class PublishTrajectoryMsg(Node):
             function(button)
         self.publisher_.publish(self.cmds)
 
+
+
+
+
+
+    # Macros
     def elevator_loading_station(self, button_val: int):
         
         #TODO: Tweak the values
-
         if button_val == 1.0:
             self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = 0.056
             self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = 0.056
@@ -153,7 +161,6 @@ class PublishTrajectoryMsg(Node):
         elif button_val == 0.0:
             self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
         
-        
         self.cmds.points = [self.position_cmds]
 
     def top_gripper_control(self, button_val: int):
@@ -166,7 +173,6 @@ class PublishTrajectoryMsg(Node):
             self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
             self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
         
-        
         self.cmds.points = [self.position_cmds]
 
     def elevator_pivot_control(self, button_val: int):
@@ -178,7 +184,6 @@ class PublishTrajectoryMsg(Node):
         else:
             self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 0.0
             self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
-        
         
         self.cmds.points = [self.position_cmds]
 

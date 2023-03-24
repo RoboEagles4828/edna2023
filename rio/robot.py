@@ -74,7 +74,7 @@ def threadLoop(name, dds, action):
     global frc_stage
     try:
         while stop_threads == False:
-            if frc_stage in ["TELEOP", "AUTON"] or name in ["encoder", "stage-broadcaster"]:
+            if (frc_stage == 'AUTON' and name != "joystick") or (name in ["encoder", "stage-broadcaster"]) or (frc_stage == 'TELEOP'):
                 action(dds)
             time.sleep(20/1000)
     except Exception as e:
@@ -216,7 +216,9 @@ def stageBroadcasterThread():
 def stageBroadcasterAction(publisher : DDS_Publisher):
     global frc_stage
     global fms_attached
-    publisher.write({ "data": f"{frc_stage}|{fms_attached}" })
+    is_disabled = wpilib.DriverStation.isDisabled()
+    
+    publisher.write({ "data": f"{frc_stage}|{fms_attached}|{is_disabled}" })
 ############################################
 
 
