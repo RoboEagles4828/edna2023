@@ -112,13 +112,7 @@ class PublishTrajectoryMsg(Node):
             else:
                 button = joystick.buttons[button]
             function(button)
-            if ENABLE_THROTTLE:
-                if not self.is_equal(self.cmds, self.last_cmd):
-                    self.publisher_.publish(self.cmds)
-                    # self.get_logger().info('Publishing...')
-                    self.last_cmd = self.cmds
-            else:
-                self.publisher_.publish(self.cmds)
+        self.publisher_.publish(self.cmds)
 
 
 
@@ -200,23 +194,6 @@ class PublishTrajectoryMsg(Node):
             self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.joint_limits["top_slider_joint"]["max"]
         
         self.cmds.points = [self.position_cmds]
-
-    def is_equal(self, a: JointTrajectory, b: JointTrajectory) -> bool:
-        if not isinstance(a.__class__, b.__class__):
-            return False
-        if a.joint_names != b.joint_names:
-            return False
-        if len(a.points) != len(b.points):
-            return False
-        for i in range(len(a.points)):
-            if list(a.points[i].positions) != list(b.points[i].positions):
-                return False
-        return True
-
-
-
-
-
 
 def main(args=None):
     rclpy.init(args=args)
