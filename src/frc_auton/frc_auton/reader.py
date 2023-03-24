@@ -23,20 +23,22 @@ class StageSubscriber(Node):
         # self.reader = rosbag2_py.SequentialReader()
         # self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
         # self.reader.open(self.storage_options,self.converter_options)
-        self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
-        self.playerOptions = rosbag2_py.PlayOptions()
-        self.player = rosbag2_py.Player()
+        if file_counter != -1:
+            
+            self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+            self.playerOptions = rosbag2_py.PlayOptions()
+            self.player = rosbag2_py.Player()
 
-        self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
-        self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
-        self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
+            self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
+            self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
+            self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
 
-        
-        self.changed_stage = False
-        self.stage= "Teleop"
-        self.fms = "False"
-        self.disabled = "True"
-        self.has_bag_played = False
+            
+            self.changed_stage = False
+            self.stage= "Teleop"
+            self.fms = "False"
+            self.disabled = "True"
+            self.has_bag_played = False
 
 
     def listener_callback(self, msg):
