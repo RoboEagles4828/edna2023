@@ -104,6 +104,13 @@ smart-build() {
     fi
 }
 
+select-build() {
+    echo "Stopping containers to save resources during rebuild..."
+    edna-kill && edna-stop
+    sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild apply $@"
+    edna-restart
+}
+
 complete-build() {
     echo -e "${ORANGE}WARNING: DOING COMPLETE REBUILD WILL TAKE A WHILE${NC}"
     read -p "Would you like to continue? (y/n) " response
@@ -203,6 +210,10 @@ case $1 in
 
     "build")
         smart-build $@
+        ;;
+
+    "select-build")
+        select-build "${@:2}";
         ;;
 
     "complete-build")
