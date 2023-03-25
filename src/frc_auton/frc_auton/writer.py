@@ -59,7 +59,6 @@ class StartWriting(Node):
 
 class BagWriter(): 
     def __init__(self):
-        super().__init__('bag_writer')
         self.curr_file_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
         self.package_root = os.path.join(self.project_root_path, 'src/frc_auton')
