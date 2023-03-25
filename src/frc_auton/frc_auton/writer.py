@@ -110,7 +110,7 @@ class BagWriter():
         # self.writer.create_topic(topic_info_swerve)
 
         self.recorder = rosbag2_py.Recorder()
-        self.swerve_record_options.topics = ['/real/swerve_controller/cmd_vel_unstamped', '/real/joint_trajectory_controller/joint_trajectory']
+        self.swerve_record_options.topics = ['real/swerve_controller/cmd_vel_unstamped', 'real/joint_trajectory_controller/joint_trajectory']
         # self.arm_record_options.topics = [self.subscription_arm.topic_name]
 
         
