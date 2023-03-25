@@ -36,9 +36,9 @@ class StartWriting(Node):
         self.converter_options = rosbag2_py._storage.ConverterOptions('', '')
         self.swerve_record_options = rosbag2_py._transport.RecordOptions()
         self.arm_record_options = rosbag2_py._transport.RecordOptions()
-
+        self.is_writing = False
         self.recorder = rosbag2_py.Recorder()
-        self.swerve_record_options.topics = ['swerve_controller/cmd_vel_unstamped', 'joint_trajectory_controller/joint_trajectory']
+        self.swerve_record_options.topics = ['/real/swerve_controller/cmd_vel_unstamped', '/real/joint_trajectory_controller/joint_trajectory']
 
         self.is_recording = False
 
@@ -47,13 +47,14 @@ class StartWriting(Node):
         self.kill = request.kill
         self.get_logger().info(f'Kill: {self.kill}')
 
-        if(self.service_enabled):
+        if(self.service_enabled and not self.is_writing):
             self.start_bag_writer()
+            self.is_writing = True
         if(self.kill):
             self.get_logger().info(f'Kill: {self.kill}')
-
+            self.is_writing = False
             self.stop_record_thread()
-            self.get_logger().info("STOPPING RECORD THREAD")
+            # self.get_logger().info("STOPPING RECORD THREAD")
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
         response.recording = True
         response.path = self.path
@@ -61,11 +62,7 @@ class StartWriting(Node):
     def start_bag_writer(self):
         if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False' and self.kill == False:
             self.start_record_thread()
-            self.get_logger().info("STARTING RECORD THREAD")
-        elif self.kill:
-            self.get_logger().info(f'Kill: {self.kill}')
-            self.stop_record_thread()
-            self.get_logger().info("STOPPING RECORD THREAD")
+            # self.get_logger().info("STARTING RECORD THREAD")
     def stage_callback(self, msg):
         data = str(msg.data).split('|')
         self.stage = str(data[0])
@@ -74,16 +71,22 @@ class StartWriting(Node):
         # self.get_logger().info(f"THREAD STATUS: {self.bag_writer.get_thread_status()}")
 
     def bag_record(self):
+        self.get_logger().info("STARTING RECORDING OUT:%s" % str(self.is_recording))
+
         if self.is_recording == False:
             self.is_recording = True
+            self.get_logger().info("STARTING RECORDING:%s" % str(self.is_recording))
             self.recorder.record(self.storage_options, self.swerve_record_options)
 
     def start_record_thread(self):
+        self.get_logger().info("STARTING RECORD THREAD")
+
         self.record_thread = Thread(target=self.bag_record, daemon=True)
-        self.is_recording = True
+        self.is_recording = False
         self.record_thread.start()
 
     def stop_record_thread(self):
+        self.get_logger().info("STOPPING RECORD THREAD")
         self.is_recording = False
         self.record_thread.join()
     
