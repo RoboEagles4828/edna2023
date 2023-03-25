@@ -9,6 +9,7 @@ from rclpy.node import Node
 from rclpy.serialization import serialize_message
 from std_msgs.msg import String
 from writer_srv.srv import StartWriter
+from threading import Thread
 
 import rosbag2_py
 # create writer instance and open for writing
@@ -34,7 +35,6 @@ class StartWriting(Node):
             self.start_bag_writer()
         if(self.kill):
             self.get_logger().info(f'Kill: {self.kill}')
-
             self.bag_writer.destroy_node()
             rclpy.shutdown()
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
@@ -42,14 +42,12 @@ class StartWriting(Node):
         response.path = self.bag_writer.path
         return response
     def start_bag_writer(self):
-        
         if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False' and self.kill == False:
-            rclpy.spin(self.bag_writer)
+            self.bag_writer.start_record_thread()
         elif self.kill:
             self.get_logger().info(f'Kill: {self.kill}')
             self.bag_writer.recorder.close()
-            self.bag_writer.destroy_node()
-            rclpy.shutdown()
+            self.bag_writer.stop_record_thread()
     def stage_callback(self, msg):
         data = str(msg.data).split('|')
         self.stage = (data[0])
@@ -57,15 +55,15 @@ class StartWriting(Node):
         self.is_disabled = str(data[2])
       
 
-class BagWriter(Node): 
+class BagWriter(): 
     def __init__(self):
         super().__init__('bag_writer')
         self.curr_file_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
         self.package_root = os.path.join(self.project_root_path, 'src/frc_auton')
 
-        self.subscription_arm = self.create_subscription(JointTrajectory,'joint_trajectory_controller/joint_trajectory',self.arm_callback,10)
-        self.subscription_swerve = self.create_subscription(Twist,'swerve_controller/cmd_vel_unstamped',self.swerve_callback,10)
+        # self.subscription_arm = self.create_subscription(JointTrajectory,'joint_trajectory_controller/joint_trajectory',self.arm_callback,10)
+        # self.subscription_swerve = self.create_subscription(Twist,'swerve_controller/cmd_vel_unstamped',self.swerve_callback,10)
 
         file_counter= int(len(os.listdir(f'{self.package_root}/frc_auton/Auto_ros_bag')))
         self.path = f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter)
@@ -87,9 +85,18 @@ class BagWriter(Node):
         # self.arm_record_options.topics = [self.subscription_arm.topic_name]
 
         
-    def swerve_callback(self, msg):
+    # def swerve_callback(self, msg):
+    #     self.recorder.record(self.storage_options, self.swerve_record_options)
+
+    def bag_record(self):
         self.recorder.record(self.storage_options, self.swerve_record_options)
-                
+
+    def start_record_thread(self):
+        self.record_thread = Thread(target=self.bag_record, daemon=True)
+        self.record_thread.start()
+
+    def stop_record_thread(self):
+        self.record_thread.join()
 
     def arm_callback(self,msg):
         self.get_logger().info(f'%s' % str(msg.joint_names))
