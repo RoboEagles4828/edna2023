@@ -18,14 +18,17 @@ class StageSubscriber(Node):
         super().__init__('stage_subscriber')
 
         
+        self.curr_file_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
+        self.package_root = os.path.join(self.project_root_path, 'src/frc_auton')
 
-        file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))-1
+        file_counter= int(len(os.listdir(f'{self.package_root}/frc_auton/Auto_ros_bag')))-1
         # self.reader = rosbag2_py.SequentialReader()
         # self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
         # self.reader.open(self.storage_options,self.converter_options)
         if file_counter != -1:
             
-            self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+            self.storage_options = rosbag2_py.StorageOptions(uri=f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
             self.playerOptions = rosbag2_py.PlayOptions()
             self.player = rosbag2_py.Player()
 
@@ -55,9 +58,9 @@ class StageSubscriber(Node):
         if(stage.lower() == 'auton' and disabled == "False" and self.changed_stage and not self.has_bag_played ):# and fms == 'True' ):
             
             #check if new bag
-            file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))-1
+            file_counter= int(len(os.listdir(f'{self.package_root}/frc_auton/Auto_ros_bag')))-1
             self.get_logger().info(f'file counter:{file_counter}' )
-            storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+            storage_options = rosbag2_py.StorageOptions(uri=f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
 
             self.has_bag_played = True
             self.playerOptions
