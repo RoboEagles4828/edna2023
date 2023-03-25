@@ -34,8 +34,9 @@ class StartWriting(Node):
             self.start_bag_writer()
         if(self.kill):
             self.get_logger().info(f'Kill: {self.kill}')
-            self.bag_writer.destroy_node()
-            rclpy.shutdown()
+            self.bag_writer.recorder.close()
+            self.bag_writer.stop_record_thread()
+            self.get_logger().info("STOPPING RECORD THREAD")
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
         response.recording = True
         response.path = self.bag_writer.path
@@ -44,17 +45,17 @@ class StartWriting(Node):
         if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False' and self.kill == False:
             self.bag_writer.start_record_thread()
             self.get_logger().info("STARTING RECORD THREAD")
-        elif self.kill:
-            self.get_logger().info(f'Kill: {self.kill}')
-            self.bag_writer.recorder.close()
-            self.bag_writer.stop_record_thread()
-            self.get_logger().info("STOPPING RECORD THREAD")
+        # elif self.kill:
+        #     self.get_logger().info(f'Kill: {self.kill}')
+        #     self.bag_writer.recorder.close()
+        #     self.bag_writer.stop_record_thread()
+        #     self.get_logger().info("STOPPING RECORD THREAD")
     def stage_callback(self, msg):
         data = str(msg.data).split('|')
-        self.stage = (data[0])
+        self.stage = str(data[0])
         self.fms = str(data[1])
         self.is_disabled = str(data[2])
-        self.get_logger().info(f"THREAD STATUS: {self.bag_writer.get_thread_status()}")
+        # self.get_logger().info(f"THREAD STATUS: {self.bag_writer.get_thread_status()}")
       
 
 class BagWriter(): 
