@@ -1,4 +1,5 @@
 bool record
+bool kill
 ---
 string path
 bool recording

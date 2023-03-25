@@ -439,6 +439,8 @@ void TeleopTwistJoy::Impl::timerCallback()
     {
       auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
       request->record = true;
+      request->kill = false;
+
       while (!service_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           RCLCPP_ERROR(rclcpp::get_logger("teleop_twist_joy"), "Interrupted while waiting for the service. Exiting.");
@@ -457,6 +459,7 @@ void TeleopTwistJoy::Impl::timerCallback()
     else if(service_client_->service_is_ready()&& !serviceEnabled && serviceButtonLastState==1){
       auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
       request->record = false;
+      request->kill = true;
       while (!service_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           RCLCPP_ERROR(rclcpp::get_logger("teleop_twist_joy"), "Interrupted while waiting for the service. Exiting.");

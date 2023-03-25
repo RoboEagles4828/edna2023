@@ -26,15 +26,19 @@ class StartWriting(Node):
     def service_callback(self, request, response):
         self.bag_writer = BagWriter()
         self.service_enabled = request.record
+        self.kill = request.kill
         if(self.service_enabled):
             self.start_bag_writer()
+        if(self.kill):
+            self.bag_writer.destroy_node()
+            rclpy.shutdown()
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
         response.recording = True
         response.path = self.bag_writer.path
         return response
     def start_bag_writer(self):
         
-        if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False':
+        if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False' and self.kill == False:
             rclpy.spin(self.bag_writer)
             self.bag_writer.destroy_node()
             rclpy.shutdown()

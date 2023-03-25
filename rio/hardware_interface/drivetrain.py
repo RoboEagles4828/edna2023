@@ -213,7 +213,7 @@ class SwerveModule():
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
-        self.axle_motor.configNeutralDeadband(0.01, timeout_ms)
+        self.axle_motor.configNeutralDeadband(0.001, timeout_ms)
         
         # Direction and Sensors
         self.axle_motor.setSensorPhase(AXLE_DIRECTION)
@@ -252,7 +252,7 @@ class SwerveModule():
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        if wheel_motor_vel == 0.0:
+        if abs(wheel_motor_vel) < 0.3:
             self.neutralize_module()
             return
         else:
