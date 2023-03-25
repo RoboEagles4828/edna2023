@@ -245,8 +245,8 @@ class ImportBot(BaseSample):
         return        
     
     def create_depth_camera(self, robot_prim_path):
-        self.depth_left_camera_path = f"{robot_prim_path}/zed2i_left_camera_frame/left_cam"
-        self.depth_right_camera_path = f"{robot_prim_path}/zed2i_right_camera_frame/right_cam"
+        self.depth_left_camera_path = f"{robot_prim_path}/zed2i_right_camera_isaac_frame/left_cam"
+        self.depth_right_camera_path = f"{robot_prim_path}/zed2i_right_camera_isaac_frame/right_cam"
         self.left_camera = prims.create_prim(
             prim_path=self.depth_left_camera_path,
             prim_type="Camera",
@@ -413,10 +413,10 @@ class ImportBot(BaseSample):
                     ("PublishImu.inputs:nodeNamespace", f"/{NAMESPACE}"), 
                     # ("PublishLidar.inputs:frameId", f"{NAMESPACE}/lidar_link"),
                     ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
-                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
+                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/zed/odom"),
                     ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
                     ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
-                    ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed2i_camera_center"),
+                    ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed2i_imu_link"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
