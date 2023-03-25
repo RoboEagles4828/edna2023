@@ -7,7 +7,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 def generate_launch_description():
     bringup_path = get_package_share_directory("edna_bringup")
     joystick_file = os.path.join(bringup_path, 'config', 'xbox-real.yaml')
-    rviz_file = os.path.join(bringup_path, 'config', 'view.rviz')
     
     common = { 'use_sim_time': 'false', 'namespace': 'real' }
     
@@ -21,12 +20,6 @@ def generate_launch_description():
         'enable_joy': 'false'
     }
     
-    debug_launch_args = common | {
-        'enable_rviz': 'false',
-        'enable_foxglove': 'false',
-        'rviz_file': rviz_file
-    }
-    
     control_layer = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
                     bringup_path,'launch','controlLayer.launch.py'
@@ -37,15 +30,8 @@ def generate_launch_description():
                     bringup_path,'launch','teleopLayer.launch.py'
                 )]), launch_arguments=teleoplaunch_args.items())
 
-    debug_layer = IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([os.path.join(
-                    bringup_path,'launch','debugLayer.launch.py'
-                )]), launch_arguments=debug_launch_args.items())
-    delay_debug_layer =  TimerAction(period=3.0, actions=[debug_layer])
-
     # Launch!
     return LaunchDescription([
         control_layer,
         teleop_layer,
-        delay_debug_layer,
     ])

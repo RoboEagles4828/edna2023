@@ -87,10 +87,6 @@
         "regex": "cpp"
     },
     "python.autoComplete.extraPaths": [
-        "/workspaces/edna2023/build/joint_trajectory_teleop",
-        "/workspaces/edna2023/install/joint_trajectory_teleop/lib/python3.10/site-packages",
-        "/workspaces/edna2023/build/edna_tests",
-        "/workspaces/edna2023/install/edna_tests/lib/python3.10/site-packages",
         "/opt/ros/humble/lib/python3.10/site-packages",
         "/opt/ros/humble/local/lib/python3.10/dist-packages"
     ],

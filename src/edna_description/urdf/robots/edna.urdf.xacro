@@ -26,7 +26,7 @@
   <xacro:property name= "chassis_side_width" value = ".0254" />
 
   <!-- Camera Position Variables -->
-  <xacro:property name="cam_pos" value="0.2 0 0.3"/> <!-- Made up values, replace with real ones later. -->
+  <xacro:property name="cam_pos" value="0.2 0 0.35"/> <!-- Made up values, replace with real ones later. -->
 
   <!-- X IS FORWARD -->
   <!-- Y IS LEFT -->
@@ -55,7 +55,7 @@
   
 
   <!-- Sensors -->
-  <xacro:zed_camera prefix="zed" model="zed2i" parent="swerve_chassis_link">
+  <xacro:zed_camera prefix="zed2i" model="zed2i" parent="swerve_chassis_link">
     <origin xyz="${cam_pos}" rpy="0 0 0" />
   </xacro:zed_camera>
 
@@ -88,7 +88,7 @@
   <!-- Bottom Intake + Gripper -->
   <xacro:property name= "intake_pos" value = "0 0 -${elevator_leg_height/4 + 0.01}" />
   <xacro:intake prefix="bottom" parent="arm_elevator_leg_link">
-    <origin xyz = "${intake_pos}" rpy = "0 0 0" />
+    <origin xyz = "${intake_pos}" rpy = "0 -${pi/2 - 0.05} 0" />
   </xacro:intake>
 
   <!-- Control -->

@@ -1,5 +1,5 @@
 ARG BASE_IMAGE=osrf/ros:humble-desktop
-FROM ${BASE_IMAGE}
+FROM $BASE_IMAGE
 RUN mkdir -p /opt/install-scripts
 ARG INSTALL_COMMON="true"
 ARG INSTALL_DOCKER="true"
@@ -87,6 +87,7 @@ COPY src /tmp/src
 USER ${USERNAME}
 RUN /opt/install-scripts/install-rosdeps
 USER root
+RUN mkdir -p /opt/workspace
 
 ######################
 # Docker Permissions #

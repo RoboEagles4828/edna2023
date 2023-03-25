@@ -39,8 +39,8 @@ class DDS_Publisher:
                 self.output.write()
             except rti.Error as e:
                 logging.warn("RTI Write Error", e.args)
-        else:
-            logging.warn("No data to write")
+        # else:
+        #     logging.warn("No data to write")
 
     def close(self):
         self.connector.close()
