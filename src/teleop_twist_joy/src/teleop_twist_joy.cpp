@@ -440,6 +440,8 @@ void TeleopTwistJoy::Impl::timerCallback()
       auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
       request->record = true;
       request->kill = false;
+      RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "Writer State: %d",request->record);
+
 
       while (!service_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
@@ -460,6 +462,8 @@ void TeleopTwistJoy::Impl::timerCallback()
       auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
       request->record = false;
       request->kill = true;
+      RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "Writer State: %d",request->record);
+
       while (!service_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           RCLCPP_ERROR(rclcpp::get_logger("teleop_twist_joy"), "Interrupted while waiting for the service. Exiting.");
@@ -509,7 +513,6 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
     auto state = joy_msg->buttons[start_writer_button];
     if (state == 1 && serviceButtonLastState == 0) {
       serviceEnabled = !serviceEnabled;
-      RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "Writer State: %d",serviceEnabled);
     }
     serviceButtonLastState = state;
   }

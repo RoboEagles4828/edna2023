@@ -24,12 +24,17 @@ class StartWriting(Node):
         self.service_enabled = False
 
     def service_callback(self, request, response):
+        
         self.bag_writer = BagWriter()
         self.service_enabled = request.record
         self.kill = request.kill
+        self.get_logger().info(f'Kill: {self.kill}')
+
         if(self.service_enabled):
             self.start_bag_writer()
         if(self.kill):
+            self.get_logger().info(f'Kill: {self.kill}')
+
             self.bag_writer.destroy_node()
             rclpy.shutdown()
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
@@ -40,6 +45,9 @@ class StartWriting(Node):
         
         if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False' and self.kill == False:
             rclpy.spin(self.bag_writer)
+        elif self.kill:
+            self.get_logger().info(f'Kill: {self.kill}')
+            self.bag_writer.recorder.close()
             self.bag_writer.destroy_node()
             rclpy.shutdown()
     def stage_callback(self, msg):
@@ -63,26 +71,29 @@ class BagWriter(Node):
         self.path = f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter)
        
         self.writer = rosbag2_py.SequentialWriter()
-        storage_options = rosbag2_py._storage.StorageOptions(uri=self.path,storage_id='sqlite3')
-        converter_options = rosbag2_py._storage.ConverterOptions('', '')
-        self.writer.open(storage_options, converter_options)
-        topic_info_arm = rosbag2_py._storage.TopicMetadata(name=self.subscription_arm.topic_name,type='trajectory_msgs/msg/JointTrajectory',serialization_format='cdr')
-        self.writer.create_topic(topic_info_arm)
+        self.storage_options = rosbag2_py._storage.StorageOptions(uri=self.path,storage_id='sqlite3')
+        self.converter_options = rosbag2_py._storage.ConverterOptions('', '')
+        self.swerve_record_options = rosbag2_py._transport.RecordOptions()
+        self.arm_record_options = rosbag2_py._transport.RecordOptions()
+        # self.writer.open(storage_options, converter_options)
+        # topic_info_arm = rosbag2_py._storage.TopicMetadata(name=self.subscription_arm.topic_name,type='trajectory_msgs/msg/JointTrajectory',serialization_format='cdr')
+        # self.writer.create_topic(topic_info_arm)
 
-        topic_info_swerve = rosbag2_py._storage.TopicMetadata(name=self.subscription_swerve.topic_name,type='geometry_msgs/msg/Twist',serialization_format='cdr')
-        self.writer.create_topic(topic_info_swerve)
+        # topic_info_swerve = rosbag2_py._storage.TopicMetadata(name=self.subscription_swerve.topic_name,type='geometry_msgs/msg/Twist',serialization_format='cdr')
+        # self.writer.create_topic(topic_info_swerve)
+
+        self.recorder: rosbag2_py.Recorder = rosbag2_py.Recorder()
+        self.swerve_record_options.topics = [self.subscription_swerve.topic_name,self.subscription_arm.topic_name]
+        # self.arm_record_options.topics = [self.subscription_arm.topic_name]
+
         
     def swerve_callback(self, msg):
-            self.writer.write(
-                self.subscription_swerve.topic_name,
-                serialize_message(msg),
-                self.get_clock().now().nanoseconds)
+        self.recorder.record(self.storage_options, self.swerve_record_options)
                 
-    def arm_callback(self, msg):
-            self.writer.write(
-                self.subscription_arm.topic_name,
-                serialize_message(msg),
-                self.get_clock().now().nanoseconds)
+
+    def arm_callback(self,msg):
+        self.get_logger().info(f'%s' % str(msg.joint_names))
+
 
 
     
@@ -92,6 +103,7 @@ def main(args=None):
     service_writer = StartWriting()
 
     rclpy.spin(service_writer)
+    
 
     service_writer.destroy_node()
     rclpy.shutdown()
