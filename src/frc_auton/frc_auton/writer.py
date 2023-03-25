@@ -25,7 +25,6 @@ class StartWriting(Node):
         self.service_enabled = False
 
     def service_callback(self, request, response):
-        
         self.bag_writer = BagWriter()
         self.service_enabled = request.record
         self.kill = request.kill
@@ -44,15 +43,18 @@ class StartWriting(Node):
     def start_bag_writer(self):
         if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False' and self.kill == False:
             self.bag_writer.start_record_thread()
+            self.get_logger().info("STARTING RECORD THREAD")
         elif self.kill:
             self.get_logger().info(f'Kill: {self.kill}')
             self.bag_writer.recorder.close()
             self.bag_writer.stop_record_thread()
+            self.get_logger().info("STOPPING RECORD THREAD")
     def stage_callback(self, msg):
         data = str(msg.data).split('|')
         self.stage = (data[0])
         self.fms = str(data[1])
         self.is_disabled = str(data[2])
+        self.get_logger().info(f"THREAD STATUS: {self.bag_writer.get_thread_status()}")
       
 
 class BagWriter(): 
@@ -97,6 +99,9 @@ class BagWriter():
 
     def stop_record_thread(self):
         self.record_thread.join()
+    
+    def get_thread_status(self):
+        return self.record_thread.is_alive()
 
     def arm_callback(self,msg):
         self.get_logger().info(f'%s' % str(msg.joint_names))
