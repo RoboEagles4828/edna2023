@@ -24,8 +24,23 @@ class StartWriting(Node):
         self.is_disabled = "True"
         self.service_enabled = False
 
+        self.curr_file_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
+        self.package_root = os.path.join(self.project_root_path, 'src/frc_auton')
+
+        file_counter= int(len(os.listdir(f'{self.package_root}/frc_auton/Auto_ros_bag')))
+        self.path = f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter)
+       
+        self.writer = rosbag2_py.SequentialWriter()
+        self.storage_options = rosbag2_py._storage.StorageOptions(uri=self.path,storage_id='sqlite3')
+        self.converter_options = rosbag2_py._storage.ConverterOptions('', '')
+        self.swerve_record_options = rosbag2_py._transport.RecordOptions()
+        self.arm_record_options = rosbag2_py._transport.RecordOptions()
+
+        self.recorder = rosbag2_py.Recorder()
+        self.swerve_record_options.topics = ['swerve_controller/cmd_vel_unstamped', 'joint_trajectory_controller/joint_trajectory']
+
     def service_callback(self, request, response):
-        self.bag_writer = BagWriter()
         self.service_enabled = request.record
         self.kill = request.kill
         self.get_logger().info(f'Kill: {self.kill}')
@@ -34,28 +49,40 @@ class StartWriting(Node):
             self.start_bag_writer()
         if(self.kill):
             self.get_logger().info(f'Kill: {self.kill}')
-            self.bag_writer.recorder.close()
-            self.bag_writer.stop_record_thread()
+
+            self.stop_record_thread()
             self.get_logger().info("STOPPING RECORD THREAD")
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
         response.recording = True
-        response.path = self.bag_writer.path
+        response.path = self.path
         return response
     def start_bag_writer(self):
         if (self.stage.lower() == "teleop" or self.stage.lower() == "auton") and (self.fms=='True' or self.service_enabled) and self.is_disabled=='False' and self.kill == False:
-            self.bag_writer.start_record_thread()
+            self.start_record_thread()
             self.get_logger().info("STARTING RECORD THREAD")
-        # elif self.kill:
-        #     self.get_logger().info(f'Kill: {self.kill}')
-        #     self.bag_writer.recorder.close()
-        #     self.bag_writer.stop_record_thread()
-        #     self.get_logger().info("STOPPING RECORD THREAD")
+        elif self.kill:
+            self.get_logger().info(f'Kill: {self.kill}')
+            self.stop_record_thread()
+            self.get_logger().info("STOPPING RECORD THREAD")
     def stage_callback(self, msg):
         data = str(msg.data).split('|')
         self.stage = str(data[0])
         self.fms = str(data[1])
         self.is_disabled = str(data[2])
         # self.get_logger().info(f"THREAD STATUS: {self.bag_writer.get_thread_status()}")
+
+    def bag_record(self):
+        self.recorder.record(self.storage_options, self.swerve_record_options)
+
+    def start_record_thread(self):
+        self.record_thread = Thread(target=self.bag_record, daemon=True)
+        self.record_thread.start()
+
+    def stop_record_thread(self):
+        self.record_thread.join()
+    
+    def get_thread_status(self):
+        return self.record_thread.is_alive()
       
 
 class BagWriter(): 
@@ -82,8 +109,8 @@ class BagWriter():
         # topic_info_swerve = rosbag2_py._storage.TopicMetadata(name=self.subscription_swerve.topic_name,type='geometry_msgs/msg/Twist',serialization_format='cdr')
         # self.writer.create_topic(topic_info_swerve)
 
-        self.recorder: rosbag2_py.Recorder = rosbag2_py.Recorder()
-        self.swerve_record_options.topics = ['swerve_controller/cmd_vel_unstamped', 'joint_trajectory_controller/joint_trajectory']
+        self.recorder = rosbag2_py.Recorder()
+        self.swerve_record_options.topics = ['/real/swerve_controller/cmd_vel_unstamped', '/real/joint_trajectory_controller/joint_trajectory']
         # self.arm_record_options.topics = [self.subscription_arm.topic_name]
 
         
@@ -102,9 +129,6 @@ class BagWriter():
     
     def get_thread_status(self):
         return self.record_thread.is_alive()
-
-    def arm_callback(self,msg):
-        self.get_logger().info(f'%s' % str(msg.joint_names))
 
 
 
