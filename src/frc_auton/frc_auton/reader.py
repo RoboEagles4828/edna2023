@@ -9,6 +9,7 @@ from rclpy.serialization import deserialize_message
 import rosbag2_py
 from std_msgs.msg import String
 import os
+from time import time
 
 
 
@@ -28,48 +29,69 @@ class StageSubscriber(Node):
         # self.reader.open(self.storage_options,self.converter_options)
         if file_counter != -1:
             
-            self.storage_options = rosbag2_py.StorageOptions(uri=f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
-            self.playerOptions = rosbag2_py.PlayOptions()
-            self.player = rosbag2_py.Player()
-
             self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
             self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
             self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
-
             
             self.changed_stage = False
-            self.stage= "Teleop"
+            self.stage= ""
             self.fms = "False"
-            self.disabled = "True"
-            self.has_bag_played = False
+            self.isdisabled = "True"
+            self.doAuton = False
+            
+            self.cmd = Twist()
+            self.cmd.linear.x = 0.0
+            self.cmd.linear.y = 0.0
+            self.cmd.angular.z = 0.0
+            self.timeInSeconds = 2.0
+
+    def initAuton(self):
+        self.startTime = time()
+        self.changed_stage = False
+        self.doAuton = True
+        self.get_logger().info(f"STARTED AUTON AT {self.startTime}")
+    
+    def loopAuton(self):
+        elapsedTime =  time() - self.startTime
+        if elapsedTime < self.timeInSeconds:
+            self.cmd.linear.x = 0.5
+            self.publish_twist.publish(self.cmd)
+        else:
+            self.stopAuton()
+    
+    def stopAuton(self):
+        self.cmd.linear.x = 0.0
+        # Publish twice to just to be safe
+        self.publish_twist.publish(self.cmd)
+        self.publish_twist.publish(self.cmd)
+        self.get_logger().info(f"STOPPED AUTON AT {time()}"),
+        self.doAuton = False
 
 
     def listener_callback(self, msg):
-    
+        
+        # Check when any state has changed, enabled, disabled, auton, teleop, etc.
         stage = str(msg.data).split("|")[0]
-        if stage != self.stage:
+        isdisabled = str(msg.data).split("|")[2]
+        if stage != self.stage or isdisabled != self.isdisabled:
             self.changed_stage = True
             self.stage = stage
-            self.has_bag_played = False
-        fms = str(msg.data).split("|")[1]
-        disabled = str(msg.data).split("|")[2]
-        # self.get_logger().info('Subscription_stage: %b' % stage.lower() == 'auton' and fms)
+            self.isdisabled = isdisabled
+        # fms = str(msg.data).split("|")[1]
 
-        if(stage.lower() == 'auton' and disabled == "False" and self.changed_stage and not self.has_bag_played ):# and fms == 'True' ):
+        # Execute auton actions
+        if(stage.lower() == 'auton' and self.isdisabled == "False"):# and fms == 'True' ):
+            if self.changed_stage:
+                self.initAuton()
             
-            #check if new bag
-            file_counter= int(len(os.listdir(f'{self.package_root}/frc_auton/Auto_ros_bag')))-1
-            self.get_logger().info(f'file counter:{file_counter}' )
-            storage_options = rosbag2_py.StorageOptions(uri=f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+            if self.doAuton:
+                self.loopAuton()
+        # We have moved out of auton enabled mode so stop if we are still running
+        else:
+            if self.doAuton:
+                self.stopAuton()
 
-            self.has_bag_played = True
-            self.playerOptions
-            self.player.play(storage_options,self.playerOptions)
-
-    
-    
-
-
+                
 
 
 
