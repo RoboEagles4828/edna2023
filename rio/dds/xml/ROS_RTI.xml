@@ -70,6 +70,13 @@ This code contains trade secrets of Real-Time Innovations, Inc.
           <register_type name="std_msgs::msg::dds_::String_" type_ref="std_msgs::msg::dds_::String_" />
           <topic name="rt/real/frc_stage" register_type_ref="std_msgs::msg::dds_::String_"/>
         </domain>
+
+        <domain name="ROS2_DOMAIN_ISAAC_TWIN" domain_id="0">
+          <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
+          <register_type name="sensor_msgs::msg::dds_::JointState_" type_ref="sensor_msgs::msg::dds_::JointState_" />
+          <topic name="rt/real/isaac_joint_states" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
+          <topic name="rt/real/isaac_joint_commands" register_type_ref="sensor_msgs::msg::dds_::JointState_"/>
+        </domain>
     </domain_library>
 
     <!-- Participant library -->
@@ -111,6 +118,18 @@ This code contains trade secrets of Real-Time Innovations, Inc.
           <publisher name="stage_publisher">
             <data_writer name="stage_writer" topic_ref="rt/real/frc_stage" />
           </publisher>
+      </domain_participant>
+
+
+
+
+      <domain_participant name="isaac" domain_ref="ROS2_DOMAIN_LIB::ROS2_DOMAIN_ISAAC_TWIN">
+        <subscriber name="isaac_states_subscriber">
+            <data_reader name="joint_reader" topic_ref="rt/real/isaac_joint_states" />
+        </subscriber>
+        <publisher name="isaac_commands_publisher">
+          <data_writer name="joint_writer" topic_ref="rt/real/isaac_joint_commands" />
+        </publisher>
       </domain_participant>
 
     </domain_participant_library>

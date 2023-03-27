@@ -11,6 +11,8 @@ from hardware_interface.drivetrain import getAxleRadians, getWheelRadians, Swerv
 from hardware_interface.armcontroller import PORTS, TOTAL_INTAKE_REVOLUTIONS
 from hardware_interface.joystick import CONTROLLER_PORT
 
+from dds import DDS_Subscriber, DDS_Publisher
+
 import math
 import typing
 
@@ -53,7 +55,16 @@ class PhysicsEngine:
         self.topGripperSlider = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER_SLIDER'])
         self.topGripper = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER'])
 
+    def getJointStateData(self):
+        data =  {"name": [], "position": [], "velocity": []}
+        fl = self.frontLeftModuleSim.getJointState()
+        fr = self.frontRightModuleSim.getJointState()
+        rl = self.rearLeftModuleSim.getJointState()
+        rr = self.rearRightModuleSim.getJointState()
 
+        data["name"].extend(fl["name"], fr["name"], rl["name"], rr["name"])
+
+    
     def update_sim(self, now: float, tm_diff: float) -> None:
 
         # Simulate Swerve Modules
@@ -61,6 +72,8 @@ class PhysicsEngine:
         self.frontRightModuleSim.update(tm_diff)
         self.rearLeftModuleSim.update(tm_diff)
         self.rearRightModuleSim.update(tm_diff)
+        
+        
 
         # Simulate Arm
         self.elevator.update(tm_diff)
@@ -78,6 +91,7 @@ class SwerveModuleSim():
     def __init__(self, module: "SwerveModule"):
         wheelMOI = center_wheel_moi
         axleMOI = center_axle_moi + center_side_wheel_moi
+        self.module = module
         self.wheel = TalonFxSim(module.wheel_motor, wheelMOI, 1, False)
         self.axle = TalonFxSim(module.axle_motor, axleMOI, AXLE_JOINT_GEAR_RATIO, False)
         self.encoder = CancoderSim(module.encoder, module.encoder_offset, True)
@@ -90,6 +104,22 @@ class SwerveModuleSim():
         self.wheel.update(tm_diff)
         self.axle.update(tm_diff)
         self.encoder.update(tm_diff, self.axle.getVelocityRadians())
+    
+    def getJointState(self):
+        return {
+            "name": [
+                self.module.axle_joint_name,
+                self.module.wheel_joint_name
+            ],
+            "position": [
+                getAxleRadians(self.axle.talon.getSelectedSensorPosition(), "position"), 
+                getWheelRadians(self.wheel.talon.getSelectedSensorPosition(), "position")
+            ],
+            "velocity": [
+                getAxleRadians(self.axle.talon.getSelectedSensorVelocity(), "velocity"),
+                getWheelRadians(self.wheel.talon.getSelectedSensorVelocity(), "velocity")
+            ]
+        }
     
     # Useful for debugging the simulation or code
     def __str__(self) -> str:
