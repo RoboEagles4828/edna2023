@@ -26,7 +26,7 @@ def generate_launch_description():
         'camera_info_topic': f'/{NAMESPACE}/left/camera_info',
         'depth_topic': f'/{NAMESPACE}/left/depth',
         'imu_topic': f'/{NAMESPACE}/imu',
-        'odom_topic': f'/{NAMESPACE}/odom',
+        'odom_topic': f'/{NAMESPACE}/zed/odom',
 
         'approx_sync': 'false',
         'wait_imu_to_init': 'true',
