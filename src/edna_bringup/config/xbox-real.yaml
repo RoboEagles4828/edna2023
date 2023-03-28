@@ -17,7 +17,7 @@
       scale_angular: #negative to fix turning direction
         yaw: -0.0001
       scale_angular_turbo:
-        yaw: -0.0004
+        yaw: -0.0002
       
       enable_turbo_button: 5
       enable_field_oriented_button: 7

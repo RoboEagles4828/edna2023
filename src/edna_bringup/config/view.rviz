@@ -64,7 +64,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /real/robot_description
+      Value: /gage/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -91,21 +91,6 @@ Visualization Manager:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      bottom_gripper_bar_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_left_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_right_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
       bottom_intake_link:
         Alpha: 1
         Show Axes: false
@@ -191,28 +176,32 @@ Visualization Manager:
         Show Axes: false
         Show Trail: false
         Value: true
-      zed_base_link:
+      zed2i_base_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_camera_center:
+      zed2i_camera_center:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      zed_left_camera_frame:
+      zed2i_imu_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_left_camera_optical_frame:
+      zed2i_left_camera_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_right_camera_frame:
+      zed2i_left_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_right_camera_optical_frame:
+      zed2i_right_camera_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed2i_right_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -220,7 +209,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: real
+    TF Prefix: gage
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -229,63 +218,63 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      real/arm_back_leg_link:
+      gage/arm_back_leg_link:
         Value: false
-      real/arm_elevator_leg_link:
+      gage/arm_elevator_leg_link:
         Value: false
-      real/arm_roller_bar_link:
+      gage/arm_roller_bar_link:
         Value: false
-      real/base_link:
+      gage/base_link:
         Value: false
-      real/bottom_gripper_bar_link:
+      gage/bottom_intake_link:
+        Value: false
+      gage/elevator_center_link:
+        Value: false
+      gage/elevator_outer_1_link:
+        Value: false
+      gage/elevator_outer_2_link:
+        Value: false
+      gage/front_left_axle_link:
         Value: true
-      real/bottom_intake_link:
-        Value: true
-      real/elevator_center_link:
-        Value: true
-      real/elevator_outer_1_link:
-        Value: true
-      real/elevator_outer_2_link:
-        Value: true
-      real/front_left_axle_link:
-        Value: true
-      real/front_left_wheel_link:
+      gage/front_left_wheel_link:
         Value: false
-      real/front_right_axle_link:
+      gage/front_right_axle_link:
         Value: true
-      real/front_right_wheel_link:
+      gage/front_right_wheel_link:
         Value: false
-      real/odom:
-        Value: false
-      real/rear_left_axle_link:
+      gage/rear_left_axle_link:
         Value: true
-      real/rear_left_wheel_link:
+      gage/rear_left_wheel_link:
         Value: false
-      real/rear_right_axle_link:
+      gage/rear_right_axle_link:
         Value: true
-      real/rear_right_wheel_link:
+      gage/rear_right_wheel_link:
         Value: false
-      real/swerve_chassis_link:
+      gage/swerve_chassis_link:
         Value: false
-      real/top_gripper_bar_link:
+      gage/top_gripper_bar_link:
+        Value: false
+      gage/top_gripper_left_arm_link:
+        Value: false
+      gage/top_gripper_right_arm_link:
+        Value: false
+      gage/top_slider_link:
+        Value: false
+      gage/zed/odom:
         Value: true
-      real/top_gripper_left_arm_link:
-        Value: true
-      real/top_gripper_right_arm_link:
-        Value: true
-      real/top_slider_link:
-        Value: true
-      real/zed_base_link:
+      gage/zed2i_base_link:
         Value: false
-      real/zed_camera_center:
+      gage/zed2i_camera_center:
         Value: false
-      real/zed_left_camera_frame:
+      gage/zed2i_imu_link:
         Value: false
-      real/zed_left_camera_optical_frame:
+      gage/zed2i_left_camera_frame:
         Value: false
-      real/zed_right_camera_frame:
+      gage/zed2i_left_camera_optical_frame:
         Value: false
-      real/zed_right_camera_optical_frame:
+      gage/zed2i_right_camera_frame:
+        Value: false
+      gage/zed2i_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -293,32 +282,35 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      real/base_link:
-        real/swerve_chassis_link:
-          real/arm_back_leg_link:
-            real/elevator_outer_1_link:
-              real/elevator_center_link:
-                real/elevator_outer_2_link:
-                  real/top_slider_link:
-                    real/top_gripper_bar_link:
-                      real/top_gripper_left_arm_link: {}
-                      real/top_gripper_right_arm_link: {}
-          real/arm_elevator_leg_link:
-            real/arm_roller_bar_link: {}
-          real/front_left_axle_link:
-            real/front_left_wheel_link: {}
-          real/front_right_axle_link:
-            real/front_right_wheel_link: {}
-          real/rear_left_axle_link:
-            real/rear_left_wheel_link: {}
-          real/rear_right_axle_link:
-            real/rear_right_wheel_link: {}
-          real/zed_base_link:
-            real/zed_camera_center:
-              real/zed_left_camera_frame:
-                real/zed_left_camera_optical_frame: {}
-              real/zed_right_camera_frame:
-                real/zed_right_camera_optical_frame: {}
+      gage/base_link:
+        gage/swerve_chassis_link:
+          gage/arm_back_leg_link:
+            gage/elevator_outer_1_link:
+              gage/elevator_center_link:
+                gage/elevator_outer_2_link:
+                  gage/top_slider_link:
+                    gage/top_gripper_bar_link:
+                      gage/top_gripper_left_arm_link: {}
+                      gage/top_gripper_right_arm_link: {}
+          gage/arm_elevator_leg_link:
+            gage/arm_roller_bar_link: {}
+            gage/bottom_intake_link: {}
+          gage/front_left_axle_link:
+            gage/front_left_wheel_link: {}
+          gage/front_right_axle_link:
+            gage/front_right_wheel_link: {}
+          gage/rear_left_axle_link:
+            gage/rear_left_wheel_link: {}
+          gage/rear_right_axle_link:
+            gage/rear_right_wheel_link: {}
+          gage/zed2i_base_link:
+            gage/zed2i_camera_center:
+              gage/zed2i_left_camera_frame:
+                gage/zed2i_imu_link: {}
+                gage/zed2i_left_camera_optical_frame: {}
+              gage/zed2i_right_camera_frame:
+                gage/zed2i_right_camera_optical_frame: {}
+      gage/zed/odom: {}
     Update Interval: 0
     Value: true
   - Angle Tolerance: 0.20000000298023224
@@ -358,12 +350,12 @@ Visualization Manager:
       Filter size: 10
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /real
+      Value: /gage
     Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: real/base_link
+    Fixed Frame: gage/base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -406,7 +398,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.219048500061035
+      Distance: 3.0842151641845703
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -421,10 +413,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6153983473777771
+      Pitch: 0.470398485660553
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 1.130397915840149
+      Yaw: 6.128584384918213
     Saved: null
 Window Geometry:
   Displays:
