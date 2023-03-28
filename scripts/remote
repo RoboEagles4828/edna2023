@@ -9,11 +9,11 @@ NC='\033[0m'
 # Check /scripts/config/remote-config for script configuration
 source /workspaces/edna2023/scripts/config/remote-config
 
-deploy-rsync() {
+smart-deploy() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
 
     echo "Generating rsync metadata..."
-    rsync -azPin -e "ssh -p $PORT" \
+    rsync -azPin --checksum -e "ssh -p $PORT" \
         --exclude .git/ \
         --exclude .vscode/ \
         --exclude .devcontainer/ \
@@ -30,9 +30,17 @@ deploy-rsync() {
         --exclude .rsyncmetadata \
     /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH \
         | egrep -v "sending incremental file list" | egrep -v "^\." | awk '{print $2}' | tr ' ' '\n' >> /workspaces/edna2023/.rsyncmetadata
+    
+    echo "Files that will be changed:"
+    printf '%s\n' $(</workspaces/edna2023/.rsyncmetadata)
+
+    read -p "Would you like to sync the files? (y/n) " response
+    if [ "$response" != "y" ]; then
+        exit
+    fi
 
     echo "Syncing files..."
-    rsync -azP -e "ssh -p $PORT" \
+    rsync -azP --checksum -e "ssh -p $PORT" \
         --exclude .git/ \
         --exclude .vscode/ \
         --exclude .devcontainer/ \
@@ -47,6 +55,13 @@ deploy-rsync() {
         --exclude edna_debugger \
         --exclude edna_tests \
     /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    echo -e "${GREEN}Done deploying files to remote${NC}"
+}
+
+deploy() {
+    echo "Deploying the following files to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync:"
+    printf '%s\n' $@
+    rsync -azP --checksum -e "ssh -p $PORT" $@ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
     echo -e "${GREEN}Done deploying files to remote${NC}"
 }
 
@@ -77,6 +92,18 @@ edna-setup() {
     fi
     echo -e "${ORANGE}Copying robot_deploy public key to $USERNAME@$IP_ADDRESS:$PORT...${NC}"
     ssh-copy-id -p $PORT -i ~/.ssh/robot_deploy.pub $USERNAME@$IP_ADDRESS 
+}
+
+build() {
+    echo -e "${PURPLE}Rebuilding Packages:${NC}"
+    printf '%s\n' $@
+
+    echo "Stopping containers to save resources during build..."
+    edna-kill && edna-stop
+    echo "Rebuilding..."
+    sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild build $@"
+    echo "Restarting the containers..."
+    edna-restart
 }
 
 smart-build() {
@@ -124,20 +151,21 @@ help() {
     echo "  config  -- Opens the config file in nano"
     echo "  setup   -- Copies your ssh-key to the remote device"
     echo "  ssh     -- Connects to the robot via ssh"
-    echo "  service"
-    echo "      log     -- Outputs the systemctl log for edna.service"
-    echo "      restart -- Restarts the systemctl edna.service"
-    echo "  deploy"
-    echo "      rsync   -- Deploys to the remote device using rsync (default)"
-    echo "      git     -- Deploys to the remote device using Git"
-    echo "  rebuild [packages] -- Rebuilds packages with colcon (all packages if not specified)"
-    echo "  run  [command]  -- Runs an arbitrary command on the remote device "
+    echo "  log     -- Outputs the log for the docker container"
+    echo "  restart -- Restarts the docker container"
+    echo "  stop    -- Stops the docker container"
+    echo "  kill    -- Kills the docker container"
+    echo "  deploy [files]      -- Deploys to the remote device using rsync (decides automatically if not specified)"
+    echo "  build [packages]    -- Rebuilds packages with colcon (decides automatically if not specified) (specify \"all\" or \"complete\" to rebuild all packages)"
+    echo "  run  [command]      -- Runs an arbitrary command on the remote device "
+    echo "  "
     echo ""
     echo "Aliases:"
     echo "  connect -- alias for \"remote ssh\""
-    echo "  log     -- alias for \"remote service log\""
-    echo "  restart -- alias for \"remote service restart\""
-    echo "Usage: remote (config | setup | ssh | service | deploy | rebuild | run)"
+    echo "  exec    -- alias for \"remote exec\""
+    echo "  sync    -- alias for \"remote deploy\""
+    echo "  rebuild -- alias for \"remote build\""
+    echo "Usage: remote (config | setup | ssh | service | deploy | build | run)"
 }
 
 case $1 in 
@@ -155,32 +183,19 @@ case $1 in
         ssh $USERNAME@$IP_ADDRESS -p $PORT
     ;;
 
+    "sync") ;&
     "deploy")
         case $2 in
-            "") ;&
-            "rsync")
-                deploy-rsync
-            ;;
-
+            "")
+                smart-deploy
+                ;;
             *)
-                echo "Unknown option: $2"
-                help
-            ;;
-        esac
-        ;;
-
-    "service")
-        case $2 in
-            "log")
-                edna-log
-                ;;
-            
-            "restart")
-                edna-restart
+                deploy "${@:2}"
                 ;;
         esac
         ;;
 
+    "run") ;&
     "exec")
         sshCommand "${@:2}";
         ;;
@@ -201,17 +216,24 @@ case $1 in
         edna-kill
         ;;
 
-    "build")
-        smart-build $@
+    "build") ;&
+    "rebuild")
+        case $2 in
+            "all") ;&
+            "complete")
+                complete-build
+                ;;
+            "")
+                smart-build
+                ;;
+            *)
+                build "${@:2}"
+                ;;
+        esac
         ;;
-
-    "complete-build")
-        complete-build $@
-        ;;
-    
     
     *)
-        echo "Unknown option: $1"
+        echo "Unknown option: \"$1\""
         help
         ;;
 esac
