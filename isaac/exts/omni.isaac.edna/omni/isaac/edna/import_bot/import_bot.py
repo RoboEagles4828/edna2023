@@ -65,7 +65,7 @@ class ImportBot(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
-        world.get_physics_context().enable_gpu_dynamics(True)
+        world.get_physics_context().enable_gpu_dynamics(False)
         world.scene.add_default_ground_plane()
         self.setup_field()
         # self.setup_perspective_cam()
@@ -76,10 +76,10 @@ class ImportBot(BaseSample):
         world = self.get_world()
         self.extension_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.extension_path, "../../../../../../.."))
-        field = os.path.join(self.project_root_path, "assets/2023_field_gpu/FE-2023.usd")
+        field = os.path.join(self.project_root_path, "assets/2023_field_cpu/FE-2023.usd")
         add_reference_to_stage(usd_path=field,prim_path="/World/Field")
-        cone = os.path.join(self.project_root_path, "assets/2023_field_gpu/parts/GE-23700_JFH.usd")
-        cube = os.path.join(self.project_root_path, "assets/2023_field_gpu/parts/GE-23701_JFL.usd")
+        cone = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23700_JFH.usd")
+        cube = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23701_JFL.usd")
         chargestation = os.path.join(self.project_root_path, "assets/ChargeStation-Copy/Assembly-1.usd")
         add_reference_to_stage(chargestation, "/World/ChargeStation_1")
         add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
@@ -292,11 +292,11 @@ class ImportBot(BaseSample):
                 ],
             }
         )
-        return
+        return  
     
     def setup_camera_action_graph(self, robot_prim_path):
         camera_graph = "{}/camera_sensor_graph".format(robot_prim_path)
-        enable_left_cam = True
+        enable_left_cam = False
         enable_right_cam = False
         rgbType = "RgbType"
         infoType = "InfoType"
