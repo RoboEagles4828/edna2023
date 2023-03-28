@@ -1,21 +1,21 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 
 
 class StagePublisher(Node):
 
     def __init__(self):
         super().__init__('stage_publisher')
-        self.publisher_ = self.create_publisher(Bool, 'frc_stage', 10)
+        self.publisher_ = self.create_publisher(String, '/real/frc_stage', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
 
     def timer_callback(self):
-        msg = Bool()
-        msg.data = True
+        msg = String()
+        msg.data = "AUTON|False|False"
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: %s' % msg.data)
         self.i += 1

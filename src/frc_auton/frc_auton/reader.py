@@ -1,43 +1,72 @@
-from rosbags.rosbag2 import Reader
-from rosbags.serde import deserialize_cdr
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from rosbags.typesys.types import geometry_msgs__msg__Twist, trajectory_msgs__msg__JointTrajectory
 from std_msgs.msg import String
+import rosbag2_py
+from pathlib import Path
+from rclpy.serialization import deserialize_message
+import rosbag2_py
+from std_msgs.msg import String
+import os
+
 
 
 class StageSubscriber(Node):
 
     def __init__(self):
         super().__init__('stage_subscriber')
-        self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
-        self.publish_twist = self.create_publisher(Twist,'/real/swerve_controller/cmd_vel_unstamped',10)
-        self.publish_trajectory = self.create_publisher(JointTrajectory,'/real/joint_trajectory_controller/joint_trajectory',10)
-        self.subscription  # prevent unused variable warning
+
+        
+
+        file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))-1
+        # self.reader = rosbag2_py.SequentialReader()
+        # self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
+        # self.reader.open(self.storage_options,self.converter_options)
+        if file_counter != -1:
+            
+            self.storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+            self.playerOptions = rosbag2_py.PlayOptions()
+            self.player = rosbag2_py.Player()
+
+            self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
+            self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
+            self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
+
+            
+            self.changed_stage = False
+            self.stage= "Teleop"
+            self.fms = "False"
+            self.disabled = "True"
+            self.has_bag_played = False
+
 
     def listener_callback(self, msg):
-        # print(msg)
-        # if msg==True:
-        # print("yes")
-        if(msg.data=="Auton"):
-            with Reader('Auto_ros_bag/rosbag2_2023_03_14-23_54_20') as reader:
-                for connection, timestamp, rawdata in reader.messages():
-                    # print(connection.topic)
-                    if connection.topic == '/real/swerve_controller/cmd_vel_unstamped':
-                        msg2 = deserialize_cdr(rawdata,connection.msgtype)
-                        twist_msg = Twist()
-                        twist_msg.linear.x = float(msg2.linear.x)
-                        twist_msg.linear.y = float(msg2.linear.y)
-                        twist_msg.angular.z = float(msg2.angular.z) 
-                        self.publisher.publish(twist_msg)
-                    if connection.topic == '/real/joint_trajectory_controller/joint_trajectory':
-                        msg = deserialize_cdr(rawdata,connection.msgtype)
-                        trajectory_msg= JointTrajectory()
-                        trajectory_msg.joint_names = str(msg2.joint_names)
-                        trajectory_msg.points.positions = str(msg2.points.positions)
-                        
+    
+        stage = str(msg.data).split("|")[0]
+        if stage != self.stage:
+            self.changed_stage = True
+            self.stage = stage
+            self.has_bag_played = False
+        fms = str(msg.data).split("|")[1]
+        disabled = str(msg.data).split("|")[2]
+        # self.get_logger().info('Subscription_stage: %b' % stage.lower() == 'auton' and fms)
+
+        if(stage.lower() == 'auton' and disabled == "False" and self.changed_stage and not self.has_bag_played ):# and fms == 'True' ):
+            
+            #check if new bag
+            file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))-1
+            self.get_logger().info(f'file counter:{file_counter}' )
+            storage_options = rosbag2_py.StorageOptions(uri='/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter), storage_id='sqlite3') #change this to the bag you want to read
+
+            self.has_bag_played = True
+            self.playerOptions
+            self.player.play(storage_options,self.playerOptions)
+
+    
+    
+
+
 
 
 

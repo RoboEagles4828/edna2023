@@ -43,7 +43,7 @@ class PhysicsEngine:
         self.rearLeftModuleSim = SwerveModuleSim(robot.drive_train.rear_left)
         self.rearRightModuleSim = SwerveModuleSim(robot.drive_train.rear_right)
 
-        self.elevator = TalonFxSim(robot.arm_controller.elevator.motor, 0.0004, 1, False)
+        self.elevator = TalonFxSim(robot.arm_controller.elevator.motor, 0.0003, 1, False)
         self.intake = TalonFxSim(robot.arm_controller.bottom_gripper_lift.motor, 0.0004, 1, False)
         self.intake.addLimitSwitch("fwd", 0)
         self.intake.addLimitSwitch("rev", TOTAL_INTAKE_REVOLUTIONS * -2 * math.pi)
