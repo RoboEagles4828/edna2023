@@ -2,12 +2,20 @@ from ctre import TalonFX, TalonFXSimCollection
 from wpilib import RobotController
 import random
 import math
-# from pyfrc.physics.motor_cfgs import MOTOR_CFG_FALCON_500
+from pyfrc.physics.motor_cfgs import MOTOR_CFG_FALCON_500
 
 import wpilib.simulation
 import wpimath.system.plant
+import pyfrc.physics.motor_cfgs
 
 FALCON_SENSOR_TICKS_PER_REV = 2048
+
+# "Falcon 500",
+# NOMINAL_VOLTAGE, nominalVoltage
+# 6380 * units.cpm, freeSpeed
+# 1.5 * units.amp, freeCurrent
+# 4.69 * units.N_m, stallTorque
+# 257 * units.amp, stallCurrent
 
 class TalonFxSim:
 
@@ -17,7 +25,8 @@ class TalonFxSim:
         self.moi = moi
         self.gearRatio = gearRatio
         self.sensorPhase = -1 if sensorPhase else 1
-        self.gearbox = wpimath.system.plant.DCMotor.falcon500(1)        
+        self.gearbox = wpimath.system.plant.DCMotor.falcon500(1)    
+        self.gearbox = wpimath.system.
         self.motor = wpilib.simulation.DCMotorSim(self.gearbox, self.gearRatio, self.moi, [0.0, 0.0])
         self.velocity = 0.0
         self.position = 0.0

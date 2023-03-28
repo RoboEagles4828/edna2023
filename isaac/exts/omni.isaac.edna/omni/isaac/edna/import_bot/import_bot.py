@@ -181,14 +181,14 @@ class ImportBot(BaseSample):
         top_slider_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_outer_2_link/top_slider_joint"), "linear")
         bottom_intake_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_elevator_leg_link/bottom_intake_joint"), "angular")
         
-        set_drive_params(front_left_axle, 1, 1000, 98.0)
-        set_drive_params(front_right_axle, 1, 1000, 98.0)
-        set_drive_params(rear_left_axle, 1, 1000, 98.0)
-        set_drive_params(rear_right_axle, 1, 1000, 98.0)       
-        set_drive_params(front_left_wheel, 1, 1000, 98.0)
-        set_drive_params(front_right_wheel, 1, 1000, 98.0)
-        set_drive_params(rear_left_wheel, 1, 1000, 98.0)
-        set_drive_params(rear_right_wheel, 1, 1000, 98.0)
+        set_drive_params(front_left_axle, 0, 0, 98.0)
+        set_drive_params(front_right_axle, 0, 0, 98.0)
+        set_drive_params(rear_left_axle, 0, 0, 98.0)
+        set_drive_params(rear_right_axle, 0, 0, 98.0)       
+        set_drive_params(front_left_wheel, 0, 0, 98.0)
+        set_drive_params(front_right_wheel, 0, 0, 98.0)
+        set_drive_params(rear_left_wheel, 0, 0, 98.0)
+        set_drive_params(rear_right_wheel, 0, 0, 98.0)
         set_drive_params(arm_roller_bar_joint, 10000000, 100000, 98.0)
         set_drive_params(elevator_center_joint, 10000000, 100000, 98.0)
         set_drive_params(elevator_outer_1_joint, 10000000, 100000, 2000.0)
@@ -201,7 +201,7 @@ class ImportBot(BaseSample):
         # self.create_lidar(robot_prim_path)
         self.create_imu(robot_prim_path)
         self.create_depth_camera(robot_prim_path)
-        self.setup_camera_action_graph(robot_prim_path)
+        # self.setup_camera_action_graph(robot_prim_path)
         self.setup_imu_action_graph(robot_prim_path)
         self.setup_robot_action_graph(robot_prim_path)  
         self.set_friction(robot_prim_path)
@@ -282,12 +282,12 @@ class ImportBot(BaseSample):
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    # ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
-                    ("Context.outputs:context", "PublishClock.inputs:context"),
+                    # ("Context.outputs:context", "PublishClock.inputs:context"),
                     ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
                 ],
             }
@@ -395,7 +395,7 @@ class ImportBot(BaseSample):
                     # General Nodes
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("SimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    # ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     # Odometry Nodes
                     ("ComputeOdometry", "omni.isaac.core_nodes.IsaacComputeOdometry"),
                     ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
@@ -429,8 +429,8 @@ class ImportBot(BaseSample):
                     ("ComputeOdometry.outputs:orientation", "RawOdomTransform.inputs:rotation"),
                     ("ComputeOdometry.outputs:position", "PublishOdometry.inputs:position"),
                     ("ComputeOdometry.outputs:position", "RawOdomTransform.inputs:translation"),
-                    ("Context.outputs:context", "PublishOdometry.inputs:context"),
-                    ("Context.outputs:context", "RawOdomTransform.inputs:context"),
+                    # ("Context.outputs:context", "PublishOdometry.inputs:context"),
+                    # ("Context.outputs:context", "RawOdomTransform.inputs:context"),
                     ("SimTime.outputs:simulationTime", "PublishOdometry.inputs:timeStamp"),
                     ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
 
@@ -453,7 +453,7 @@ class ImportBot(BaseSample):
                     # IMU Connections
                     ("OnPlaybackTick.outputs:tick", "IsaacReadImu.inputs:execIn"),
                     ("IsaacReadImu.outputs:execOut", "PublishImu.inputs:execIn"),
-                    ("Context.outputs:context", "PublishImu.inputs:context"),
+                    # ("Context.outputs:context", "PublishImu.inputs:context"),
                     ("SimTime.outputs:simulationTime", "PublishImu.inputs:timeStamp"),
 
                     ("IsaacReadImu.outputs:angVel", "PublishImu.inputs:angularVelocity"),
@@ -476,7 +476,7 @@ class ImportBot(BaseSample):
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    # ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
                     ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
                     ("articulation_controller", "omni.isaac.core_nodes.IsaacArticulationController"),
@@ -495,11 +495,12 @@ class ImportBot(BaseSample):
                    
                     ("OnPlaybackTick.outputs:tick", "articulation_controller.inputs:execIn"),
                     ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
-                    ("Context.outputs:context", "PublishJointState.inputs:context"),
-                    ("Context.outputs:context", "SubscribeJointState.inputs:context"),
+                    # ("Context.outputs:context", "PublishJointState.inputs:context"),
+                    # ("Context.outputs:context", "SubscribeJointState.inputs:context"),
                     ("SubscribeJointState.outputs:jointNames", "articulation_controller.inputs:jointNames"),
-                    ("SubscribeJointState.outputs:velocityCommand", "articulation_controller.inputs:velocityCommand"),
-                    ("SubscribeJointState.outputs:positionCommand", "articulation_controller.inputs:positionCommand"),
+                    # ("SubscribeJointState.outputs:velocityCommand", "articulation_controller.inputs:velocityCommand"),
+                    # ("SubscribeJointState.outputs:positionCommand", "articulation_controller.inputs:positionCommand"),
+                    ("SubscribeJointState.outputs:effortCommand", "articulation_controller.inputs:effortCommand"),
                 ],
             }
         )

@@ -9,7 +9,7 @@ class PublishJointCmd(Node):
 
     def __init__(self):
         super().__init__('publish_drive_joint_commands')
-        self.publisher_ = self.create_publisher(JointState, '/real/real_joint_commands', 10)
+        self.publisher_ = self.create_publisher(JointState, '/real/isaac_joint_commands', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
@@ -29,25 +29,36 @@ class PublishJointCmd(Node):
         ]
         rad = math.pi
         cmds.velocity = [ 
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0, #ignore
-            0.0, #ignore
-            0.0, #ignore
-            0.0, #ignore
-        ]
-        cmds.position = [
-            0.0, #ignore
-            0.0, #ignore
-            0.0, #ignore
-            0.0, #ignore
+            rad,
+            rad,
             rad,
             0.0,
-            0.0,
-            0.0
+            0.0, #ignore
+            0.0, #ignore
+            0.0, #ignore
+            0.0, #ignore
         ]
+        # cmds.position = [
+        #     1.0, #ignore
+        #     1.0, #ignore
+        #     1.0, #ignore
+        #     0.0, #ignore
+        #     0.0,
+        #     0.0,
+        #     0.0,
+        #     0.0
+        # ]
+
+        # cmds.effort = [ 
+        #     100e8,
+        #     100e8,
+        #     100e8,
+        #     100e8,
+        #     0.0, #ignore
+        #     0.0, #ignore
+        #     0.0, #ignore
+        #     0.0, #ignore
+        # ]
         # position_cmds.position = []
 
         self.publisher_.publish(cmds)
