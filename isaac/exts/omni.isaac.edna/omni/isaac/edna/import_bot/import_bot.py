@@ -417,6 +417,7 @@ class ImportBot(BaseSample):
                     ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
                     ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
                     ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed2i_imu_link"),
+                    ("PublishOdometry.inputs:topicName", "zed/odom")
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
