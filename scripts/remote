@@ -101,7 +101,7 @@ build() {
     echo "Stopping containers to save resources during build..."
     edna-kill && edna-stop
     echo "Rebuilding..."
-    sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild build $@"
+    sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild apply $@"
     echo "Restarting the containers..."
     edna-restart
 }
@@ -156,7 +156,11 @@ help() {
     echo "  stop    -- Stops the docker container"
     echo "  kill    -- Kills the docker container"
     echo "  deploy [files]      -- Deploys to the remote device using rsync (decides automatically if not specified)"
-    echo "  build [packages]    -- Rebuilds packages with colcon (decides automatically if not specified) (specify \"all\" or \"complete\" to rebuild all packages)"
+    echo "  build:"
+    echo "      \"\"                -- Smartly detects edited packages and rebuilds"
+    echo "      [packages]          -- Rebuilds specified packages"
+    echo "      all                 -- Rebuilds all packages"
+    echo "      complete            -- Deletes old build and rebuilds all packages"
     echo "  run  [command]      -- Runs an arbitrary command on the remote device "
     echo "  "
     echo ""
@@ -219,7 +223,6 @@ case $1 in
     "build") ;&
     "rebuild")
         case $2 in
-            "all") ;&
             "complete")
                 complete-build
                 ;;
