@@ -48,12 +48,15 @@ class StartWriting(Node):
 class BagWriter(Node): 
     def __init__(self):
         super().__init__('bag_writer')
+        self.curr_file_path = os.path.abspath(__file__)
+        self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
+        self.package_root = os.path.join(self.project_root_path, 'src/frc_auton')
 
         self.subscription_arm = self.create_subscription(JointTrajectory,'joint_trajectory_controller/joint_trajectory',self.arm_callback,10)
         self.subscription_swerve = self.create_subscription(Twist,'swerve_controller/cmd_vel_unstamped',self.swerve_callback,10)
 
-        file_counter= int(len(os.listdir('/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag')))
-        self.path = '/workspaces/edna2023/src/frc_auton/frc_auton/Auto_ros_bag/bag_'+str(file_counter)
+        file_counter= int(len(os.listdir(f'{self.package_root}/frc_auton/Auto_ros_bag')))
+        self.path = f'{self.package_root}/frc_auton/Auto_ros_bag/bag_'+str(file_counter)
        
         self.writer = rosbag2_py.SequentialWriter()
         storage_options = rosbag2_py._storage.StorageOptions(uri=self.path,storage_id='sqlite3')
