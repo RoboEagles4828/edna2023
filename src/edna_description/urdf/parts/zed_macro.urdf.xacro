@@ -104,6 +104,13 @@
       <child link="${prefix}_left_camera_optical_frame"/>
     </joint>
 
+    <link name="${prefix}_left_camera_isaac_frame"/>
+    <joint name="${prefix}_left_camera_isaac_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${M_PI/2} 0.0 -${M_PI/2}"/>
+      <parent link="${prefix}_left_camera_frame"/>
+      <child link="${prefix}_left_camera_isaac_frame"/>
+    </joint>
+
 
 
     <!-- Right Camera -->
@@ -119,6 +126,13 @@
       <origin xyz="${optical_offset_x} 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
       <parent link="${prefix}_right_camera_frame"/>
       <child link="${prefix}_right_camera_optical_frame"/>
+    </joint>
+
+    <link name="${prefix}_right_camera_isaac_frame"/>
+    <joint name="${prefix}_right_camera_isaac_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${M_PI/2} 0.0 -${M_PI/2}"/>
+      <parent link="${prefix}_right_camera_frame"/>
+      <child link="${prefix}_right_camera_isaac_frame"/>
     </joint>
 
     <link name="${prefix}_imu_link" />
