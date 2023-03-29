@@ -1,6 +1,6 @@
 USERNAME="roboeagles"
 IP_ADDRESS="10.48.28.22"
-PORT="22"
+PORT="5800"
 REMOTE_PATH="/home/$USERNAME/edna2023"
 
 MACHINE_NAME=${5:-""}
