@@ -247,7 +247,7 @@ class SwerveModule():
         self.axle_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
     def neutralize_module(self):
-        self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
+        # self.wheel_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
         self.axle_motor.set(ctre.TalonFXControlMode.PercentOutput, 0)
 
     def set(self, wheel_motor_vel, axle_position):

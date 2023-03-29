@@ -10,6 +10,8 @@ import rosbag2_py
 from std_msgs.msg import String
 import os
 from time import time
+import yaml
+import math
 
 
 
@@ -45,19 +47,129 @@ class StageSubscriber(Node):
             self.cmd.angular.z = 0.0
             self.timeInSeconds = 2.0
 
+            self.taxiTimeDuration = 2.0
+
+
+            # joint trajectory msg stuff
+            self.joints = [
+            'arm_roller_bar_joint',
+            'elevator_center_joint',
+            'elevator_outer_1_joint',
+            'elevator_outer_2_joint',
+            'top_gripper_right_arm_joint',
+            'top_gripper_left_arm_joint',
+            'top_slider_joint',
+            'bottom_intake_joint',
+            ]
+
+            self.cmds: JointTrajectory = JointTrajectory()
+            self.cmds.joint_names = self.joints
+            self.position_cmds = JointTrajectoryPoint()
+            self.cmds.points = [self.position_cmds]
+            self.cmds.points[0].positions = [0.0] * len(self.joints)
+
+            # yaml
+            self.curr_file_path = os.path.abspath(__file__)
+            self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
+            self.yaml_path = os.path.join(self.project_root_path, 'src/edna_bringup/config/teleop-control.yaml')
+            with open(self.yaml_path, 'r') as f:
+                self.yaml = yaml.safe_load(f)
+            self.joint_map = self.yaml['joint_mapping']
+            self.joint_limits = self.yaml["joint_limits"]
+
+            # task times
+            self.tasks = [
+                { 'dur': 1, 'task': self.raiseArm },
+                { 'dur': 1, 'task': self.extendArm },
+                { 'dur': 1, 'task': self.openGripper },
+                { 'dur': 1, 'task': self.closeGripper },
+                { 'dur': 1, 'task': self.retractArm },
+                { 'dur': 1, 'task': self.lowerArm },
+            ]
+
+            self.prefixSumArr = [0.0] * len(self.tasks)
+
+    
+    def prefixSum(self):
+        self.prefixSumArr[0] = self.tasks[0]
+        for i in range(1, len(self.tasks)):
+            self.prefixSumArr[i] = self.prefixSumArr[i-1] + self.tasks[i]
+
+
     def initAuton(self):
         self.startTime = time()
         self.changed_stage = False
         self.doAuton = True
         self.get_logger().info(f"STARTED AUTON AT {self.startTime}")
+        self.get_logger().warn(str(self.prefixSumArr))
+
     
     def loopAuton(self):
-        elapsedTime =  time() - self.startTime
-        if elapsedTime < self.timeInSeconds:
+        # self.taxiAuton()
+        self.coneAuton()
+
+    # CONE AUTOMATION STUFF
+    def raiseArm(self):
+        self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = self.joint_limits["arm_roller_bar_joint"]["max"]
+        self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = self.joint_limits["elevator_outer_1_joint"]["max"]
+        self.cmds.points = [self.position_cmds]
+        self.publish_trajectory.publish(self.cmds)
+        self.get_logger().warn("ARM RAISED")
+    def extendArm(self):
+        self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = self.joint_limits["elevator_center_joint"]["max"]
+        self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = self.joint_limits["elevator_outer_2_joint"]["max"]
+        self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.joint_limits["top_slider_joint"]["max"]
+        self.cmds.points = [self.position_cmds]
+        self.publish_trajectory.publish(self.cmds)
+        self.get_logger().warn("ARM EXTENDED")
+    def openGripper(self):
+        self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_left_arm_joint"]["min"]
+        self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["min"]
+        self.cmds.points = [self.position_cmds]
+        self.publish_trajectory.publish(self.cmds)
+        self.get_logger().warn("GRIPPER OPENED")
+    def closeGripper(self):
+        self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
+        self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
+        self.cmds.points = [self.position_cmds]
+        self.publish_trajectory.publish(self.cmds)
+        self.get_logger().warn("GRIPPER CLOSED")
+    def retractArm(self):
+        self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
+        self.cmds.points = [self.position_cmds]
+        self.publish_trajectory.publish(self.cmds)
+        self.get_logger().warn("ARM RETRACTED")
+    def lowerArm(self):
+        self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 0.0
+        self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
+        self.cmds.points = [self.position_cmds]
+        self.publish_trajectory.publish(self.cmds)
+        self.get_logger().warn("ARM LOWERED")
+
+
+    def coneAuton(self):
+        elapsedTime = time() - self.startTime
+
+        # for i in reversed(self.prefixSumArr):
+        #     if elapsedTime > i:
+        #         self.tasks[i]()
+        #         break
+        totalDur = 0.0
+        for task in self.tasks:
+            totalDur += task['dur']
+            if elapsedTime < totalDur:
+                task['task']()
+                return
+    
+    def taxiAuton(self):
+        elapsedTime = time() - self.startTime
+        if elapsedTime < self.taxiTimeDuration:
             self.cmd.linear.x = 0.5
             self.publish_twist.publish(self.cmd)
         else:
-            self.stopAuton()
+            return
+        
+    
     
     def stopAuton(self):
         self.cmd.linear.x = 0.0

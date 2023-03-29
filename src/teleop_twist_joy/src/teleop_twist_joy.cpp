@@ -100,7 +100,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10).best_effort(),
     std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
   // pimpl_->client = this->create_client<writer_srv::srv::StartWriter>("start_writer");
-  pimpl_->timer_callback_ = this->create_wall_timer(std::chrono::duration<double>(0.1), std::bind(&TeleopTwistJoy::Impl::timerCallback,this->pimpl_));
+  // pimpl_->timer_callback_ = this->create_wall_timer(std::chrono::duration<double>(0.1), std::bind(&TeleopTwistJoy::Impl::timerCallback,this->pimpl_));
 
   // pimpl_->client = create_client<writer_srv::srv::StartWriter>("start_writer",
   //                             [this](std::shared_ptr<writer_srv::srv::StartWriter::Request> /*request*/,  // NOLINT
