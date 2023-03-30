@@ -79,74 +79,94 @@ class StageSubscriber(Node):
 
             # task times
             self.tasks = [
-                { 'dur': 1, 'task': self.raiseArm },
-                { 'dur': 1, 'task': self.extendArm },
-                { 'dur': 1, 'task': self.openGripper },
-                { 'dur': 1, 'task': self.closeGripper },
-                { 'dur': 1, 'task': self.retractArm },
-                { 'dur': 1, 'task': self.lowerArm },
+                { 'dur': 1, 'task': self.gripperManager, 'arg': 0 },
+                { 'dur': 1, 'task': self.armHeightManager, 'arg': 1 },
+                { 'dur': 4, 'task': self.armExtensionManager, 'arg': 1 },
+                { 'dur': 1, 'task': self.gripperManager, 'arg': 1 },
+                { 'dur': 4, 'task': self.armExtensionManager, 'arg': 0 },
+                { 'dur': 1, 'task': self.armHeightManager, 'arg': 0 },
             ]
 
-            self.prefixSumArr = [] * (len(self.tasks) + 1)
+            self.conePlacementDuration = 0
+            for task in self.tasks:
+                self.conePlacementDuration += task['dur']
 
-    
-    def prefixSum(self):
-        self.prefixSumArr[0] = 0
-        for i in range(1, len(self.prefixSumArr)):
-            self.prefixSumArr[i] = self.prefixSumArr[i-1] + self.tasks[i-1]['dur']
+
+            # TURN AROUND STUFF
+            self.turnCmd = Twist()
+            self.turnCmd.linear.x = 0.0
+            self.turnCmd.linear.y = 0.0
+            self.turnCmd.angular.z = 0.0
+            self.turnTimeDuration = 2.0
 
 
 
     def initAuton(self):
         self.startTime = time()
+        self.turnStartTime = self.startTime + self.conePlacementDuration + 2
         self.changed_stage = False
         self.doAuton = True
         self.get_logger().info(f"STARTED AUTON AT {self.startTime}")
-        self.get_logger().warn(str(self.prefixSumArr))
 
     
     def loopAuton(self):
         # self.taxiAuton()
         self.coneAuton()
+        self.turnAuton()
+
 
     # CONE AUTOMATION STUFF
-    def raiseArm(self):
-        self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = self.joint_limits["arm_roller_bar_joint"]["max"]
-        self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = self.joint_limits["elevator_outer_1_joint"]["max"]
+    def publishCurrent(self):
         self.cmds.points = [self.position_cmds]
         self.publish_trajectory.publish(self.cmds)
-        self.get_logger().warn("ARM RAISED")
-    def extendArm(self):
-        self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = self.joint_limits["elevator_center_joint"]["max"]
-        self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = self.joint_limits["elevator_outer_2_joint"]["max"]
-        self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.joint_limits["top_slider_joint"]["max"]
-        self.cmds.points = [self.position_cmds]
-        self.publish_trajectory.publish(self.cmds)
-        self.get_logger().warn("ARM EXTENDED")
-    def openGripper(self):
-        self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_left_arm_joint"]["min"]
-        self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["min"]
-        self.cmds.points = [self.position_cmds]
-        self.publish_trajectory.publish(self.cmds)
-        self.get_logger().warn("GRIPPER OPENED")
-    def closeGripper(self):
-        self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
-        self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"]["max"]
-        self.cmds.points = [self.position_cmds]
-        self.publish_trajectory.publish(self.cmds)
-        self.get_logger().warn("GRIPPER CLOSED")
-    def retractArm(self):
-        self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
-        self.cmds.points = [self.position_cmds]
-        self.publish_trajectory.publish(self.cmds)
-        self.get_logger().warn("ARM RETRACTED")
-    def lowerArm(self):
-        self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = 0.0
-        self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = 0.0
-        self.cmds.points = [self.position_cmds]
-        self.publish_trajectory.publish(self.cmds)
-        self.get_logger().warn("ARM LOWERED")
 
+    def armExtensionManager(self, pos):
+        value = ''
+        if(pos == 0):
+            # RETRACT THE ARM
+            value = 'min'
+            self.get_logger().warn("ARM RETRACTED")
+        elif(pos == 1):
+            # EXTEND THE ARM
+            value = 'max'
+            self.get_logger().warn("ARM EXTENDED")
+
+        self.position_cmds.positions[int(self.joint_map['elevator_center_joint'])] = self.joint_limits["elevator_center_joint"][value]
+        self.position_cmds.positions[int(self.joint_map['elevator_outer_2_joint'])] = self.joint_limits["elevator_outer_2_joint"][value]
+        self.position_cmds.positions[int(self.joint_map['top_slider_joint'])] = self.joint_limits["top_slider_joint"][value]
+        self.publishCurrent()
+        
+
+    def armHeightManager(self, pos):
+        value = ''
+        if(pos == 0):
+            # LOWER THE ARM
+            value = "min"
+            self.get_logger().warn("ARM LOWERED")
+        elif(pos == 1):
+            # RAISE THE ARM
+            value = "max"
+            self.get_logger().warn("ARM RAISED")
+        
+        self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = self.joint_limits["arm_roller_bar_joint"][value]
+        self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = self.joint_limits["elevator_outer_1_joint"][value]
+        self.publishCurrent()
+
+    
+    def gripperManager(self, pos):
+        value = ''
+        if(pos == 1):
+            # OPEN THE GRIPPER
+            value = 'min'
+            self.get_logger().warn("GRIPPER OPENED")
+        elif(pos == 0):
+            # CLOSE THE GRIPPER
+            value = 'max'
+            self.get_logger().warn("GRIPPER CLOSED")
+
+        self.position_cmds.positions[int(self.joint_map['top_gripper_left_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"][value]
+        self.position_cmds.positions[int(self.joint_map['top_gripper_right_arm_joint'])] = self.joint_limits["top_gripper_right_arm_joint"][value]
+        self.publishCurrent()
 
     def coneAuton(self):
         elapsedTime = time() - self.startTime
@@ -155,7 +175,7 @@ class StageSubscriber(Node):
         for task in self.tasks:
             totalDur += task['dur']
             if elapsedTime < totalDur:
-                task['task']()
+                task['task'](task['arg'])
                 return
     
     def taxiAuton(self):
@@ -163,6 +183,17 @@ class StageSubscriber(Node):
         if elapsedTime < self.taxiTimeDuration:
             self.cmd.linear.x = 0.5
             self.publish_twist.publish(self.cmd)
+        else:
+            return
+        
+    def turnAuton(self):
+        if time() < self.turnStartTime: return
+
+        elapsedTime = time() - self.turnStartTime
+        if elapsedTime < self.turnTimeDuration:
+            self.turnCmd.angular.z = math.pi / 2
+            self.publish_twist.publish(self.turnCmd)
+            self.get_logger().warn("TURNING")
         else:
             return
         
