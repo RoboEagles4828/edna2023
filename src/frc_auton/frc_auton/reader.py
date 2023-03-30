@@ -87,13 +87,14 @@ class StageSubscriber(Node):
                 { 'dur': 1, 'task': self.lowerArm },
             ]
 
-            self.prefixSumArr = [0.0] * len(self.tasks)
+            self.prefixSumArr = [] * (len(self.tasks) + 1)
 
     
     def prefixSum(self):
-        self.prefixSumArr[0] = self.tasks[0]
-        for i in range(1, len(self.tasks)):
-            self.prefixSumArr[i] = self.prefixSumArr[i-1] + self.tasks[i]
+        self.prefixSumArr[0] = 0
+        for i in range(1, len(self.prefixSumArr)):
+            self.prefixSumArr[i] = self.prefixSumArr[i-1] + self.tasks[i-1]['dur']
+
 
 
     def initAuton(self):
@@ -150,10 +151,6 @@ class StageSubscriber(Node):
     def coneAuton(self):
         elapsedTime = time() - self.startTime
 
-        # for i in reversed(self.prefixSumArr):
-        #     if elapsedTime > i:
-        #         self.tasks[i]()
-        #         break
         totalDur = 0.0
         for task in self.tasks:
             totalDur += task['dur']
