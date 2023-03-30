@@ -1,45 +1,149 @@
 #!/bin/bash
 
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+PURPLE='\033[0;35m'
+NC='\033[0m'
+
 # Check /scripts/config/remote-config for script configuration
 source /workspaces/edna2023/scripts/config/remote-config
 
-deploy-git() {
-    echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH via git..."
-    if [[ ! $(git remote -v | grep $USERNAME@$IP_ADDRESS) ]]; then # Add it as a remote
-            if [ $(git remote | grep "$MACHINE_NAME") ]; then # Remove the old jetson remote
-                    git remote remove $MACHINE_NAME
-            fi
-            git remote add $MACHINE_NAME "$USERNAME@$IP_ADDRESS:$REMOTE_PATH"
-    fi
-
-    git push $MACHINE_NAME main
-}
-
-deploy-rsync() {
+smart-deploy() {
     echo "Deploying to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync..."
-    rsync -azP -e "ssh -p $PORT" --exclude .git/ --exclude .devcontainer/ --exclude build/ --exclude install/ --exclude log/ --exclude isaac/ --exclude docker/ --exclude *.rviz --exclude __pycache__ --exclude edna_tests --exclude joy /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+
+    echo "Generating rsync metadata..."
+    rsync -azPin --checksum -e "ssh -p $PORT" \
+        --exclude .git/ \
+        --exclude .vscode/ \
+        --exclude .devcontainer/ \
+        --exclude build/ \
+        --exclude install/ \
+        --exclude log/ \
+        --exclude rio/ \
+        --exclude isaac/ \
+        --exclude *.rviz \
+        --exclude __pycache__ \
+        --exclude joy \
+        --exclude edna_debugger \
+        --exclude edna_tests \
+        --exclude .rsyncmetadata \
+    /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH \
+        | egrep -v "sending incremental file list" | egrep -v "^\." | awk '{print $2}' | tr ' ' '\n' >> /workspaces/edna2023/.rsyncmetadata
+    
+    echo "Files that will be changed:"
+    printf '%s\n' $(</workspaces/edna2023/.rsyncmetadata)
+
+    read -p "Would you like to sync the files? (y/n) " response
+    if [ "$response" != "y" ]; then
+        exit
+    fi
+
+    echo "Syncing files..."
+    rsync -azP --checksum -e "ssh -p $PORT" \
+        --exclude .git/ \
+        --exclude .vscode/ \
+        --exclude .devcontainer/ \
+        --exclude build/ \
+        --exclude install/ \
+        --exclude log/ \
+        --exclude rio/ \
+        --exclude isaac/ \
+        --exclude *.rviz \
+        --exclude __pycache__ \
+        --exclude joy \
+        --exclude edna_debugger \
+        --exclude edna_tests \
+    /workspaces/edna2023/ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    echo -e "${GREEN}Done deploying files to remote${NC}"
 }
 
-rebuild() {
-    echo "Disabling edna.service for speed..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl stop edna.service"
-    echo "Connecting to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) and building..."
-    if [ -z "$2" ]; then
-        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/*";
-    else
-        ssh $USERNAME@$IP_ADDRESS -p $PORT "cd $REMOTE_PATH && source /opt/ros/humble/setup.bash && colcon build --symlink-install --paths src/* --packages-select ${@:2}";
-    fi
-    edna-restart
+deploy() {
+    echo "Deploying the following files to $USERNAME@$IP_ADDRESS:$REMOTE_PATH (port $PORT) via rsync:"
+    printf '%s\n' $@
+    rsync -azP --checksum -e "ssh -p $PORT" $@ $USERNAME@$IP_ADDRESS:$REMOTE_PATH
+    echo -e "${GREEN}Done deploying files to remote${NC}"
+}
+
+sshCommand() {
+    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "$@"
+}
+
+edna-stop() {
+    sshCommand "cd $REMOTE_PATH && docker compose stop"
+}
+
+edna-kill() {
+    sshCommand "cd $REMOTE_PATH && docker compose kill"
 }
 
 edna-restart() {
-    echo "Restarting edna.service on $USERNAME@$IP_ADDRESS:$PORT..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT "sudo systemctl restart edna.service"
+    sshCommand "cd $REMOTE_PATH && docker compose restart"
 }
 
 edna-log() {
-    echo "Checking edna.service status..."
-    ssh -t $USERNAME@$IP_ADDRESS -p $PORT 'sudo systemctl status edna.service'
+    sshCommand "cd $REMOTE_PATH && docker compose logs -f"
+}
+
+edna-setup() {
+    if [ ! -f ~/.ssh/robot_deploy ]; then
+        ssh-keygen -b 2048 -t rsa -f ~/.ssh/robot_deploy -q -N ""
+        echo -e "${GREEN}robot_deploy key created${NC}"
+    fi
+    echo -e "${ORANGE}Copying robot_deploy public key to $USERNAME@$IP_ADDRESS:$PORT...${NC}"
+    ssh-copy-id -p $PORT -i ~/.ssh/robot_deploy.pub $USERNAME@$IP_ADDRESS 
+}
+
+build() {
+    echo -e "${PURPLE}Rebuilding Packages:${NC}"
+    printf '%s\n' $@
+
+    echo "Stopping containers to save resources during build..."
+    edna-kill && edna-stop
+    echo "Rebuilding..."
+    sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild apply $@"
+    echo "Restarting the containers..."
+    edna-restart
+}
+
+smart-build() {
+    echo -e "${PURPLE}Generating a plan for a smart build${NC}"
+    smartPlan=`sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild plan"`
+    packageCount=$(echo $smartPlan | wc -w)
+    if [ $packageCount == 0 ]; then
+        echo -e "${GREEN}No packages to rebuild${NC}"
+    else
+        # Show the Plan
+        echo -e "${ORANGE}$packageCount Packages to rebuild:${NC}"
+        printf '%s\n' $smartPlan
+
+        # Ask if the user wants to apply the plan
+        read -p "Would you like to apply this plan? (y/n) " response
+        if [ "$response" == "y" ]; then
+            echo "Stopping containers to save resources during build..."
+            edna-kill && edna-stop
+            echo "Applying plan..."
+            sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild apply $smartPlan"
+            rm .rsyncmetadata
+            echo "Restarting the containers..."
+            edna-restart
+        fi
+    fi
+}
+
+complete-build() {
+    echo -e "${ORANGE}WARNING: DOING COMPLETE REBUILD WILL TAKE A WHILE${NC}"
+    read -p "Would you like to continue? (y/n) " response
+    if [ "$response" == "y" ]; then
+        echo "Stopping containers to save resources during rebuild..."
+        edna-kill && edna-stop
+        echo "Removing old build files..."
+        sshCommand "cd $REMOTE_PATH && sudo rm -rf build/ install/ log/"
+        echo "Starting rebuild container..."
+        sshCommand "cd $REMOTE_PATH && ./scripts/remote-rebuild apply all"
+        if [ -f "./.rsyncmetadata" ]; then rm .rsyncmetadata; fi
+        edna-restart
+    fi
 }
 
 help() {
@@ -47,20 +151,25 @@ help() {
     echo "  config  -- Opens the config file in nano"
     echo "  setup   -- Copies your ssh-key to the remote device"
     echo "  ssh     -- Connects to the robot via ssh"
-    echo "  service"
-    echo "      log     -- Outputs the systemctl log for edna.service"
-    echo "      restart -- Restarts the systemctl edna.service"
-    echo "  deploy"
-    echo "      rsync   -- Deploys to the remote device using rsync (default)"
-    echo "      git     -- Deploys to the remote device using Git"
-    echo "  rebuild [packages] -- Rebuilds packages with colcon (all packages if not specified)"
-    echo "  run  [command]  -- Runs an arbitrary command on the remote device "
+    echo "  log     -- Outputs the log for the docker container"
+    echo "  restart -- Restarts the docker container"
+    echo "  stop    -- Stops the docker container"
+    echo "  kill    -- Kills the docker container"
+    echo "  deploy [files]      -- Deploys to the remote device using rsync (decides automatically if not specified)"
+    echo "  build:"
+    echo "      \"\"                -- Smartly detects edited packages and rebuilds"
+    echo "      [packages]          -- Rebuilds specified packages"
+    echo "      all                 -- Rebuilds all packages"
+    echo "      complete            -- Deletes old build and rebuilds all packages"
+    echo "  run  [command]      -- Runs an arbitrary command on the remote device "
+    echo "  "
     echo ""
     echo "Aliases:"
     echo "  connect -- alias for \"remote ssh\""
-    echo "  log     -- alias for \"remote service log\""
-    echo "  restart -- alias for \"remote service restart\""
-    echo "Usage: remote (config | setup | ssh | service | deploy | rebuild | run)"
+    echo "  exec    -- alias for \"remote exec\""
+    echo "  sync    -- alias for \"remote deploy\""
+    echo "  rebuild -- alias for \"remote build\""
+    echo "Usage: remote (config | setup | ssh | service | deploy | build | run)"
 }
 
 case $1 in 
@@ -69,8 +178,7 @@ case $1 in
     ;;
 
     "setup")
-        echo "Copying public key to $USERNAME@$IP_ADDRESS:$PORT..."
-        ssh-copy-id -p $PORT -i ~/.ssh/id_rsa.pub $USERNAME@$IP_ADDRESS 
+        edna-setup
     ;;
         
     "connect") ;&
@@ -79,40 +187,23 @@ case $1 in
         ssh $USERNAME@$IP_ADDRESS -p $PORT
     ;;
 
+    "sync") ;&
     "deploy")
         case $2 in
-            "") ;&
-            "rsync")
-                deploy-rsync
-            ;;
-            
-            "git")
-                deploy-git
-            ;;
-
+            "")
+                smart-deploy
+                ;;
             *)
-                echo "Unknown option: $2"
-                help
-            ;;
-        esac
-        ;;
-
-    "service")
-        case $2 in
-            "log")
-                edna-log
-                ;;
-            
-            "restart")
-                edna-restart
+                deploy "${@:2}"
                 ;;
         esac
         ;;
 
-    "run")
-        ssh -t $USERNAME@$IP_ADDRESS -p $PORT "${@:2}";
+    "run") ;&
+    "exec")
+        sshCommand "${@:2}";
         ;;
-
+    
     "log")
         edna-log
         ;;
@@ -120,14 +211,32 @@ case $1 in
     "restart")
         edna-restart
         ;;
-
-    "rebuild")
-        rebuild $@
+    
+    "stop")
+        edna-stop
         ;;
     
+    "kill")
+        edna-kill
+        ;;
+
+    "build") ;&
+    "rebuild")
+        case $2 in
+            "complete")
+                complete-build
+                ;;
+            "")
+                smart-build
+                ;;
+            *)
+                build "${@:2}"
+                ;;
+        esac
+        ;;
     
     *)
-        echo "Unknown option: $1"
+        echo "Unknown option: \"$1\""
         help
         ;;
 esac

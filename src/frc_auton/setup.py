@@ -11,7 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools','rosbag'],
+    install_requires=['setuptools','rosbags'],
     zip_safe=True,
     maintainer='admin',
     maintainer_email='nchan18@outlook.com',
@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'reader = frc_auton.runner:main',
+            'reader = frc_auton.reader:main',
+            'writer = frc_auton.writer:main',
         ],
     },
 )

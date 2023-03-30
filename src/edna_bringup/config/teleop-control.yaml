@@ -1,0 +1,70 @@
+controller_mapping:
+    A: 0
+    B: 1
+    X: 2
+    Y: 3
+    LB: 4
+    RB: 5
+    squares: 6
+    menu: 7
+    xbox: 8
+    LSin: 9
+    RSin: 10
+    leftTriggerAxis: 2
+    rightTriggerAxis: 5
+joint_limits:
+  arm_roller_bar_joint:
+    min: 0.0
+    max: 0.07
+  elevator_center_joint:
+    min: 0.0
+    max: 0.56
+  elevator_outer_1_joint:
+    min: 0.0
+    max: 0.2
+  elevator_outer_2_joint:
+    min: 0.0
+    max: 0.56
+  top_gripper_right_arm_joint:
+    min: 0.0
+    max: 0.9
+  top_gripper_left_arm_joint:
+    min: 0.0
+    max: 0.9
+  top_slider_joint:
+    min: 0.0
+    max: 0.30
+  bottom_intake_joint:
+    min: 0.0
+    max: 1.52
+joint_mapping:
+  arm_roller_bar_joint: 0
+  elevator_center_joint: 1
+  elevator_outer_1_joint: 2
+  elevator_outer_2_joint: 3
+  top_gripper_right_arm_joint: 4
+  top_gripper_left_arm_joint: 5
+  top_slider_joint: 6
+  bottom_intake_joint: 7
+function_mapping:
+  elevator_loading_station:
+    button: "RSin"
+    toggle: true
+  skis_up:
+    button: "leftTriggerAxis"
+    toggle: true
+  elevator_mid_level:
+    button: "LB"
+    toggle: true
+  elevator_high_level:
+    button: "X"
+    toggle: true
+  top_gripper_control:
+    button: "A"
+    toggle: true
+  elevator_pivot_control:
+    button: "Y"
+    toggle: true
+  top_slider_control:
+    button: "B"
+    toggle: true

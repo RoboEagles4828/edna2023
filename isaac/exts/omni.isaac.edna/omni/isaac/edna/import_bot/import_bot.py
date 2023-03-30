@@ -252,9 +252,7 @@ class ImportBot(BaseSample):
         top_gripper_left_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/top_gripper_bar_link/top_gripper_left_arm_joint"), "angular")
         top_gripper_right_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/top_gripper_bar_link/top_gripper_right_arm_joint"), "angular")
         top_slider_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/elevator_outer_2_link/top_slider_joint"), "linear")
-        # bottom_gripper_left_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/bottom_gripper_bar_link/bottom_gripper_left_arm_joint"), "angular")
-        # bottom_gripper_right_arm_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/bottom_gripper_bar_link/bottom_gripper_right_arm_joint"), "angular")
-        # bottom_intake_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_elevator_leg_link/bottom_intake_joint"), "angular")
+        bottom_intake_joint = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(f"{robot_prim_path}/arm_elevator_leg_link/bottom_intake_joint"), "angular")
         
         set_drive_params(front_left_axle, 1, 1000, 98.0)
         set_drive_params(front_right_axle, 1, 1000, 98.0)
@@ -271,17 +269,15 @@ class ImportBot(BaseSample):
         set_drive_params(top_gripper_left_arm_joint, 10000000, 100000, 98.0)
         set_drive_params(top_gripper_right_arm_joint, 10000000, 100000, 98.0)
         set_drive_params(top_slider_joint, 10000000, 100000, 98.0)
-        # set_drive_params(bottom_gripper_left_arm_joint, 10000000, 100000, 98.0)
-        # set_drive_params(bottom_gripper_right_arm_joint, 10000000, 100000, 98.0)
-        # set_drive_params(bottom_intake_joint, 10000000, 100000, 98.0)
+        set_drive_params(bottom_intake_joint, 10000000, 100000, 98.0)
         
         # self.create_lidar(robot_prim_path)
-        # self.create_imu(robot_prim_path)
-        # self.create_depth_camera(robot_prim_path)
-        # self.setup_camera_action_graph(robot_prim_path)
-        # self.setup_imu_action_graph(robot_prim_path)
-        # self.setup_robot_action_graph(robot_prim_path)  
-        # self.set_friction(robot_prim_path)
+        self.create_imu(robot_prim_path)
+        self.create_depth_camera(robot_prim_path)
+        self.setup_camera_action_graph(robot_prim_path)
+        self.setup_imu_action_graph(robot_prim_path)
+        self.setup_robot_action_graph(robot_prim_path)  
+        self.set_friction(robot_prim_path)
         return
 
     def create_lidar(self, robot_prim_path):
@@ -308,7 +304,7 @@ class ImportBot(BaseSample):
         return
 
     def create_imu(self, robot_prim_path):
-        imu_parent = f"{robot_prim_path}/zed_camera_center"
+        imu_parent = f"{robot_prim_path}/zed2i_imu_link"
         imu_path = "/imu"
         self.imu_prim_path = imu_parent + imu_path
         result, prim = omni.kit.commands.execute(
@@ -322,8 +318,8 @@ class ImportBot(BaseSample):
         return        
     
     def create_depth_camera(self, robot_prim_path):
-        self.depth_left_camera_path = f"{robot_prim_path}/zed_left_camera_optical_frame/left_cam"
-        self.depth_right_camera_path = f"{robot_prim_path}/zed_right_camera_optical_frame/right_cam"
+        self.depth_left_camera_path = f"{robot_prim_path}/zed2i_right_camera_isaac_frame/left_cam"
+        self.depth_right_camera_path = f"{robot_prim_path}/zed2i_right_camera_isaac_frame/right_cam"
         self.left_camera = prims.create_prim(
             prim_path=self.depth_left_camera_path,
             prim_type="Camera",
@@ -369,11 +365,11 @@ class ImportBot(BaseSample):
                 ],
             }
         )
-        return
+        return  
     
     def setup_camera_action_graph(self, robot_prim_path):
         camera_graph = "{}/camera_sensor_graph".format(robot_prim_path)
-        enable_left_cam = True
+        enable_left_cam = False
         enable_right_cam = False
         rgbType = "RgbType"
         infoType = "InfoType"
@@ -392,7 +388,7 @@ class ImportBot(BaseSample):
                 ],
                 "setvalues": [
                     (f"{side}CamHelper{name}.inputs:topicName", f"{side.lower()}/{topic}"),
-                    (f"{side}CamHelper{name}.inputs:frameId", f"{NAMESPACE}/zed_{side.lower()}_camera_frame"),
+                    (f"{side}CamHelper{name}.inputs:frameId", f"{NAMESPACE}/zed2i_{side.lower()}_camera_frame"),
                     (f"{side}CamHelper{name}.inputs:nodeNamespace", f"/{NAMESPACE}"),
                 ]
             }
@@ -478,22 +474,23 @@ class ImportBot(BaseSample):
                     ("PublishOdometry", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
                     ("RawOdomTransform", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
                     # LiDAR Nodes
-                    ("ReadLidar", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
-                    ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan"),
+                    # ("ReadLidar", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
+                    # ("PublishLidar", "omni.isaac.ros2_bridge.ROS2PublishLaserScan"),
                     # IMU Nodes
                     ("IsaacReadImu", "omni.isaac.sensor.IsaacReadIMU"),
                     ("PublishImu", "omni.isaac.ros2_bridge.ROS2PublishImu"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     ("PublishOdometry.inputs:nodeNamespace", f"/{NAMESPACE}"),
-                    ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
+                    # ("PublishLidar.inputs:nodeNamespace", f"/{NAMESPACE}"),
                     ("PublishImu.inputs:nodeNamespace", f"/{NAMESPACE}"), 
-                    ("PublishLidar.inputs:frameId", f"{NAMESPACE}/lidar_link"),
+                    # ("PublishLidar.inputs:frameId", f"{NAMESPACE}/lidar_link"),
                     ("RawOdomTransform.inputs:childFrameId", f"{NAMESPACE}/base_link"),
-                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/odom"),
+                    ("RawOdomTransform.inputs:parentFrameId", f"{NAMESPACE}/zed/odom"),
                     ("PublishOdometry.inputs:chassisFrameId", f"{NAMESPACE}/base_link"),
                     ("PublishOdometry.inputs:odomFrameId", f"{NAMESPACE}/odom"),
-                    ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed_camera_center"),
+                    ("PublishImu.inputs:frameId", f"{NAMESPACE}/zed2i_imu_link"),
+                    ("PublishOdometry.inputs:topicName", "zed/odom")
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Odometry Connections
@@ -512,20 +509,20 @@ class ImportBot(BaseSample):
                     ("SimTime.outputs:simulationTime", "RawOdomTransform.inputs:timeStamp"),
 
                     # LiDAR Connections
-                    ("OnPlaybackTick.outputs:tick", "ReadLidar.inputs:execIn"),
-                    ("ReadLidar.outputs:execOut", "PublishLidar.inputs:execIn"),
-                    ("Context.outputs:context", "PublishLidar.inputs:context"),
-                    ("SimTime.outputs:simulationTime", "PublishLidar.inputs:timeStamp"),
+                    # ("OnPlaybackTick.outputs:tick", "ReadLidar.inputs:execIn"),
+                    # ("ReadLidar.outputs:execOut", "PublishLidar.inputs:execIn"),
+                    # ("Context.outputs:context", "PublishLidar.inputs:context"),
+                    # ("SimTime.outputs:simulationTime", "PublishLidar.inputs:timeStamp"),
                     
-                    ("ReadLidar.outputs:azimuthRange", "PublishLidar.inputs:azimuthRange"),
-                    ("ReadLidar.outputs:depthRange", "PublishLidar.inputs:depthRange"),
-                    ("ReadLidar.outputs:horizontalFov", "PublishLidar.inputs:horizontalFov"),
-                    ("ReadLidar.outputs:horizontalResolution", "PublishLidar.inputs:horizontalResolution"),
-                    ("ReadLidar.outputs:intensitiesData", "PublishLidar.inputs:intensitiesData"),
-                    ("ReadLidar.outputs:linearDepthData", "PublishLidar.inputs:linearDepthData"),
-                    ("ReadLidar.outputs:numCols", "PublishLidar.inputs:numCols"),
-                    ("ReadLidar.outputs:numRows", "PublishLidar.inputs:numRows"),
-                    ("ReadLidar.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
+                    # ("ReadLidar.outputs:azimuthRange", "PublishLidar.inputs:azimuthRange"),
+                    # ("ReadLidar.outputs:depthRange", "PublishLidar.inputs:depthRange"),
+                    # ("ReadLidar.outputs:horizontalFov", "PublishLidar.inputs:horizontalFov"),
+                    # ("ReadLidar.outputs:horizontalResolution", "PublishLidar.inputs:horizontalResolution"),
+                    # ("ReadLidar.outputs:intensitiesData", "PublishLidar.inputs:intensitiesData"),
+                    # ("ReadLidar.outputs:linearDepthData", "PublishLidar.inputs:linearDepthData"),
+                    # ("ReadLidar.outputs:numCols", "PublishLidar.inputs:numCols"),
+                    # ("ReadLidar.outputs:numRows", "PublishLidar.inputs:numRows"),
+                    # ("ReadLidar.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
                     
                     # IMU Connections
                     ("OnPlaybackTick.outputs:tick", "IsaacReadImu.inputs:execIn"),

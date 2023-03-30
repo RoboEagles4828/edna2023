@@ -9,7 +9,7 @@ import torch
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
-class Runner(Node):
+class Reader(Node):
     def __init__(self):
         super().__init__("reinforcement_learning_runner")
         # self.robot_ip = robot_ip
@@ -34,8 +34,6 @@ class Runner(Node):
             'top_gripper_left_arm_joint',
             'top_slider_joint',
             'bottom_intake_joint',
-            'bottom_gripper_right_arm_joint',
-            'bottom_gripper_left_arm_joint',
         ]   
 
     def get_action(self, msg):
@@ -76,8 +74,8 @@ class Runner(Node):
 def main(args=None):
     # env = gym.create_env("RealRobot", ip=self.robot_ip)
     rclpy.init(args=args)
-    runner = Runner()
-    rclpy.spin(runner)
+    reader = Reader()
+    rclpy.spin(reader)
     # env.disconnect()
 if __name__ == '__main__':
     main()

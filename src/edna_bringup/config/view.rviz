@@ -91,21 +91,6 @@ Visualization Manager:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      bottom_gripper_bar_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_left_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_right_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
       bottom_intake_link:
         Alpha: 1
         Show Axes: false
@@ -191,28 +176,32 @@ Visualization Manager:
         Show Axes: false
         Show Trail: false
         Value: true
-      zed_base_link:
+      zed2i_base_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_camera_center:
+      zed2i_camera_center:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      zed_left_camera_frame:
+      zed2i_imu_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_left_camera_optical_frame:
+      zed2i_left_camera_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_right_camera_frame:
+      zed2i_left_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_right_camera_optical_frame:
+      zed2i_right_camera_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed2i_right_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -406,7 +395,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.219048500061035
+      Distance: 3.0842151641845703
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -421,10 +410,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6153983473777771
+      Pitch: 0.470398485660553
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 1.130397915840149
+      Yaw: 6.128584384918213
     Saved: null
 Window Geometry:
   Displays:

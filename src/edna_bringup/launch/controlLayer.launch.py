@@ -1,11 +1,12 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler, DeclareLaunchArgument, SetEnvironmentVariable
+from launch.actions import RegisterEventHandler, DeclareLaunchArgument, SetEnvironmentVariable, LogInfo, EmitEvent
 from launch.substitutions import LaunchConfiguration, Command, PythonExpression, TextSubstitution
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
 from launch.conditions import IfCondition
+from launch.events import Shutdown
 
 # Easy use of namespace since args are not strings
 # NAMESPACE = os.environ.get('ROS_NAMESPACE') if 'ROS_NAMESPACE' in os.environ else 'default'
@@ -14,6 +15,7 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     use_ros2_control = LaunchConfiguration('use_ros2_control')
     load_controllers = LaunchConfiguration('load_controllers')
+    forward_command_controllers = LaunchConfiguration('forward_command_controller')
     namespace = LaunchConfiguration('namespace')
     hardware_plugin = LaunchConfiguration('hardware_plugin')
 
@@ -25,7 +27,6 @@ def generate_launch_description():
     # Get paths to other config files
     bringup_pkg_path = os.path.join(get_package_share_directory('edna_bringup'))
     controllers_file = os.path.join(bringup_pkg_path, 'config', 'controllers.yaml')
-    joint_trajectory_file = os.path.join(bringup_pkg_path, 'config', 'joint_trajectory_controller.yaml')
     
     # Create a robot_state_publisher node
     node_robot_state_publisher = Node(
@@ -52,6 +53,15 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             }, controllers_file],
         output="both",
+    )
+    control_node_require = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=control_node,
+            on_exit=[
+                LogInfo(msg="Listener exited; tearing down entire system."),
+                EmitEvent(event=Shutdown())
+            ],
+        )
     )
 
     # Starts ROS2 Control Joint State Broadcaster
@@ -90,18 +100,34 @@ def generate_launch_description():
         )
     )
 
-    # Starts Joint State Publisher GUI for rviz
-    joint_state_publisher_gui = Node (
-        package='joint_state_publisher_gui',
+    # Starts ROS2 Control Forward Controller
+    forward_position_controller_spawner = Node(
+        package="controller_manager",
         namespace=namespace,
-        executable='joint_state_publisher_gui',
-        output='screen',
-        parameters=[{
-            'use_sim_time': use_sim_time,
-            'publish_default_velocities':  True,
-        }],
-        condition=IfCondition( PythonExpression([ "'", use_ros2_control, "' == 'false'" ]) ),
+        executable="spawner",
+        arguments=["forward_position_controller", "-c", ['/', namespace, "/controller_manager"]],
+        condition=IfCondition(use_ros2_control and forward_command_controllers),
     )
+    forward_position_controller_delay = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[forward_position_controller_spawner],
+        )
+    )
+    forward_velocity_controller_spawner = Node(
+        package="controller_manager",
+        namespace=namespace,
+        executable="spawner",
+        arguments=["forward_velocity_controller", "-c", ['/', namespace, "/controller_manager"]],
+        condition=IfCondition(use_ros2_control and forward_command_controllers),
+    )
+    forward_velocity_controller_delay = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[forward_velocity_controller_spawner],
+        )
+    )
+
 
     # Launch!
     return LaunchDescription([
@@ -126,10 +152,16 @@ def generate_launch_description():
             'load_controllers',
             default_value='true',
             description='Enable or disable ros2 controllers but leave hardware interfaces'),
+        DeclareLaunchArgument(
+            'forward_command_controller',
+            default_value='false',
+            description='Forward commands for ros2 control'),
         node_robot_state_publisher,
         control_node,
         joint_state_broadcaster_spawner,
         joint_trajectory_controller_spawner,
         swerve_drive_controller_delay,
-        joint_state_publisher_gui
+        forward_position_controller_delay,
+        forward_velocity_controller_delay,
+        control_node_require
     ])

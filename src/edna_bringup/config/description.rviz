@@ -53,7 +53,7 @@ Visualization Manager:
     Value: true
   - Alpha: 1
     Class: rviz_default_plugins/RobotModel
-    Collision Enabled: true
+    Collision Enabled: false
     Description File: ''
     Description Source: Topic
     Description Topic:
@@ -88,21 +88,6 @@ Visualization Manager:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      bottom_gripper_bar_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_left_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
-      bottom_gripper_right_arm_link:
-        Alpha: 1
-        Show Axes: false
-        Show Trail: false
-        Value: true
       bottom_intake_link:
         Alpha: 1
         Show Axes: false
@@ -188,28 +173,40 @@ Visualization Manager:
         Show Axes: false
         Show Trail: false
         Value: true
-      zed_base_link:
+      zed2i_base_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_camera_center:
+      zed2i_camera_center:
         Alpha: 1
         Show Axes: false
         Show Trail: false
         Value: true
-      zed_left_camera_frame:
+      zed2i_imu_link:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_left_camera_optical_frame:
+      zed2i_left_camera_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_right_camera_frame:
+      zed2i_left_camera_isaac_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
-      zed_right_camera_optical_frame:
+      zed2i_left_camera_optical_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed2i_right_camera_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed2i_right_camera_isaac_frame:
+        Alpha: 1
+        Show Axes: false
+        Show Trail: false
+      zed2i_right_camera_optical_frame:
         Alpha: 1
         Show Axes: false
         Show Trail: false
@@ -233,12 +230,6 @@ Visualization Manager:
       gage/arm_roller_bar_link:
         Value: false
       gage/base_link:
-        Value: false
-      gage/bottom_gripper_bar_link:
-        Value: false
-      gage/bottom_gripper_left_arm_link:
-        Value: false
-      gage/bottom_gripper_right_arm_link:
         Value: false
       gage/bottom_intake_link:
         Value: true
@@ -274,17 +265,25 @@ Visualization Manager:
         Value: false
       gage/top_slider_link:
         Value: false
-      gage/zed_base_link:
+      gage/zed/odom:
         Value: false
-      gage/zed_camera_center:
+      gage/zed2i_base_link:
         Value: false
-      gage/zed_left_camera_frame:
+      gage/zed2i_camera_center:
         Value: false
-      gage/zed_left_camera_optical_frame:
+      gage/zed2i_imu_link:
         Value: false
-      gage/zed_right_camera_frame:
+      gage/zed2i_left_camera_frame:
         Value: false
-      gage/zed_right_camera_optical_frame:
+      gage/zed2i_left_camera_isaac_frame:
+        Value: true
+      gage/zed2i_left_camera_optical_frame:
+        Value: false
+      gage/zed2i_right_camera_frame:
+        Value: false
+      gage/zed2i_right_camera_isaac_frame:
+        Value: true
+      gage/zed2i_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -292,36 +291,37 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      gage/base_link:
-        gage/swerve_chassis_link:
-          gage/arm_back_leg_link:
-            gage/elevator_outer_1_link:
-              gage/elevator_center_link:
-                gage/elevator_outer_2_link:
-                  gage/top_slider_link:
-                    gage/top_gripper_bar_link:
-                      gage/top_gripper_left_arm_link: {}
-                      gage/top_gripper_right_arm_link: {}
-          gage/arm_elevator_leg_link:
-            gage/arm_roller_bar_link: {}
-            gage/bottom_intake_link:
-              gage/bottom_gripper_bar_link:
-                gage/bottom_gripper_left_arm_link: {}
-                gage/bottom_gripper_right_arm_link: {}
-          gage/front_left_axle_link:
-            gage/front_left_wheel_link: {}
-          gage/front_right_axle_link:
-            gage/front_right_wheel_link: {}
-          gage/rear_left_axle_link:
-            gage/rear_left_wheel_link: {}
-          gage/rear_right_axle_link:
-            gage/rear_right_wheel_link: {}
-          gage/zed_base_link:
-            gage/zed_camera_center:
-              gage/zed_left_camera_frame:
-                gage/zed_left_camera_optical_frame: {}
-              gage/zed_right_camera_frame:
-                gage/zed_right_camera_optical_frame: {}
+      gage/zed/odom:
+        gage/base_link:
+          gage/swerve_chassis_link:
+            gage/arm_back_leg_link:
+              gage/elevator_outer_1_link:
+                gage/elevator_center_link:
+                  gage/elevator_outer_2_link:
+                    gage/top_slider_link:
+                      gage/top_gripper_bar_link:
+                        gage/top_gripper_left_arm_link: {}
+                        gage/top_gripper_right_arm_link: {}
+            gage/arm_elevator_leg_link:
+              gage/arm_roller_bar_link: {}
+              gage/bottom_intake_link: {}
+            gage/front_left_axle_link:
+              gage/front_left_wheel_link: {}
+            gage/front_right_axle_link:
+              gage/front_right_wheel_link: {}
+            gage/rear_left_axle_link:
+              gage/rear_left_wheel_link: {}
+            gage/rear_right_axle_link:
+              gage/rear_right_wheel_link: {}
+            gage/zed2i_base_link:
+              gage/zed2i_camera_center:
+                gage/zed2i_left_camera_frame:
+                  gage/zed2i_imu_link: {}
+                  gage/zed2i_left_camera_isaac_frame: {}
+                  gage/zed2i_left_camera_optical_frame: {}
+                gage/zed2i_right_camera_frame:
+                  gage/zed2i_right_camera_isaac_frame: {}
+                  gage/zed2i_right_camera_optical_frame: {}
     Update Interval: 0
     Value: true
   Enabled: true
@@ -370,25 +370,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.3943190574645996
+      Distance: 1.2690420150756836
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.033792316913604736
-        Y: -0.24759666621685028
-        Z: 0.5461775064468384
-      Focal Shape Fixed Size: true
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8203982710838318
+      Pitch: 0.470398485660553
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 0.09040485322475433
+      Yaw: 0.24039846658706665
     Saved: null
 Window Geometry:
   Displays:

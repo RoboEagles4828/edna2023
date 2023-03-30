@@ -6,18 +6,18 @@
         x: 1
         y: 0
       scale_linear:
-        x: 10.0
-        y: 10.0
+        x: 1.0
+        y: 1.0
       scale_linear_turbo:
-        x: 20.0
-        y: 20.0
+        x: 2.5
+        y: 2.5
 
       axis_angular:  # Right thumb stick horizontal
         yaw: 3
       scale_angular:
-        yaw: -6.0
+        yaw: -1.0
       scale_angular_turbo:
-        yaw: -20.0
+        yaw: -2.5
       
       enable_turbo_button: 5
       enable_field_oriented_button: 7
