@@ -139,7 +139,7 @@ class ImportBot(BaseSample):
         add_reference_to_stage(usd_path=field,prim_path="/World/Field")
         cone = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23700_JFH.usd")
         cube = os.path.join(self.project_root_path, "assets/2023_field_cpu/parts/GE-23701_JFL.usd")
-        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation-Copy/Assembly-1.usd")
+        chargestation = os.path.join(self.project_root_path, "assets/ChargeStation/Assembly-1.usd")
         substation = os.path.join(self.project_root_path, "assets/te-23060/te_23060.usd")
         add_reference_to_stage(chargestation, "/World/ChargeStation_1")
         add_reference_to_stage(chargestation, "/World/ChargeStation_2") 
@@ -159,14 +159,14 @@ class ImportBot(BaseSample):
         self.game_piece_list.append( GeometryPrim("/World/Cone_2","cone_2_view",position=np.array([1.20298,3.08899,0.0])))
         self.game_piece_list.append( GeometryPrim("/World/Cone_3","cone_3_view",position=np.array([-1.20298,-0.56861,0.0])))
         self.game_piece_list.append( GeometryPrim("/World/Cone_4","cone_4_view",position=np.array([-1.20298,3.08899,0.0])))
-        self.game_piece_list.append( GeometryPrim("/World/Cone_5","cone_5_view",position=np.array([-8.17,-2.65,1.15])))
+        self.game_piece_list.append( GeometryPrim("/World/Cone_5","cone_5_view",position=np.array([-8.17,-1.8,1.15])))
         self.game_piece_list.append( GeometryPrim("/World/Cone_6","cone_6_view",position=np.array([8.17,-2.65,1.15])))
         chargestation_1 = GeometryPrim("/World/ChargeStation_1","chargestation_1_view",position=np.array([-4.20298,-0.56861,0.0]))
         chargestation_2 = GeometryPrim("/World/ChargeStation_2","chargesation_2_view",position=np.array([4.20298,0.56861,0.0]))
         substation_1 = GeometryPrim("/World/Substation_1","substation_1_view",position=np.array([-8,-3.4,0.0]))
-        substation_2 = GeometryPrim("/World/Substation_2","substation_2_view",position=np.array([8,-3.4,0.0]))
+        substation_2 = GeometryPrim("/World/Substation_2","substation_2_view",position=np.array([8,-3.4,0.0]),orientation=np.array([ 0.5,0.5,-0.5,-0.5]))
         substation_3 = GeometryPrim("/World/Substation_3","substation_3_view",position=np.array([-8,-2.2,0.0]))
-        substation_4 = GeometryPrim("/World/Substation_4","substation_4_view",position=np.array([8,-2.2,0.0]))
+        substation_4 = GeometryPrim("/World/Substation_4","substation_4_view",position=np.array([8,-2.2,0.0]),orientation=np.array([ -0.5,-0.5,0.5,0.5 ]))
 
 
         add_reference_to_stage(cube, "/World/Cube_1")
@@ -181,7 +181,7 @@ class ImportBot(BaseSample):
         self.game_piece_list.append( GeometryPrim("/World/Cube_2","cube_2_view",position=np.array([1.20298,1.86979,0.121])))
         self.game_piece_list.append( GeometryPrim("/World/Cube_3","cube_3_view",position=np.array([-1.20298,0.65059,0.121])))
         self.game_piece_list.append( GeometryPrim("/World/Cube_4","cube_4_view",position=np.array([-1.20298,1.86979,0.121])))
-        self.game_piece_list.append( GeometryPrim("/World/Cube_5","cube_5_view",position=np.array([-8.17,-3.65,1.15])))
+        self.game_piece_list.append( GeometryPrim("/World/Cube_5","cube_5_view",position=np.array([-8.17,-2.95,1.15])))
         self.game_piece_list.append( GeometryPrim("/World/Cube_6","cube_6_view",position=np.array([8.17,-3.65,1.15])))
 
 
