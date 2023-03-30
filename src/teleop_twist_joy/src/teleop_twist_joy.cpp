@@ -37,7 +37,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
 
 #include "teleop_twist_joy/teleop_twist_joy.hpp"
-#include "writer_srv/srv/start_writer.hpp" 
+#include "edna_interfaces/srv/set_bool.hpp" 
 #include <functional> // for bind()
 using namespace std;
 
@@ -63,9 +63,9 @@ struct TeleopTwistJoy::Impl
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub;
-  rclcpp::Client<writer_srv::srv::StartWriter>::SharedPtr client;
+  rclcpp::Service<edna_interfaces::srv::SetBool> reset_orientation_service;
   rclcpp::TimerBase::SharedPtr timer_callback_;
-  rclcpp::Client<writer_srv::srv::StartWriter>::SharedPtr service_client_;
+  rclcpp::Client<edna_interfaces::srv::SetBool>::SharedPtr start_writer_client_;
   nav_msgs::msg::Odometry::SharedPtr last_msg;
 
   bool require_enable_button;
@@ -99,15 +99,15 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
     std::bind(&TeleopTwistJoy::Impl::odomCallback, this->pimpl_, std::placeholders::_1));
   pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10).best_effort(),
     std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
-  // pimpl_->client = this->create_client<writer_srv::srv::StartWriter>("start_writer");
+  // pimpl_->client = this->create_client<edna_interfaces::srv::SetBool>("set_bool");
   pimpl_->timer_callback_ = this->create_wall_timer(std::chrono::duration<double>(0.1), std::bind(&TeleopTwistJoy::Impl::timerCallback,this->pimpl_));
-
-  // pimpl_->client = create_client<writer_srv::srv::StartWriter>("start_writer",
-  //                             [this](std::shared_ptr<writer_srv::srv::StartWriter::Request> /*request*/,  // NOLINT
-  //                                    std::shared_ptr<writer_srv::srv::StartWriter::Response> response) {  // NOLINT
+  pimpl_->reset_orientation_service = this->create_wall_timer<edna_interfaces::srv::SetBool>(double>(0.1), std::bind(&TeleopTwistJoy::Impl::startServiceCallback, this->pimpl_, std::placeholders::_1, std::placeholders::_2));
+  // pimpl_->client = create_client<edna_interfaces::srv::SetBool>("set_bool",
+  //                             [this](std::shared_ptr<edna_interfaces::srv::SetBool::Request> /*request*/,  // NOLINT
+  //                                    std::shared_ptr<edna_interfaces::srv::SetBool::Response> response) {  // NOLINT
   //                               return startServiceCallback(std::move(response));     // NOLINT
   //                             });
-  pimpl_->service_client_ = create_client<writer_srv::srv::StartWriter>("start_writer");
+  pimpl_->start_writer_client_ = create_client<edna_interfaces::srv::SetBool>("set_bool");
 
   pimpl_->require_enable_button = this->declare_parameter("require_enable_button", true);
 
@@ -425,7 +425,7 @@ double correct_joystick_pos(const std::map<std::string, double>& scale_map,const
   return 0.0;
 
 }
-// void TeleopTwistJoy::startServiceCallBack(const std::shared_ptr<writer_srv::srv::StartWriter::Response> response)
+// void TeleopTwistJoy::startServiceCallBack(const std::shared_ptr<edna_interfaces::srv::SetBool::Response> response)
 // {
 //   if(joy){
 
@@ -435,11 +435,11 @@ void TeleopTwistJoy::Impl::timerCallback()
   {
     // it's good to firstly check if the service server is even ready to be called
 
-    if (service_client_->service_is_ready()&& serviceEnabled && serviceButtonLastState==1)
+    if (start_writer_client_->service_is_ready()&& serviceEnabled && serviceButtonLastState==1)
     {
-      auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
-      request->record = true;
-      while (!service_client_->wait_for_service(1s)) {
+      auto request = std::make_shared<edna_interfaces::srv::SetBool::Request>();
+      request->data = true;
+      while (!start_writer_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           RCLCPP_ERROR(rclcpp::get_logger("teleop_twist_joy"), "Interrupted while waiting for the service. Exiting.");
           break;
@@ -447,17 +447,17 @@ void TeleopTwistJoy::Impl::timerCallback()
         RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "service not available, waiting again...");
       }
 
-      auto result = service_client_->async_send_request(request);
+      auto result = start_writer_client_->async_send_request(request);
 
       // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Bag recording started: %d", result.get()->recording);
       // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Path of Bag: %s", result.get()->path.c_str());
 
 
     }
-    else if(service_client_->service_is_ready()&& !serviceEnabled && serviceButtonLastState==1){
-      auto request = std::make_shared<writer_srv::srv::StartWriter::Request>();
-      request->record = false;
-      while (!service_client_->wait_for_service(1s)) {
+    else if(start_writer_client_->service_is_ready()&& !serviceEnabled && serviceButtonLastState==1){
+      auto request = std::make_shared<edna_interfaces::srv::SetBool::Request>();
+      request->data = false;
+      while (!start_writer_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           RCLCPP_ERROR(rclcpp::get_logger("teleop_twist_joy"), "Interrupted while waiting for the service. Exiting.");
           break;
@@ -465,13 +465,13 @@ void TeleopTwistJoy::Impl::timerCallback()
         RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "service not available, waiting again...");
       }
 
-      auto result = service_client_->async_send_request(request);
+      auto result = start_writer_client_->async_send_request(request);
       
       // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Bag recording stopped: %d", !result.get()->recording);
       // RCLCPP_INFO(rclcpp::get_logger("teleop_twist_joy"), "Path of Bag: %s", result.get()->path.c_str());
     }
 
-    else if(!service_client_->service_is_ready())
+    else if(!start_writer_client_->service_is_ready())
       RCLCPP_WARN(rclcpp::get_logger("teleop_twist_joy"), "[ServiceClientExample]: not calling service using callback, service not ready!");
 
   }
