@@ -38,6 +38,16 @@ build() {
     colcon build --symlink-install --paths src/* --packages-select $@
 }
 
+help() {
+    echo -e "\033[0;31m===WARNING: THIS SCRIPT SHOULD ONLY BE RUN ON THE REMOTE DEVICE===\033[0m"
+    echo "For deploying to the remote device, use the \"remote\" script."
+    echo "Usage:"
+    echo "  plan                -- Reads packages to rebuild from .rsyncmetadata"
+    echo "  apply [packages]    -- Rebuilds the docker container and packages specified"
+    echo "  build [packages]    -- Rebuilds specified packages"
+    echo "Usage: remote-rebuild (plan | apply | build)"
+}
+
 case $1 in
     # This does the plan on the remote destination
     "plan")
@@ -55,7 +65,7 @@ case $1 in
     ;;
 
     *)
-        echo "Unknown option: $1"
+        echo "Unknown option: \"$1\""
         help
         ;;
 esac

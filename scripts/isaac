@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-IMAGE_NAME="ghcr.io/roboeagles4828/isaac-sim:2022.2.0"
+IMAGE_NAME="ghcr.io/roboeagles4828/isaac-sim:2022.2.1"
 CONTAINTER_NAME="isaac-sim"
 DEFAULT_CMD="/isaac-sim/isaac-sim.sh --allow-root"
 CMD=${@:-$DEFAULT_CMD}

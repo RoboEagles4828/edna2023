@@ -64,7 +64,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /gage/robot_description
+      Value: /prat/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -209,7 +209,8 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
-    TF Prefix: gage
+    TF Prefix: prat
+    TF Prefix: Nitin
     Update Interval: 0
     Value: true
     Visual Enabled: true
@@ -218,63 +219,63 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      gage/arm_back_leg_link:
+      prat/arm_back_leg_link:
         Value: false
-      gage/arm_elevator_leg_link:
+      prat/arm_elevator_leg_link:
         Value: false
-      gage/arm_roller_bar_link:
+      prat/arm_roller_bar_link:
         Value: false
-      gage/base_link:
+      prat/base_link:
         Value: false
-      gage/bottom_intake_link:
+      prat/bottom_intake_link:
         Value: false
-      gage/elevator_center_link:
+      prat/elevator_center_link:
         Value: false
-      gage/elevator_outer_1_link:
+      prat/elevator_outer_1_link:
         Value: false
-      gage/elevator_outer_2_link:
+      prat/elevator_outer_2_link:
         Value: false
-      gage/front_left_axle_link:
+      prat/front_left_axle_link:
         Value: true
-      gage/front_left_wheel_link:
+      prat/front_left_wheel_link:
         Value: false
-      gage/front_right_axle_link:
+      prat/front_right_axle_link:
         Value: true
-      gage/front_right_wheel_link:
+      prat/front_right_wheel_link:
         Value: false
-      gage/rear_left_axle_link:
+      prat/rear_left_axle_link:
         Value: true
-      gage/rear_left_wheel_link:
+      prat/rear_left_wheel_link:
         Value: false
-      gage/rear_right_axle_link:
+      prat/rear_right_axle_link:
         Value: true
-      gage/rear_right_wheel_link:
+      prat/rear_right_wheel_link:
         Value: false
-      gage/swerve_chassis_link:
+      prat/swerve_chassis_link:
         Value: false
-      gage/top_gripper_bar_link:
+      prat/top_gripper_bar_link:
         Value: false
-      gage/top_gripper_left_arm_link:
+      prat/top_gripper_left_arm_link:
         Value: false
-      gage/top_gripper_right_arm_link:
+      prat/top_gripper_right_arm_link:
         Value: false
-      gage/top_slider_link:
+      prat/top_slider_link:
         Value: false
-      gage/zed/odom:
+      prat/zed/odom:
         Value: true
-      gage/zed2i_base_link:
+      prat/zed2i_base_link:
         Value: false
-      gage/zed2i_camera_center:
+      prat/zed2i_camera_center:
         Value: false
-      gage/zed2i_imu_link:
+      prat/zed2i_imu_link:
         Value: false
-      gage/zed2i_left_camera_frame:
+      prat/zed2i_left_camera_frame:
         Value: false
-      gage/zed2i_left_camera_optical_frame:
+      prat/zed2i_left_camera_optical_frame:
         Value: false
-      gage/zed2i_right_camera_frame:
+      prat/zed2i_right_camera_frame:
         Value: false
-      gage/zed2i_right_camera_optical_frame:
+      prat/zed2i_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -282,35 +283,35 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      gage/base_link:
-        gage/swerve_chassis_link:
-          gage/arm_back_leg_link:
-            gage/elevator_outer_1_link:
-              gage/elevator_center_link:
-                gage/elevator_outer_2_link:
-                  gage/top_slider_link:
-                    gage/top_gripper_bar_link:
-                      gage/top_gripper_left_arm_link: {}
-                      gage/top_gripper_right_arm_link: {}
-          gage/arm_elevator_leg_link:
-            gage/arm_roller_bar_link: {}
-            gage/bottom_intake_link: {}
-          gage/front_left_axle_link:
-            gage/front_left_wheel_link: {}
-          gage/front_right_axle_link:
-            gage/front_right_wheel_link: {}
-          gage/rear_left_axle_link:
-            gage/rear_left_wheel_link: {}
-          gage/rear_right_axle_link:
-            gage/rear_right_wheel_link: {}
-          gage/zed2i_base_link:
-            gage/zed2i_camera_center:
-              gage/zed2i_left_camera_frame:
-                gage/zed2i_imu_link: {}
-                gage/zed2i_left_camera_optical_frame: {}
-              gage/zed2i_right_camera_frame:
-                gage/zed2i_right_camera_optical_frame: {}
-      gage/zed/odom: {}
+      prat/base_link:
+        prat/swerve_chassis_link:
+          prat/arm_back_leg_link:
+            prat/elevator_outer_1_link:
+              prat/elevator_center_link:
+                prat/elevator_outer_2_link:
+                  prat/top_slider_link:
+                    prat/top_gripper_bar_link:
+                      prat/top_gripper_left_arm_link: {}
+                      prat/top_gripper_right_arm_link: {}
+          prat/arm_elevator_leg_link:
+            prat/arm_roller_bar_link: {}
+            prat/bottom_intake_link: {}
+          prat/front_left_axle_link:
+            prat/front_left_wheel_link: {}
+          prat/front_right_axle_link:
+            prat/front_right_wheel_link: {}
+          prat/rear_left_axle_link:
+            prat/rear_left_wheel_link: {}
+          prat/rear_right_axle_link:
+            prat/rear_right_wheel_link: {}
+          prat/zed2i_base_link:
+            prat/zed2i_camera_center:
+              prat/zed2i_left_camera_frame:
+                prat/zed2i_imu_link: {}
+                prat/zed2i_left_camera_optical_frame: {}
+              prat/zed2i_right_camera_frame:
+                prat/zed2i_right_camera_optical_frame: {}
+      prat/zed/odom: {}
     Update Interval: 0
     Value: true
   - Angle Tolerance: 0.20000000298023224
@@ -350,12 +351,12 @@ Visualization Manager:
       Filter size: 10
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /gage
+      Value: /prat
     Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: gage/base_link
+    Fixed Frame: prat/base_link
     Frame Rate: 30
   Name: root
   Tools:
