@@ -112,7 +112,7 @@ class StageSubscriber(Node):
     def loopAuton(self):
         # self.taxiAuton()
         self.coneAuton()
-        self.turnAuton()
+        #self.turnAuton()
 
 
     # CONE AUTOMATION STUFF
