@@ -91,7 +91,9 @@ class StageSubscriber(Node):
                 { 'dur': 1, 'task': self.stop, 'arg': 0 },
             ]
             self.BalanceAuton = [
-                {'dur': 2, 'task': self.balance},
+                {'dur': 1.05, 'task': self.turnAround, 'arg': math.pi / 2 },
+                {'dur': 2, 'task': self.goBackwards, 'arg': 0.5},
+                {'dur': 6, 'task': self.balance, 'arg': 0.25}
             ]
 
             self.conePlacementDuration = 0
@@ -106,7 +108,23 @@ class StageSubscriber(Node):
             self.turnCmd.angular.z = 0.0
             self.turnTimeDuration = 2.0
 
-
+    def balance(self, speed):
+        notBalanced = (inertial_z != 0.0)
+        self.tasks = [
+            {'dur': 0.5, 'task': self.goBackwards, 'arg': speed},
+            {'dur': 0.5, 'task': self.goBackwards, 'arg': 0 - speed},
+            {'dur': 1, 'task': self.goBackwards, 'arg': speed},
+            {'dur': 1, 'task': self.goBackwards, 'arg': 0 - speed},
+            {'dur': 1.5, 'task': self.goBackwards, 'arg': speed},
+            {'dur': 1.5, 'task': self.goBackwards, 'arg': 0 - speed},
+        ]
+        elapsedTime = time() - self.startTime
+        while notBalanced:
+            for task in self.tasks:
+                totalDur += task['dur']
+                if elapsedTime < totalDur:
+                    task['task'](task['arg'])
+                    return
 
     def initAuton(self):
         self.startTime = time()
@@ -118,8 +136,9 @@ class StageSubscriber(Node):
     
     def loopAuton(self):
         # self.taxiAuton()
-        self.coneAuton()
+        # self.coneAuton()
         #self.turnAuton()
+        self.BalanceAuton()
 
 
     # CONE AUTOMATION STUFF
@@ -158,26 +177,7 @@ class StageSubscriber(Node):
         self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = self.joint_limits["arm_roller_bar_joint"][value]
         self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = self.joint_limits["elevator_outer_1_joint"][value]
         self.publishCurrent()
-    
-    def balance(self):
-        notBalanced = (inertial_z != 0.0)
-        self.tasks = [
-            {'dur': 0.5, 'task': self.goBackwards, 'arg': 0.25},
-            {'dur': 0.5, 'task': self.goBackwards, 'arg': -0.25},
-            {'dur': 1, 'task': self.goBackwards, 'arg': 0.25},
-            {'dur': 1, 'task': self.goBackwards, 'arg': -0.25},
-            {'dur': 1.5, 'task': self.goBackwards, 'arg': 0.25},
-            {'dur': 1.5, 'task': self.goBackwards, 'arg': -0.25},
-        ]
-        elapsedTime = time() - self.startTime
-        while notBalanced:
-            for task in self.tasks:
-                totalDur += task['dur']
-                if elapsedTime < totalDur:
-                    task['task'](task['arg'])
-                    return
             
-    
     def gripperManager(self, pos):
         value = ''
         if(pos == 1):
@@ -225,10 +225,11 @@ class StageSubscriber(Node):
         self.turnCmd.angular.z = angVel
         self.publish_twist.publish(self.turnCmd)
         self.get_logger().warn("TURNING")
-
-        
-    
-    
+    def goBackwardsTurned(self, speed):
+        self.cmd.linear.x = speed
+        self.cmd.linear.y = speed
+        self.publish_twist.publish(self.cmd)
+        self.get_logger().warn("DOCKING CHARGE STATION")
     def stopAuton(self):
         self.cmd.linear.x = 0.0
         # Publish twice to just to be safe

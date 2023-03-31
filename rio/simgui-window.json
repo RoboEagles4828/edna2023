@@ -5,19 +5,19 @@
   "MainWindow": {
     "GLOBAL": {
       "fps": "120",
-      "height": "1016",
+      "height": "1376",
       "maximized": "1",
       "style": "1",
       "userScale": "3",
-      "width": "1846",
-      "xpos": "1376",
-      "ypos": "82"
+      "width": "2486",
+      "xpos": "74",
+      "ypos": "64"
     }
   },
   "Window": {
     "###FMS": {
       "Collapsed": "0",
-      "Pos": "344,28",
+      "Pos": "1170,37",
       "Size": "336,164"
     },
     "###Joysticks": {
@@ -27,12 +27,12 @@
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "344,160",
+      "Pos": "1161,221",
       "Size": "750,452"
     },
     "###Other Devices": {
       "Collapsed": "0",
-      "Pos": "344,28",
+      "Pos": "946,791",
       "Size": "412,519"
     },
     "###Plot <0>": {
