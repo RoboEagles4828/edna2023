@@ -481,7 +481,7 @@ void TeleopTwistJoy::Impl::timerCallback()
  void TeleopTwistJoy::Impl::resetOrientationCallback(const std::shared_ptr<edna_interfaces::srv::SetBool::Request> request,
                                                std::shared_ptr<edna_interfaces::srv::SetBool::Response> response)
   {
-    RCLCPP_INFO(get_logger(), "[TeleopTwistJoy]: received service call: %s", request->data ? "TRUE" : "FALSE");
+    // RCLCPP_INFO(get_logger(), "[TeleopTwistJoy]: received service call: %s", request->data ? "TRUE" : "FALSE");
 
     response->message = "succeeded";
     response->success = true;
