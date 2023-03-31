@@ -261,7 +261,7 @@ class SwerveModule():
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        if wheel_motor_vel == 0.0:
+        if abs(wheel_motor_vel) < 0.2:
             self.neutralize_module()
             return
         else:

@@ -100,14 +100,14 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
     std::bind(&TeleopTwistJoy::Impl::odomCallback, this->pimpl_, std::placeholders::_1));
   pimpl_->joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::QoS(10).best_effort(),
     std::bind(&TeleopTwistJoy::Impl::joyCallback, this->pimpl_, std::placeholders::_1));
-  // pimpl_->client = this->create_client<edna_interfaces::srv::SetBool>("set_bool");
-  pimpl_->timer_callback_ = this->create_wall_timer(std::chrono::duration<double>(0.1), std::bind(&TeleopTwistJoy::Impl::timerCallback,this->pimpl_));
-  // pimpl_->reset_orientation_service = this->create_wall_timer(std::chrono::duration<double>(0.1), std::bind(&TeleopTwistJoy::Impl::resetOrientationCallback, this->pimpl_, std::placeholders::_1, std::placeholders::_2));
-  // pimpl_->client = create_client<edna_interfaces::srv::SetBool>("set_bool",
-  //                             [this](std::shared_ptr<edna_interfaces::srv::SetBool::Request> /*request*/,  // NOLINT
-  //                                    std::shared_ptr<edna_interfaces::srv::SetBool::Response> response) {  // NOLINT
+  // pimpl_->client = this->create_client<writer_srv::srv::StartWriter>("start_writer");
+  // pimpl_->timer_callback_ = this->create_wall_timer(std::chrono::duration<double>(0.1), std::bind(&TeleopTwistJoy::Impl::timerCallback,this->pimpl_));
+
+  // pimpl_->client = create_client<writer_srv::srv::StartWriter>("start_writer",
+  //                             [this](std::shared_ptr<writer_srv::srv::StartWriter::Request> /*request*/,  // NOLINT
+  //                                    std::shared_ptr<writer_srv::srv::StartWriter::Response> response) {  // NOLINT
   //                               return startServiceCallback(std::move(response));     // NOLINT
-  pimpl_->reset_orientation_service = create_service<edna_interfaces::srv::SetBool>("~/set_bool_in", std::bind(&TeleopTwistJoy::Impl::resetOrientationCallback, this->pimpl_, std::placeholders::_1, std::placeholders::_2));
+  pimpl_->reset_orientation_service = create_service<edna_interfaces::srv::SetBool>("reset_field_oriented", std::bind(&TeleopTwistJoy::Impl::resetOrientationCallback, this->pimpl_, std::placeholders::_1, std::placeholders::_2));
 
   //                             });
   pimpl_->start_writer_client_ = create_client<edna_interfaces::srv::SetBool>("set_bool");
@@ -485,7 +485,7 @@ void TeleopTwistJoy::Impl::timerCallback()
  void TeleopTwistJoy::Impl::resetOrientationCallback(const std::shared_ptr<edna_interfaces::srv::SetBool::Request> request,
                                                std::shared_ptr<edna_interfaces::srv::SetBool::Response> response)
   {
-    // RCLCPP_INFO(get_logger(), "[TeleopTwistJoy]: received service call: %s", request->data ? "TRUE" : "FALSE");
+    RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "received service call: %d", request->data );
 
     response->message = "succeeded";
     response->success = true;
