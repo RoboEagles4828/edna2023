@@ -79,12 +79,16 @@ class StageSubscriber(Node):
 
             # task times
             self.tasks = [
-                { 'dur': 1, 'task': self.gripperManager, 'arg': 0 },
+                { 'dur': 0.25, 'task': self.gripperManager, 'arg': 0 },
                 { 'dur': 1, 'task': self.armHeightManager, 'arg': 1 },
                 { 'dur': 4, 'task': self.armExtensionManager, 'arg': 1 },
                 { 'dur': 1, 'task': self.gripperManager, 'arg': 1 },
                 { 'dur': 4, 'task': self.armExtensionManager, 'arg': 0 },
                 { 'dur': 1, 'task': self.armHeightManager, 'arg': 0 },
+                { 'dur': 9, 'task': self.goBackwards, 'arg': -0.5 },
+                { 'dur': 0.2, 'task': self.stop, 'arg': 0 },
+                { 'dur': 2.1, 'task': self.turnAround, 'arg': math.pi / 2 },
+                { 'dur': 1, 'task': self.stop, 'arg': 0 },
             ]
 
             self.conePlacementDuration = 0
@@ -186,16 +190,22 @@ class StageSubscriber(Node):
         else:
             return
         
-    def turnAuton(self):
-        if time() < self.turnStartTime: return
+    def stop(self, x):
+        self.cmd.linear.x = 0.0
+        self.cmd.linear.y = 0.0
+        self.cmd.angular.z = 0.0
+        self.publish_twist.publish(self.cmd)
+        
+    def goBackwards(self, speed):
+        self.cmd.linear.x = speed
+        self.publish_twist.publish(self.cmd)
+        self.get_logger().warn("GOING BACKWARDS")
 
-        elapsedTime = time() - self.turnStartTime
-        if elapsedTime < self.turnTimeDuration:
-            self.turnCmd.angular.z = math.pi / 2
-            self.publish_twist.publish(self.turnCmd)
-            self.get_logger().warn("TURNING")
-        else:
-            return
+    def turnAround(self, angVel):
+        self.turnCmd.angular.z = angVel
+        self.publish_twist.publish(self.turnCmd)
+        self.get_logger().warn("TURNING")
+
         
     
     
