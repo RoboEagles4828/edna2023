@@ -35,7 +35,6 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 #include <sensor_msgs/msg/joy.hpp>
 #include "nav_msgs/msg/odometry.hpp"
 
-
 #include "teleop_twist_joy/teleop_twist_joy.hpp"
 #include "edna_interfaces/srv/set_bool.hpp" 
 #include <functional> // for bind()
@@ -76,6 +75,7 @@ struct TeleopTwistJoy::Impl
   int64_t start_writer_button;
 
   int fieldOrientationButtonLastState = 0;
+  double last_offset = 0.0;
   bool fieldOrientationEnabled = false;
   int serviceButtonLastState = 0;
   bool serviceEnabled = false;
@@ -119,7 +119,9 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   pimpl_->enable_turbo_button = this->declare_parameter("enable_turbo_button", -1);
   pimpl_->enable_field_oriented_button = this->declare_parameter("enable_field_oriented_button", 8);
   pimpl_->start_writer_button = this->declare_parameter("start_writer_button", 6);
-
+  this->declare_parameter("offset", 0.0);
+  pimpl_->last_offset = this->get_parameter("offset").as_double();  
+  
   std::map<std::string, int64_t> default_linear_map{
     {"x", 5L},
     {"y", -1L},
@@ -127,6 +129,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   };
   this->declare_parameters("axis_linear", default_linear_map);
   this->get_parameters("axis_linear", pimpl_->axis_linear_map);
+  
 
   std::map<std::string, int64_t> default_angular_map{
     {"yaw", 2L},
@@ -198,7 +201,7 @@ TeleopTwistJoy::TeleopTwistJoy(const rclcpp::NodeOptions& options) : Node("teleo
   {
     static std::set<std::string> intparams = {"axis_linear.x", "axis_linear.y", "axis_linear.z",
                                               "axis_angular.yaw", "axis_angular.pitch", "axis_angular.roll",
-                                              "enable_button", "enable_turbo_button", "enable_field_oriented_button","start_writer_button"};
+                                              "enable_button", "enable_turbo_button", "enable_field_oriented_button","start_writer_button","offset"};
     static std::set<std::string> doubleparams = {"scale_linear.x", "scale_linear.y", "scale_linear.z",
                                                  "scale_linear_turbo.x", "scale_linear_turbo.y", "scale_linear_turbo.z",
                                                  "scale_angular.yaw", "scale_angular.pitch", "scale_angular.roll",
@@ -381,14 +384,15 @@ double get_orientation_val(nav_msgs::msg::Odometry::SharedPtr odom_msg)
   if(!odom_msg){
     return 0.0;
   }
-  double x = odom_msg-> pose.pose.orientation.x;
-  double y = odom_msg-> pose.pose.orientation.y;
-  double z = odom_msg-> pose.pose.orientation.z;
-  double w = odom_msg-> pose.pose.orientation.w;
+  double x = odom_msg->pose.pose.orientation.x;
+  double y = odom_msg->pose.pose.orientation.y;
+  double z = odom_msg->pose.pose.orientation.z;
+  double w = odom_msg->pose.pose.orientation.w;
+
   double siny_cosp = 2 * (w * z + x * y);
   double cosy_cosp = 1 - 2 * (y * y + z * z);
   double angle = std::atan2(siny_cosp, cosy_cosp);
- 
+
   return angle;
 }
 double correct_joystick_pos(const std::map<std::string, double>& scale_map,const std::string& fieldname, double lin_x_vel, double lin_y_vel)
@@ -497,6 +501,7 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
   auto cmd_vel_msg = std::make_unique<geometry_msgs::msg::Twist>();
   double lin_x_vel =  getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "x");
   double lin_y_vel = getVal(joy_msg, axis_linear_map, scale_linear_map[which_map], "y");
+  double ang_z_vel = getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw");
   double temp = correct_joystick_pos(scale_linear_map[which_map],"x", lin_x_vel,lin_y_vel);
   lin_y_vel = correct_joystick_pos(scale_linear_map[which_map],"y", lin_x_vel, lin_y_vel);
   lin_x_vel = temp;
@@ -521,10 +526,12 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
     }
     serviceButtonLastState = state;
   }
-
+    // RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "robot_orientation: %f",last_offset);
   // Math for field oriented drive
   if(fieldOrientationEnabled) {
-    double robot_odom_orientation = ((get_orientation_val(last_msg)));
+    double robot_odom_orientation = (get_orientation_val(last_msg));
+    robot_odom_orientation += ang_z_vel * last_offset;
+    RCLCPP_INFO(rclcpp::get_logger("TeleopTwistJoy"), "robot_orientation: %f",robot_odom_orientation);
     double temp = lin_x_vel * cos(robot_odom_orientation)+ lin_y_vel * sin(robot_odom_orientation);
     lin_y_vel = -1 * lin_x_vel * sin(robot_odom_orientation) + lin_y_vel * cos(robot_odom_orientation);
     lin_x_vel = temp;

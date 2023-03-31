@@ -64,7 +64,7 @@ Visualization Manager:
       Durability Policy: Volatile
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /Nitin/robot_description
+      Value: /prat/robot_description
     Enabled: true
     Links:
       All Links Enabled: true
@@ -209,6 +209,7 @@ Visualization Manager:
       Inertia: false
       Mass: false
     Name: RobotModel
+    TF Prefix: prat
     TF Prefix: Nitin
     Update Interval: 0
     Value: true
@@ -218,63 +219,63 @@ Visualization Manager:
     Frame Timeout: 15
     Frames:
       All Enabled: false
-      Nitin/arm_back_leg_link:
+      prat/arm_back_leg_link:
         Value: false
-      Nitin/arm_elevator_leg_link:
+      prat/arm_elevator_leg_link:
         Value: false
-      Nitin/arm_roller_bar_link:
+      prat/arm_roller_bar_link:
         Value: false
-      Nitin/base_link:
+      prat/base_link:
         Value: false
-      Nitin/bottom_intake_link:
+      prat/bottom_intake_link:
         Value: false
-      Nitin/elevator_center_link:
+      prat/elevator_center_link:
         Value: false
-      Nitin/elevator_outer_1_link:
+      prat/elevator_outer_1_link:
         Value: false
-      Nitin/elevator_outer_2_link:
+      prat/elevator_outer_2_link:
         Value: false
-      Nitin/front_left_axle_link:
+      prat/front_left_axle_link:
         Value: true
-      Nitin/front_left_wheel_link:
+      prat/front_left_wheel_link:
         Value: false
-      Nitin/front_right_axle_link:
+      prat/front_right_axle_link:
         Value: true
-      Nitin/front_right_wheel_link:
+      prat/front_right_wheel_link:
         Value: false
-      Nitin/rear_left_axle_link:
+      prat/rear_left_axle_link:
         Value: true
-      Nitin/rear_left_wheel_link:
+      prat/rear_left_wheel_link:
         Value: false
-      Nitin/rear_right_axle_link:
+      prat/rear_right_axle_link:
         Value: true
-      Nitin/rear_right_wheel_link:
+      prat/rear_right_wheel_link:
         Value: false
-      Nitin/swerve_chassis_link:
+      prat/swerve_chassis_link:
         Value: false
-      Nitin/top_gripper_bar_link:
+      prat/top_gripper_bar_link:
         Value: false
-      Nitin/top_gripper_left_arm_link:
+      prat/top_gripper_left_arm_link:
         Value: false
-      Nitin/top_gripper_right_arm_link:
+      prat/top_gripper_right_arm_link:
         Value: false
-      Nitin/top_slider_link:
+      prat/top_slider_link:
         Value: false
-      Nitin/zed/odom:
+      prat/zed/odom:
         Value: true
-      Nitin/zed2i_base_link:
+      prat/zed2i_base_link:
         Value: false
-      Nitin/zed2i_camera_center:
+      prat/zed2i_camera_center:
         Value: false
-      Nitin/zed2i_imu_link:
+      prat/zed2i_imu_link:
         Value: false
-      Nitin/zed2i_left_camera_frame:
+      prat/zed2i_left_camera_frame:
         Value: false
-      Nitin/zed2i_left_camera_optical_frame:
+      prat/zed2i_left_camera_optical_frame:
         Value: false
-      Nitin/zed2i_right_camera_frame:
+      prat/zed2i_right_camera_frame:
         Value: false
-      Nitin/zed2i_right_camera_optical_frame:
+      prat/zed2i_right_camera_optical_frame:
         Value: false
     Marker Scale: 1
     Name: TF
@@ -282,35 +283,35 @@ Visualization Manager:
     Show Axes: true
     Show Names: false
     Tree:
-      Nitin/base_link:
-        Nitin/swerve_chassis_link:
-          Nitin/arm_back_leg_link:
-            Nitin/elevator_outer_1_link:
-              Nitin/elevator_center_link:
-                Nitin/elevator_outer_2_link:
-                  Nitin/top_slider_link:
-                    Nitin/top_gripper_bar_link:
-                      Nitin/top_gripper_left_arm_link: {}
-                      Nitin/top_gripper_right_arm_link: {}
-          Nitin/arm_elevator_leg_link:
-            Nitin/arm_roller_bar_link: {}
-            Nitin/bottom_intake_link: {}
-          Nitin/front_left_axle_link:
-            Nitin/front_left_wheel_link: {}
-          Nitin/front_right_axle_link:
-            Nitin/front_right_wheel_link: {}
-          Nitin/rear_left_axle_link:
-            Nitin/rear_left_wheel_link: {}
-          Nitin/rear_right_axle_link:
-            Nitin/rear_right_wheel_link: {}
-          Nitin/zed2i_base_link:
-            Nitin/zed2i_camera_center:
-              Nitin/zed2i_left_camera_frame:
-                Nitin/zed2i_imu_link: {}
-                Nitin/zed2i_left_camera_optical_frame: {}
-              Nitin/zed2i_right_camera_frame:
-                Nitin/zed2i_right_camera_optical_frame: {}
-      Nitin/zed/odom: {}
+      prat/base_link:
+        prat/swerve_chassis_link:
+          prat/arm_back_leg_link:
+            prat/elevator_outer_1_link:
+              prat/elevator_center_link:
+                prat/elevator_outer_2_link:
+                  prat/top_slider_link:
+                    prat/top_gripper_bar_link:
+                      prat/top_gripper_left_arm_link: {}
+                      prat/top_gripper_right_arm_link: {}
+          prat/arm_elevator_leg_link:
+            prat/arm_roller_bar_link: {}
+            prat/bottom_intake_link: {}
+          prat/front_left_axle_link:
+            prat/front_left_wheel_link: {}
+          prat/front_right_axle_link:
+            prat/front_right_wheel_link: {}
+          prat/rear_left_axle_link:
+            prat/rear_left_wheel_link: {}
+          prat/rear_right_axle_link:
+            prat/rear_right_wheel_link: {}
+          prat/zed2i_base_link:
+            prat/zed2i_camera_center:
+              prat/zed2i_left_camera_frame:
+                prat/zed2i_imu_link: {}
+                prat/zed2i_left_camera_optical_frame: {}
+              prat/zed2i_right_camera_frame:
+                prat/zed2i_right_camera_optical_frame: {}
+      prat/zed/odom: {}
     Update Interval: 0
     Value: true
   - Angle Tolerance: 0.20000000298023224
@@ -350,12 +351,12 @@ Visualization Manager:
       Filter size: 10
       History Policy: Keep Last
       Reliability Policy: Reliable
-      Value: /Nitin
+      Value: /prat
     Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: Nitin/base_link
+    Fixed Frame: prat/base_link
     Frame Rate: 30
   Name: root
   Tools:
