@@ -9,16 +9,16 @@
         x: 0.0001
         y: 0.0001
       scale_linear_turbo:
-        x: 0.00033
-        y: 0.00033
+        x: 0.00035
+        y: 0.00035
 
       axis_angular:  # Right thumb stick horizontal
         yaw: 3
       scale_angular: #negative to fix turning direction
         yaw: -0.0001
       scale_angular_turbo:
-        yaw: -0.0003
+        yaw: -0.0002
       
       enable_turbo_button: 5
       enable_field_oriented_button: 7
-      offset: 0.5
+      offset: -0.25

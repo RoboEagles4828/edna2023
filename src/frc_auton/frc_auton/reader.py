@@ -102,15 +102,15 @@ class StageSubscriber(Node):
             # task times
             self.tasks = [
                 { 'dur': 0.25, 'task': self.gripperManager, 'arg': 0 },
-                { 'dur': 1, 'task': self.armHeightManager, 'arg': 1 },
-                { 'dur': 4, 'task': self.armExtensionManager, 'arg': 1 },
-                { 'dur': 1, 'task': self.gripperManager, 'arg': 1 },
-                { 'dur': 4, 'task': self.armExtensionManager, 'arg': 0 },
-                { 'dur': 1, 'task': self.armHeightManager, 'arg': 0 },
-                { 'dur': 9, 'task': self.goBackwards, 'arg': -0.5 },
-                { 'dur': 0.2, 'task': self.stop, 'arg': 0 },
+                { 'dur': 0.5, 'task': self.armHeightManager, 'arg': 1 },
+                { 'dur': 3.5, 'task': self.armExtensionManager, 'arg': 1 },
+                { 'dur': 0.5, 'task': self.gripperManager, 'arg': 1 },
+                { 'dur': 2.5, 'task': self.armExtensionManager, 'arg': 0 },
+                { 'dur': 0.5, 'task': self.armHeightManager, 'arg': 0 },
+                { 'dur': 4.0, 'task': self.goBackwards, 'arg': -1.0 },
+                { 'dur': 0.1, 'task': self.stop, 'arg': 0 },
                 { 'dur': 2.1, 'task': self.turnAround, 'arg': math.pi / 2 },
-                { 'dur': 1, 'task': self.stop, 'arg': 0 },
+                { 'dur': 0.1, 'task': self.stop, 'arg': 0 },
             ]
 
             self.conePlacementDuration = 0
@@ -127,11 +127,18 @@ class StageSubscriber(Node):
 
 
 
+    def flip_camera(self):
+        minimal_client = MinimalClientAsync()
+        response = minimal_client.send_request(True)
+        minimal_client.destroy_node()
+
     def initAuton(self):
         self.startTime = time()
         self.turnStartTime = self.startTime + self.conePlacementDuration + 2
         self.changed_stage = False
         self.doAuton = True
+        self.flip_camera()
+
         self.get_logger().info(f"STARTED AUTON AT {self.startTime}")
 
     
@@ -270,14 +277,14 @@ class StageSubscriber(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    minimal_client = MinimalClientAsync()
-    response = minimal_client.send_request(True)
-    # minimal_client.get_logger().info(
-    #     'Result of add_two_ints: for %d + %d = %s' %
-    #     (True, response.success, response.message))
+    # minimal_client = MinimalClientAsync()
+    # response = minimal_client.send_request(True)
+    # # minimal_client.get_logger().info(
+    # #     'Result of add_two_ints: for %d + %d = %s' %
+    # #     (True, response.success, response.message))
 
+    # # minimal_client.destroy_node()
     # minimal_client.destroy_node()
-    minimal_client.destroy_node()
 
    
     stage_subscriber = StageSubscriber()
