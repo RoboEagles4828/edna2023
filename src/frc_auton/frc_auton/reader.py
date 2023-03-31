@@ -12,15 +12,14 @@ import os
 from time import time
 import yaml
 import math
+from nav_msgs.msg import Odometry
 
-
-
+inertial_z = 0
 class StageSubscriber(Node):
 
     def __init__(self):
         super().__init__('stage_subscriber')
 
-        
         self.curr_file_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
         self.package_root = os.path.join(self.project_root_path, 'src/frc_auton')
@@ -32,6 +31,7 @@ class StageSubscriber(Node):
         if file_counter != -1:
             
             self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
+            self.subscription1 = self.create_subscription(Odometry, 'zed/odom', self.odom_callback,10)
             self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
             self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
             
@@ -89,6 +89,9 @@ class StageSubscriber(Node):
                 { 'dur': 0.2, 'task': self.stop, 'arg': 0 },
                 { 'dur': 2.1, 'task': self.turnAround, 'arg': math.pi / 2 },
                 { 'dur': 1, 'task': self.stop, 'arg': 0 },
+            ]
+            self.BalanceAuton = [
+                {'dur': 2, 'task': self.balance},
             ]
 
             self.conePlacementDuration = 0
@@ -155,7 +158,25 @@ class StageSubscriber(Node):
         self.position_cmds.positions[int(self.joint_map['arm_roller_bar_joint'])] = self.joint_limits["arm_roller_bar_joint"][value]
         self.position_cmds.positions[int(self.joint_map['elevator_outer_1_joint'])] = self.joint_limits["elevator_outer_1_joint"][value]
         self.publishCurrent()
-
+    
+    def balance(self):
+        notBalanced = (inertial_z != 0.0)
+        self.tasks = [
+            {'dur': 0.5, 'task': self.goBackwards, 'arg': 0.25},
+            {'dur': 0.5, 'task': self.goBackwards, 'arg': -0.25},
+            {'dur': 1, 'task': self.goBackwards, 'arg': 0.25},
+            {'dur': 1, 'task': self.goBackwards, 'arg': -0.25},
+            {'dur': 1.5, 'task': self.goBackwards, 'arg': 0.25},
+            {'dur': 1.5, 'task': self.goBackwards, 'arg': -0.25},
+        ]
+        elapsedTime = time() - self.startTime
+        while notBalanced:
+            for task in self.tasks:
+                totalDur += task['dur']
+                if elapsedTime < totalDur:
+                    task['task'](task['arg'])
+                    return
+            
     
     def gripperManager(self, pos):
         value = ''
@@ -200,7 +221,6 @@ class StageSubscriber(Node):
         self.cmd.linear.x = speed
         self.publish_twist.publish(self.cmd)
         self.get_logger().warn("GOING BACKWARDS")
-
     def turnAround(self, angVel):
         self.turnCmd.angular.z = angVel
         self.publish_twist.publish(self.turnCmd)
@@ -240,7 +260,8 @@ class StageSubscriber(Node):
         else:
             if self.doAuton:
                 self.stopAuton()
-
+    def odom_callback(self, msg):
+        inertial_z = msg['position']['z']
                 
 
 
