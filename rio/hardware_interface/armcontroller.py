@@ -30,8 +30,8 @@ PORTS = {
 
 MOTOR_PID_CONFIG = {
     'SLOT': 2,
-    'MAX_SPEED': 19000,             # Ticks/100ms 
-    'TARGET_ACCELERATION': 15000,    # Ticks/100ms
+    'MAX_SPEED': 18000,             # Ticks/100ms 
+    'TARGET_ACCELERATION': 14000,    # Ticks/100ms
     "kP": 0.2,
     "kI": 0.0,
     "kD": 0.1,
@@ -233,7 +233,8 @@ class Elevator():
         # Motion Magic
         self.motor.configMotionCruiseVelocity(MOTOR_PID_CONFIG['MAX_SPEED'], MOTOR_TIMEOUT) # Sets the maximum speed of motion magic (ticks/100ms)
         self.motor.configMotionAcceleration(MOTOR_PID_CONFIG['TARGET_ACCELERATION'], MOTOR_TIMEOUT) # Sets the maximum acceleration of motion magic (ticks/100ms)
-        
+        self.motor.configClearPositionOnLimitR(True)
+
     def getPosition(self) -> float:
         percent = self.motor.getSelectedSensorPosition() / self.totalTicks
         return percent * (self.max - self.min) + self.min

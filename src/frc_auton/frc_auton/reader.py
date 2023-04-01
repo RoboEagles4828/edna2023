@@ -107,7 +107,7 @@ class StageSubscriber(Node):
                 { 'dur': 0.5, 'task': self.gripperManager, 'arg': 1 },
                 { 'dur': 2.5, 'task': self.armExtensionManager, 'arg': 0 },
                 { 'dur': 0.5, 'task': self.armHeightManager, 'arg': 0 },
-                { 'dur': 4.0, 'task': self.goBackwards, 'arg': -1.0 },
+                { 'dur': 3.0, 'task': self.goBackwards, 'arg': -1.5 },
                 { 'dur': 0.1, 'task': self.stop, 'arg': 0 },
                 { 'dur': 2.1, 'task': self.turnAround, 'arg': math.pi / 2 },
                 { 'dur': 0.1, 'task': self.stop, 'arg': 0 },
