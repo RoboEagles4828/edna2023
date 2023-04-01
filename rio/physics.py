@@ -44,9 +44,9 @@ class PhysicsEngine:
         self.rearRightModuleSim = SwerveModuleSim(robot.drive_train.rear_right)
 
         self.elevator = TalonFxSim(robot.arm_controller.elevator.motor, 0.0003, 1, False)
-        self.intake = TalonFxSim(robot.arm_controller.bottom_gripper_lift.motor, 0.0004, 1, False)
-        self.intake.addLimitSwitch("fwd", 0)
-        self.intake.addLimitSwitch("rev", TOTAL_INTAKE_REVOLUTIONS * -2 * math.pi)
+        # self.intake = TalonFxSim(robot.arm_controller.bottom_gripper_lift.motor, 0.0004, 1, False)
+        # self.intake.addLimitSwitch("fwd", 0)
+        # self.intake.addLimitSwitch("rev", TOTAL_INTAKE_REVOLUTIONS * -2 * math.pi)
 
         self.pneumaticHub = wpilib.simulation.REVPHSim(PORTS['HUB'])
         self.armRollerBar = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['ARM_ROLLER_BAR'])
@@ -64,7 +64,7 @@ class PhysicsEngine:
 
         # Simulate Arm
         self.elevator.update(tm_diff)
-        self.intake.update(tm_diff)
+        # self.intake.update(tm_diff)
 
         # Add Currents into Battery Simulation
         self.roborio.setVInVoltage(self.battery.calculate([0.0]))

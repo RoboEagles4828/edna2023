@@ -5,11 +5,11 @@
   "MainWindow": {
     "GLOBAL": {
       "fps": "120",
-      "height": "1536",
+      "height": "1016",
       "maximized": "1",
       "style": "1",
       "userScale": "3",
-      "width": "2486",
+      "width": "1846",
       "xpos": "74",
       "ypos": "64"
     }
@@ -27,7 +27,7 @@
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "344,160",
+      "Pos": "954,34",
       "Size": "750,452"
     },
     "###Other Devices": {
