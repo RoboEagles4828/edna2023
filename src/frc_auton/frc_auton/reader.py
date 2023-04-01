@@ -91,15 +91,14 @@ class StageSubscriber(Node):
                 { 'dur': 1, 'task': self.stop, 'arg': 0 },
             ]
             self.BalanceAuton = [
-                {'dur': 1.05, 'task': self.turnAround, 'arg': math.pi / 2 },
-                {'dur': 2, 'task': self.goBackwards, 'arg': 0.5},
-                {'dur': 6, 'task': self.balance, 'arg': 0.25}
+                {'dur': 0.5025, 'task': self.turnAround, 'arg': math.pi / 2 },
+                {'dur': 2, 'task': self.goBackwardsTurned, 'arg': 2.5},
+                {'dur': 4, 'task': self.goBackwardsUntilBalance, 'arg': 1.25}
             ]
 
             self.conePlacementDuration = 0
-            for task in self.tasks:
-                self.conePlacementDuration += task['dur']
-
+            """for task in self.tasks:
+                self.conePlacementDuration += task['dur']"""
 
             # TURN AROUND STUFF
             self.turnCmd = Twist()
@@ -108,24 +107,18 @@ class StageSubscriber(Node):
             self.turnCmd.angular.z = 0.0
             self.turnTimeDuration = 2.0
 
-    def balance(self, speed):
-        notBalanced = (inertial_z != 0.0)
-        self.tasks = [
-            {'dur': 0.5, 'task': self.goBackwards, 'arg': speed},
-            {'dur': 0.5, 'task': self.goBackwards, 'arg': 0 - speed},
-            {'dur': 1, 'task': self.goBackwards, 'arg': speed},
-            {'dur': 1, 'task': self.goBackwards, 'arg': 0 - speed},
-            {'dur': 1.5, 'task': self.goBackwards, 'arg': speed},
-            {'dur': 1.5, 'task': self.goBackwards, 'arg': 0 - speed},
-        ]
+    
+    def balanceAuton(self):
+        totalDur = 0.0
         elapsedTime = time() - self.startTime
-        while notBalanced:
-            for task in self.tasks:
-                totalDur += task['dur']
-                if elapsedTime < totalDur:
-                    task['task'](task['arg'])
-                    return
-
+        notBalanced = (abs(inertial_z) >= 0.1)
+        # while notBalanced: 
+        print(notBalanced)
+        for task in self.BalanceAuton:
+            totalDur += task['dur']
+            if elapsedTime < totalDur:
+                task['task'](task['arg'])
+                return
     def initAuton(self):
         self.startTime = time()
         self.turnStartTime = self.startTime + self.conePlacementDuration + 2
@@ -136,12 +129,17 @@ class StageSubscriber(Node):
     
     def loopAuton(self):
         # self.taxiAuton()
-        # self.coneAuton()
-        #self.turnAuton()
-        self.BalanceAuton()
+        self.coneAuton()
+        # self.turnAuton()
+        # self.balanceAuton()
 
 
     # CONE AUTOMATION STUFF
+    def goBackwardsUntilBalance(self, speed):
+        self.cmd.linear.x = speed
+        self.cmd.linear.y = speed
+        self.publish_twist.publish(self.cmd)
+        self.get_logger().warn("DOCKING CHARGE STATION")
     def publishCurrent(self):
         self.cmds.points = [self.position_cmds]
         self.publish_trajectory.publish(self.cmds)
@@ -262,7 +260,9 @@ class StageSubscriber(Node):
             if self.doAuton:
                 self.stopAuton()
     def odom_callback(self, msg):
+        print(str(msg))
         inertial_z = msg['position']['z']
+        
                 
 
 
@@ -272,11 +272,10 @@ def main(args=None):
 
     stage_subscriber = StageSubscriber()
 
-    rclpy.spin(stage_subscriber)
-
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
+
     stage_subscriber.destroy_node()
     rclpy.shutdown()
 
