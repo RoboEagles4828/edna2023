@@ -31,7 +31,7 @@ class StageSubscriber(Node):
         if file_counter != -1:
             
             self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
-            self.subscription1 = self.create_subscription(Odometry, 'zed/odom', self.odom_callback,10)
+            # self.subscription1 = self.create_subscription(Odometry, 'zed/odom', self.odom_callback,10)
             self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
             self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
             
@@ -260,8 +260,7 @@ class StageSubscriber(Node):
             if self.doAuton:
                 self.stopAuton()
     def odom_callback(self, msg):
-        print(str(msg))
-        inertial_z = msg['position']['z']
+        inertial_z = msg.position.y
         
                 
 

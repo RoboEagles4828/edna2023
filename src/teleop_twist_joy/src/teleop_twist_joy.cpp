@@ -519,8 +519,8 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::msg::Joy::SharedPtr&
     lin_x_vel = temp;*/
     double vNorth = lin_x_vel;
     double vEast = lin_y_vel;
-    theta = get_orientation_val(last_msg) * (M_PI / 180.0);
-    theta = theta + angular.z * (M_PI / 180.0) * 0.15;
+    double theta = get_orientation_val(last_msg) * (M_PI / 180.0);
+    theta = theta + getVal(joy_msg, axis_angular_map, scale_angular_map[which_map], "yaw") * (M_PI / 180.0) * 0.15;
     lin_x_vel = cos(theta) * vNorth + sin(theta) * vEast;
     lin_y_vel = -sin(theta) * vNorth + cos(theta) * vEast;
   }
