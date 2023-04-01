@@ -14,7 +14,6 @@ import yaml
 import math
 from nav_msgs.msg import Odometry
 
-inertial_z = 0
 class StageSubscriber(Node):
 
     def __init__(self):
@@ -31,7 +30,7 @@ class StageSubscriber(Node):
         if file_counter != -1:
             
             self.subscription = self.create_subscription(String,'frc_stage',self.listener_callback,10)
-            # self.subscription1 = self.create_subscription(Odometry, 'zed/odom', self.odom_callback,10)
+            self.subscription1 = self.create_subscription(Odometry, 'zed/odom', self.odom_callback,10)
             self.publish_twist = self.create_publisher(Twist,'swerve_controller/cmd_vel_unstamped',10)
             self.publish_trajectory = self.create_publisher(JointTrajectory,'joint_trajectory_controller/joint_trajectory',10)
             
@@ -92,13 +91,14 @@ class StageSubscriber(Node):
             ]
             self.BalanceAuton = [
                 {'dur': 0.5025, 'task': self.turnAround, 'arg': math.pi / 2 },
-                {'dur': 2, 'task': self.goBackwardsTurned, 'arg': 2.5},
-                {'dur': 4, 'task': self.goBackwardsUntilBalance, 'arg': 1.25}
+                {'dur': 2, 'task': self.goBackwardsTurned, 'arg': 1.0},
+                {'dur': 3, 'task': self.goBackwardsUntilBalance, 'arg': 0.5},
+                {'dur': 1, 'task': self.stop, 'arg': 0},
             ]
 
             self.conePlacementDuration = 0
-            """for task in self.tasks:
-                self.conePlacementDuration += task['dur']"""
+            for task in self.BalanceAuton:
+                self.conePlacementDuration += task['dur']
 
             # TURN AROUND STUFF
             self.turnCmd = Twist()
@@ -107,13 +107,12 @@ class StageSubscriber(Node):
             self.turnCmd.angular.z = 0.0
             self.turnTimeDuration = 2.0
 
+            self.inertial_z = 0.0
+
     
     def balanceAuton(self):
         totalDur = 0.0
         elapsedTime = time() - self.startTime
-        notBalanced = (abs(inertial_z) >= 0.1)
-        # while notBalanced: 
-        print(notBalanced)
         for task in self.BalanceAuton:
             totalDur += task['dur']
             if elapsedTime < totalDur:
@@ -129,17 +128,21 @@ class StageSubscriber(Node):
     
     def loopAuton(self):
         # self.taxiAuton()
-        self.coneAuton()
+        # self.coneAuton()
         # self.turnAuton()
-        # self.balanceAuton()
+        self.balanceAuton()
 
 
     # CONE AUTOMATION STUFF
     def goBackwardsUntilBalance(self, speed):
-        self.cmd.linear.x = speed
-        self.cmd.linear.y = speed
-        self.publish_twist.publish(self.cmd)
-        self.get_logger().warn("DOCKING CHARGE STATION")
+        self.cmd.linear.x = 0.0 - speed
+        self.cmd.linear.y = 0.0 - speed
+        self.cmd.angular.z = 0.0
+        notBalanced = (self.inertial_z >= 0.1)
+        self.get_logger().warn(str(self.inertial_z))
+        if notBalanced:
+            self.publish_twist.publish(self.cmd)
+        # self.get_logger().warn("DOCKING CHARGE STATION")
     def publishCurrent(self):
         self.cmds.points = [self.position_cmds]
         self.publish_trajectory.publish(self.cmds)
@@ -219,17 +222,22 @@ class StageSubscriber(Node):
         self.cmd.linear.x = speed
         self.publish_twist.publish(self.cmd)
         self.get_logger().warn("GOING BACKWARDS")
+
     def turnAround(self, angVel):
         self.turnCmd.angular.z = angVel
         self.publish_twist.publish(self.turnCmd)
         self.get_logger().warn("TURNING")
+
     def goBackwardsTurned(self, speed):
         self.cmd.linear.x = speed
         self.cmd.linear.y = speed
+        self.cmd.angular.z = 0.0
         self.publish_twist.publish(self.cmd)
         self.get_logger().warn("DOCKING CHARGE STATION")
+
     def stopAuton(self):
         self.cmd.linear.x = 0.0
+        self.cmd.linear.y = 0.0
         # Publish twice to just to be safe
         self.publish_twist.publish(self.cmd)
         self.publish_twist.publish(self.cmd)
@@ -260,7 +268,7 @@ class StageSubscriber(Node):
             if self.doAuton:
                 self.stopAuton()
     def odom_callback(self, msg):
-        inertial_z = msg.position.y
+        self.inertial_z = msg.position.y
         
                 
 
@@ -270,6 +278,8 @@ def main(args=None):
     rclpy.init(args=args)
 
     stage_subscriber = StageSubscriber()
+
+    rclpy.spin(stage_subscriber)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
