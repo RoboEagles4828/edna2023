@@ -5,13 +5,13 @@
   "MainWindow": {
     "GLOBAL": {
       "fps": "120",
-      "height": "1016",
+      "height": "1536",
       "maximized": "1",
       "style": "1",
       "userScale": "3",
-      "width": "1846",
-      "xpos": "1376",
-      "ypos": "82"
+      "width": "2486",
+      "xpos": "74",
+      "ypos": "64"
     }
   },
   "Window": {

@@ -18,7 +18,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(writer_srv REQUIRED)
+find_package(edna_interfaces REQUIRED)
 
 
 add_library(
@@ -40,7 +40,7 @@ ament_target_dependencies(${PROJECT_NAME}
   "rclcpp_components"
   "sensor_msgs"
   "nav_msgs"
-  "writer_srv"
+  "edna_interfaces"
 
 )
 

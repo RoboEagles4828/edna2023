@@ -12,19 +12,41 @@ import os
 from time import time
 import yaml
 import math
+from edna_interfaces.srv import SetBool
 
 
+
+class MinimalClientAsync(Node):
+
+    def __init__(self):
+        super().__init__('minimal_client_async')
+        self.client = self.create_client(SetBool, 'reset_field_oriented')
+        while not self.client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.request = SetBool.Request()
+
+    def send_request(self, request):
+        self.request.data = request
+        self.future = self.client.call_async(self.request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
 class StageSubscriber(Node):
 
     def __init__(self):
         super().__init__('stage_subscriber')
-
         
         self.curr_file_path = os.path.abspath(__file__)
         self.project_root_path = os.path.abspath(os.path.join(self.curr_file_path, "../../../.."))
         self.package_root = os.path.join(self.project_root_path, 'src/frc_auton')
+        # minimal_client = MinimalClientAsync()
 
+        # response = minimal_client.send_request(True)
+        # minimal_client.get_logger().info(
+        # 'Result of add_two_ints: for %d + %d = %s' %
+        # (True, response.success, response.message))
+        # rclpy.spin_once(minimal_client)
+        # minimal_client.destroy_node()
         file_counter= int(len(os.listdir(f'{self.package_root}/frc_auton/Auto_ros_bag')))-1
         # self.reader = rosbag2_py.SequentialReader()
         # self.converter_options = rosbag2_py.ConverterOptions(input_serialization_format='cdr',output_serialization_format='cdr')
@@ -80,15 +102,15 @@ class StageSubscriber(Node):
             # task times
             self.tasks = [
                 { 'dur': 0.25, 'task': self.gripperManager, 'arg': 0 },
-                { 'dur': 1, 'task': self.armHeightManager, 'arg': 1 },
-                { 'dur': 4, 'task': self.armExtensionManager, 'arg': 1 },
-                { 'dur': 1, 'task': self.gripperManager, 'arg': 1 },
-                { 'dur': 4, 'task': self.armExtensionManager, 'arg': 0 },
-                { 'dur': 1, 'task': self.armHeightManager, 'arg': 0 },
-                { 'dur': 9, 'task': self.goBackwards, 'arg': -0.5 },
-                { 'dur': 0.2, 'task': self.stop, 'arg': 0 },
+                { 'dur': 0.5, 'task': self.armHeightManager, 'arg': 1 },
+                { 'dur': 3.5, 'task': self.armExtensionManager, 'arg': 1 },
+                { 'dur': 0.5, 'task': self.gripperManager, 'arg': 1 },
+                { 'dur': 2.5, 'task': self.armExtensionManager, 'arg': 0 },
+                { 'dur': 0.5, 'task': self.armHeightManager, 'arg': 0 },
+                { 'dur': 3.0, 'task': self.goBackwards, 'arg': -1.5 },
+                { 'dur': 0.1, 'task': self.stop, 'arg': 0 },
                 { 'dur': 2.1, 'task': self.turnAround, 'arg': math.pi / 2 },
-                { 'dur': 1, 'task': self.stop, 'arg': 0 },
+                { 'dur': 0.1, 'task': self.stop, 'arg': 0 },
             ]
 
             self.conePlacementDuration = 0
@@ -105,11 +127,18 @@ class StageSubscriber(Node):
 
 
 
+    def flip_camera(self):
+        minimal_client = MinimalClientAsync()
+        response = minimal_client.send_request(True)
+        minimal_client.destroy_node()
+
     def initAuton(self):
         self.startTime = time()
         self.turnStartTime = self.startTime + self.conePlacementDuration + 2
         self.changed_stage = False
         self.doAuton = True
+        self.flip_camera()
+
         self.get_logger().info(f"STARTED AUTON AT {self.startTime}")
 
     
@@ -248,7 +277,18 @@ class StageSubscriber(Node):
 def main(args=None):
     rclpy.init(args=args)
 
+    # minimal_client = MinimalClientAsync()
+    # response = minimal_client.send_request(True)
+    # # minimal_client.get_logger().info(
+    # #     'Result of add_two_ints: for %d + %d = %s' %
+    # #     (True, response.success, response.message))
+
+    # # minimal_client.destroy_node()
+    # minimal_client.destroy_node()
+
+   
     stage_subscriber = StageSubscriber()
+    # stage_subscriber.send_request()
 
     rclpy.spin(stage_subscriber)
 
