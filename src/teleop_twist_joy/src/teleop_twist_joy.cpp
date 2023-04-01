@@ -77,7 +77,7 @@ namespace teleop_twist_joy
     int turboButtonLastState = 0;
     double last_offset = 0.0;
     double rotation_offset = 0.0;
-    bool fieldOrientationEnabled = false;
+    bool fieldOrientationEnabled = true;
     bool turboEnabled = false;
     int serviceButtonLastState = 0;
     bool serviceEnabled = false;
