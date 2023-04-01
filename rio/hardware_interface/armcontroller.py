@@ -22,7 +22,7 @@ PORTS = {
     # Pistons
     'ARM_ROLLER_BAR': [14, 15],
     'TOP_GRIPPER_SLIDER': [10, 11],
-    'TOP_GRIPPER': [13, 12],
+    'TOP_GRIPPER': [12, 13],
     # Wheels
     'ELEVATOR': 13,
     'BOTTOM_GRIPPER_LIFT': 14
@@ -59,7 +59,7 @@ class ArmController():
 
         self.arm_roller_bar = Piston(self.hub, PORTS['ARM_ROLLER_BAR'], max=0.07, name="Arm Roller Bar")
         self.top_gripper_slider = Piston(self.hub, PORTS['TOP_GRIPPER_SLIDER'], max=0.30, name="Top Gripper Slider")
-        self.top_gripper = Piston(self.hub, PORTS['TOP_GRIPPER'], max=0.90, name="Top Gripper")
+        self.top_gripper = Piston(self.hub, PORTS['TOP_GRIPPER'], min=0.0, max=-0.9, name="Top Gripper", reverse=True)
 
         self.elevator = Elevator(PORTS['ELEVATOR'], max=0.56)
         self.bottom_gripper_lift = Intake(PORTS['BOTTOM_GRIPPER_LIFT'], max=(math.pi/2.0 - 0.05))
@@ -109,7 +109,7 @@ class ArmController():
 class Piston():
     def __init__(self, hub : wpilib.PneumaticHub, ports : list[int], min : float = 0.0, max : float = 1.0, reverse : bool = False, name : str = "Piston"):
         self.solenoid = hub.makeDoubleSolenoid(ports[0], ports[1])
-        self.state = 0
+        self.state = self.solenoid.get() != wpilib.DoubleSolenoid.Value.kForward
         self.min = min
         self.max = max
         self.reverse = reverse
@@ -130,13 +130,15 @@ class Piston():
         if position != self.lastCommand:
             logging.info(f"{self.name} Position: {position}")
         self.lastCommand = position
-        center = (self.max - self.min) / 2 + self.min
+        center = abs((self.max - self.min) / 2 + self.min)
         forward = wpilib.DoubleSolenoid.Value.kForward
         reverse = wpilib.DoubleSolenoid.Value.kReverse
-        if position >= center and self.state == 0:
+        if abs(position) >= center and self.state == 0:
+            logging.info(f"{self.name} first block")
             self.solenoid.set(reverse if self.reverse else forward)
             self.state = 1
-        elif position < center and self.state == 1:
+        elif abs(position) < center and self.state == 1:
+            logging.info(f"{self.name} first block")
             self.solenoid.set(forward if self.reverse else reverse)
             self.state = 0
 
@@ -231,7 +233,8 @@ class Elevator():
         # Motion Magic
         self.motor.configMotionCruiseVelocity(MOTOR_PID_CONFIG['MAX_SPEED'], MOTOR_TIMEOUT) # Sets the maximum speed of motion magic (ticks/100ms)
         self.motor.configMotionAcceleration(MOTOR_PID_CONFIG['TARGET_ACCELERATION'], MOTOR_TIMEOUT) # Sets the maximum acceleration of motion magic (ticks/100ms)
-        
+        self.motor.configClearPositionOnLimitR(True)
+
     def getPosition(self) -> float:
         percent = self.motor.getSelectedSensorPosition() / self.totalTicks
         return percent * (self.max - self.min) + self.min

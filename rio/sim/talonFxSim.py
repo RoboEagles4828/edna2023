@@ -2,7 +2,7 @@ from ctre import TalonFX, TalonFXSimCollection
 from wpilib import RobotController
 import random
 import math
-# from pyfrc.physics.motor_cfgs import MOTOR_CFG_FALCON_500
+from pyfrc.physics.motor_cfgs import MOTOR_CFG_FALCON_500
 
 import wpilib.simulation
 import wpimath.system.plant

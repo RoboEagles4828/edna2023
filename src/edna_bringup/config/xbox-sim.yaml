@@ -17,10 +17,11 @@
       scale_angular:
         yaw: -1.0
       scale_angular_turbo:
-        yaw: -2.5
+        yaw: -2.2
       
       enable_turbo_button: 5
       enable_field_oriented_button: 7
+      offset: 0.5
   
   
       

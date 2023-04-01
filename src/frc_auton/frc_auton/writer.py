@@ -8,7 +8,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.serialization import serialize_message
 from std_msgs.msg import String
-from writer_srv.srv import StartWriter
+from edna_interfaces.srv import SetBool
 
 import rosbag2_py
 # create writer instance and open for writing
@@ -16,7 +16,7 @@ class StartWriting(Node):
     def __init__(self):
         super().__init__('start_writer')
         self.subscription_stage =self.create_subscription(String, 'frc_stage', self.stage_callback, 10)
-        self.srv = self.create_service(StartWriter, 'start_writer', self.service_callback)
+        self.srv = self.create_service(SetBool, 'set_bool', self.service_callback)
         
         self.stage = ""
         self.fms = "False"
@@ -25,12 +25,12 @@ class StartWriting(Node):
 
     def service_callback(self, request, response):
         self.bag_writer = BagWriter()
-        self.service_enabled = request.record
+        self.service_enabled = request.data
         if(self.service_enabled):
             self.start_bag_writer()
         self.get_logger().info(f'Service Enabled: {self.service_enabled}')
-        response.recording = True
-        response.path = self.bag_writer.path
+        response.sucess = True
+        response.message = self.bag_writer.path
         return response
     def start_bag_writer(self):
         
