@@ -66,11 +66,11 @@
     </link>
 
     <joint name="${prefix}_gripper_left_arm_joint" type="revolute">
-      <origin xyz = "0 ${center_to_arm_axle_left} ${arm_axle_lower}" rpy = "0 0 ${pi/10}" />
+      <origin xyz = "0 ${center_to_arm_axle_left} ${arm_axle_lower}" rpy = "0 0 ${-0.9 + pi/10}" />
       <parent link="${prefix}_gripper_bar_link"/>
       <child link="${prefix}_gripper_left_arm_link"/>
       <axis xyz = "0 0 -1"/>
-      <limit effort="1000.0" lower="0" upper="0.9" velocity="0.5"/>
+      <limit effort="1000.0" lower="-0.9" upper="0" velocity="0.5"/>
     </joint>
 
 
@@ -99,12 +99,12 @@
     </link>
 
     <joint name="${prefix}_gripper_right_arm_joint" type="revolute">
-      <origin xyz = "0 ${center_to_arm_axle_right} ${arm_axle_lower}" rpy = "0 0 -${pi/10}" />
+      <origin xyz = "0 ${center_to_arm_axle_right} ${arm_axle_lower}" rpy = "0 0 ${-pi/10 + 0.9}" />
       <parent link="${prefix}_gripper_bar_link"/>
       <child link="${prefix}_gripper_right_arm_link"/>
       <axis xyz = "0 0 1"/>
       <mimic joint = "${prefix}_gripper_left_arm_joint" multiplier = "1" offset = "0"/>
-      <limit effort="1000.0" lower="0" upper="0.9" velocity="0.5"/>
+      <limit effort="1000.0" lower="-0.9" upper="0" velocity="0.5"/>
     </joint>
   </xacro:macro>
 </robot>

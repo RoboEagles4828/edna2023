@@ -4,6 +4,7 @@ import ctre.sensors
 import math
 import time
 import logging
+from wpimath.filter import SlewRateLimiter
 
 NAMESPACE = 'real'
 
@@ -210,6 +211,14 @@ class SwerveModule():
         # Velocity Ramp
         # TODO: Tweak this value
         self.wheel_motor.configClosedloopRamp(0.1)
+
+        # Current Limit
+        current_limit = 20
+        current_threshold = 40
+        current_threshold_time = 0.1
+        supply_current_limit_configs = ctre.SupplyCurrentLimitConfiguration(True, current_limit, current_threshold, current_threshold_time)
+        self.wheel_motor.configSupplyCurrentLimit(supply_current_limit_configs, timeout_ms)
+
     
     def setupAxleMotor(self):
         self.axle_motor.configFactoryDefault()
@@ -252,7 +261,7 @@ class SwerveModule():
 
     def set(self, wheel_motor_vel, axle_position):
         wheel_vel = getWheelShaftTicks(wheel_motor_vel, "velocity")
-        if wheel_motor_vel == 0.0:
+        if abs(wheel_motor_vel) < 0.2:
             self.neutralize_module()
             return
         else:
