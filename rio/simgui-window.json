@@ -11,7 +11,7 @@
       "userScale": "3",
       "width": "1357",
       "xpos": "225",
-      "ypos": "218"
+      "ypos": "208"
     }
   },
   "Window": {
@@ -23,11 +23,11 @@
     "###Joysticks": {
       "Collapsed": "0",
       "Pos": "242,566",
-      "Size": "976,82"
+      "Size": "976,252"
     },
     "###NetworkTables": {
       "Collapsed": "1",
-      "Pos": "400,677",
+      "Pos": "1338,550",
       "Size": "750,452"
     },
     "###Other Devices": {

@@ -26,7 +26,6 @@ class TalonFxSim:
         self.gearRatio = gearRatio
         self.sensorPhase = -1 if sensorPhase else 1
         self.gearbox = wpimath.system.plant.DCMotor.falcon500(1)    
-        self.gearbox = wpimath.system.
         self.motor = wpilib.simulation.DCMotorSim(self.gearbox, self.gearRatio, self.moi, [0.0, 0.0])
         self.velocity = 0.0
         self.position = 0.0

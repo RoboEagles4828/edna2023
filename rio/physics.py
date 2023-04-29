@@ -2,6 +2,7 @@
 import wpilib
 import wpilib.simulation
 import ctre
+import os, inspect
 from pyfrc.physics import drivetrains
 from pyfrc.physics.core import PhysicsInterface
 
@@ -10,11 +11,16 @@ from sim.cancoderSim import CancoderSim
 from hardware_interface.drivetrain import getAxleRadians, getWheelRadians, SwerveModule, AXLE_JOINT_GEAR_RATIO
 from hardware_interface.armcontroller import PORTS, TOTAL_INTAKE_REVOLUTIONS
 from hardware_interface.joystick import CONTROLLER_PORT
-
-from dds import DDS_Subscriber, DDS_Publisher
+from robot import initDDS
+from dds.dds import DDS_Publisher
 
 import math
 import typing
+
+curr_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+xml_path = os.path.join(curr_path, "dds/xml/ROS_RTI.xml")
+SIM_PARTICIPANT_NAME = "ROS2_PARTICIPANT_LIB::isaac"
+SIM_WRITER_NAME = "isaac_commands_publisher::joint_writer"
 
 if typing.TYPE_CHECKING:
     from robot import EdnaRobot
@@ -55,14 +61,21 @@ class PhysicsEngine:
         self.topGripperSlider = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER_SLIDER'])
         self.topGripper = wpilib.simulation.DoubleSolenoidSim(self.pneumaticHub, *PORTS['TOP_GRIPPER'])
 
-    def getJointStateData(self):
-        data =  {"name": [], "position": [], "velocity": []}
-        fl = self.frontLeftModuleSim.getJointState()
-        fr = self.frontRightModuleSim.getJointState()
-        rl = self.rearLeftModuleSim.getJointState()
-        rr = self.rearRightModuleSim.getJointState()
+        self.isaac_pub = initDDS(DDS_Publisher, SIM_PARTICIPANT_NAME, SIM_WRITER_NAME)
 
-        data["name"].extend(fl["name"], fr["name"], rl["name"], rr["name"])
+    def getJointStateData(self):
+        data =  {"name": [], "velocity": []}
+        moduleStates = [ 
+            self.frontLeftModuleSim.getJointState(),
+            self.frontRightModuleSim.getJointState(),
+            self.rearLeftModuleSim.getJointState(),
+            self.rearRightModuleSim.getJointState(),
+        ]
+        for module in moduleStates:
+            data["name"].extend(module["name"])
+            # data["position"].extend(module["position"])
+            data["velocity"].extend(module["velocity"])
+        return data
 
     
     def update_sim(self, now: float, tm_diff: float) -> None:
@@ -73,7 +86,7 @@ class PhysicsEngine:
         self.rearLeftModuleSim.update(tm_diff)
         self.rearRightModuleSim.update(tm_diff)
         
-        
+        self.isaac_pub.write(self.getJointStateData())
 
         # Simulate Arm
         self.elevator.update(tm_diff)
