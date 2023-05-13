@@ -63,6 +63,7 @@ If all goes well, you'll be able to move the robot around with the joystick! See
 </details>
 
 <details><summary><b style="font-size:1em">Simulating the RoboRIO</b></summary>
+
 The National Instruments [RoboRIO](https://www.ni.com/en-us/shop/model/roborio.html) is a required computer for the FRC competitions, and as such, all of our code to physically move robot parts has to be run through it.
 
 In order to run this simulator, you'll have to navigate to the `rio/` before running the following commands.
@@ -139,11 +140,3 @@ However, there is one thing not covered by the tutorial. You will have to run `r
 
 ### 3. Deploying to the RoboRIO  
 To deploy to the RoboRIO, you'll need to connect your computer to the RIO, either over USB or over the network. Once you're connected you can run `python3 robot.py deploy` in order to flash the script onto the RoboRIO.
-
-## Setting up the Jetson
-The Jetson acts as the coprocessor for the RoboRIO, as the RIO doesn't have nearly enough processing power in order to run complex AI models or vision processing algorithms.
-
-> WARNING: This part was written by the person who DID NOT setup up the Jetson. Please fact check it for accuracy before pushing to main!
-
-### 1. Installing the repository
-Installing the repository follows essentially the same steps as our setup guide, just with more raw docker commands than the nice setup that VSCode does for you.

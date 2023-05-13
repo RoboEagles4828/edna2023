@@ -33,4 +33,4 @@ However, if you want object detection to be on by default, then go into src/zed_
 Now if you open RViz2 with the default ZED settings, you can see the bounding boxes going around the real world things! (You can also add the point cloud from the topic to see it even better).
 
 ## Chapter Four: Custom Object Detection
-I'm working on it!
+Unfortunately, custom object detection is *not* currently included in the ROS2 wrapper for the ZED SDK. This could be done by modifying the `zed_wrapper` package manually to add in a supported detection algorithm like Yolo or OpenCV. For us, we ran out of time to get this working during the season, but the above steps can give you a starting point. For more information, head over to [the ZED SDK](https://github.com/stereolabs/zed-sdk/tree/master/object%20detection/custom%20detector/cpp/tensorrt_yolov5_v6.0) and look at their code.
