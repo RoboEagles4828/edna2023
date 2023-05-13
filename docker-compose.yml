@@ -9,7 +9,7 @@ services:
       - FASTRTPS_DEFAULT_PROFILES_FILE=/usr/local/share/middleware_profiles/rtps_udp_profile.xml
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: unless-stopped
         delay: 2s
         max_attempts: 3
         window: 120s
