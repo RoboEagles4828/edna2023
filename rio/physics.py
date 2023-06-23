@@ -15,7 +15,7 @@ import math
 import typing
 
 if typing.TYPE_CHECKING:
-    from robot import EdnaRobot
+    from rio.ros2robot import EdnaRobot
 
 # Calculations
 axle_radius = 0.05
