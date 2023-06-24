@@ -2,9 +2,9 @@ import wpilib
 import logging
 
 CONTROLLER_PORT = 0
-SCALING_FACTOR_FIX = 10000
+SCALING_FACTOR_FIX = 1
 
-ENABLE_THROTTLE = True
+ENABLE_THROTTLE = False
 
 pov_x_map = {
     -1: 0.0,
@@ -38,10 +38,10 @@ class Joystick:
         self.count = 0
 
     def scaleAxis(self, axis):
-        return int(axis * SCALING_FACTOR_FIX * -1)
+        return axis * SCALING_FACTOR_FIX * -1.0
     
     def scaleTrigger(self, trigger):
-        return int(trigger * SCALING_FACTOR_FIX * -1)
+        return trigger * SCALING_FACTOR_FIX * -1.0
     
     def getEmptyData(self):
         return {
@@ -61,10 +61,13 @@ class Joystick:
         axes = [
             self.scaleAxis(leftX) if abs(leftX) > self.deadzone else 0.0,
             self.scaleAxis(leftY) if abs(leftY) > self.deadzone else 0.0,
+            # leftX,
+            # leftY,
             self.scaleTrigger(leftTrigger),
             self.scaleAxis(rightX) if abs(rightX) > self.deadzone else 0.0,
-            
             self.scaleAxis(rightY) if abs(rightY) > self.deadzone else 0.0,
+            # rightX,
+            # rightY,
             self.scaleTrigger(rightTrigger),
             
             pov_x_map[pov], # left 1.0 right -1.0

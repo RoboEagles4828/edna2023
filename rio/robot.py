@@ -9,3 +9,6 @@ class Robot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         self.drive_train.arcadeDrive(self.joystick)
+
+if __name__ == '__main__':
+    wpilib.run(Robot)

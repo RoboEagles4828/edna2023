@@ -7,7 +7,7 @@ import math
 import time
 import logging
 from wpimath.filter import SlewRateLimiter
-from joystick import Joystick
+from hardware_interface.joystick import Joystick
 import navx
 
 
@@ -24,25 +24,35 @@ MODULE_CONFIG = {
         "axle_joint_name": "front_left_axle_joint",
         "axle_motor_port": 1, #7
         "axle_encoder_port": 2, #8
-        "encoder_offset": 18.984, # 248.203
-        "location:" : Translation2d(0.381, 0.381)
+        "encoder_offset": 18.984, # 248.203,
+        "location" : Translation2d(0.52085486, 0.52085486)
     },
     "front_right": {
         "wheel_joint_name": "front_right_wheel_joint",
         "wheel_motor_port": 6, #12
         "axle_joint_name": "front_right_axle_joint",
+        "axle_motor_port": 4, #10
+        "axle_encoder_port": 5, #11
+        "encoder_offset": 145.723, #15.908,
+        "location" : Translation2d(-0.52085486, 0.52085486)
+    },
+    "rear_left": {
+        "wheel_joint_name": "rear_left_wheel_joint",
+        "wheel_motor_port": 12, #6
+        "axle_joint_name": "rear_left_axle_joint",
+        "axle_motor_port": 10, #4
         "axle_encoder_port": 11, #5
         "encoder_offset": 194.678, #327.393,
-        "location:" : Translation2d(-0.381, 0.381)
+        "location" : Translation2d(0.52085486, -0.52085486)
     },
     "rear_right": {
         "wheel_joint_name": "rear_right_wheel_joint",
         "wheel_motor_port": 9, #3
         "axle_joint_name": "rear_right_axle_joint",
-        "axle_motor_port": 7, #1wpimath.geometry.
+        "axle_motor_port": 7, #1
         "axle_encoder_port": 8, #2
         "encoder_offset": 69.785, #201.094,
-        "location:" : Translation2d(-0.381, -0.381)
+        "location" : Translation2d(-0.52085486, -0.52085486)
     }
 }
 
@@ -341,6 +351,7 @@ class DriveTrain():
         self.rear_right_location = MODULE_CONFIG["rear_right"]["location"]
         self.kinematics = SwerveDrive4Kinematics(self.front_left_location, self.front_right_location, self.rear_left_location, self.rear_right_location)
         self.navx = navx.AHRS.create_spi()
+        self.speed = ChassisSpeeds(0, 0, 0)
         self.module_lookup = \
         {
             'front_left_axle_joint': self.front_left,
@@ -374,46 +385,51 @@ class DriveTrain():
         self.rear_right.stop()
 
     def arcadeDrive(self, joystick: Joystick):
-        linearY = joystick.getData().get("axes")[0]
-        linearX = joystick.getData().get("axes")[1]
-        angularZ = joystick.getData().get("axes")[3]
+        # print(f'FL: {self.front_left.getEncoderVelocity()} FR: {self.front_right.getEncoderVelocity()} RL: {self.rear_left.getEncoderVelocity()} RR: {self.rear_right.getEncoderVelocity()}')
 
-        speeds = ChassisSpeeds(0, 0, 0)
+        linearX = joystick.getData()["axes"][1] * 500.0
+        linearY = -joystick.getData()["axes"][0] * 500.0
+        angularZ = joystick.getData()["axes"][3] * 500.0
 
-        if self.toggle(7, joystick):
+        print("linearX: " + str(linearX) + " linearY: " + str(linearY) + " angularZ: " + str(angularZ))
+
+        if self.toggleButton(7, joystick):
             # field  oriented
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(linearY, linearX, angularZ, Rotation2d.fromDegrees(self.navx.getYaw()))
+            self.speeds = ChassisSpeeds.fromFieldRelativeSpeeds(linearY, linearX, angularZ, Rotation2d.fromDegrees(self.navx.getYaw()))
         else:
-            speeds = ChassisSpeeds(linearY, linearX, angularZ)
+            self.speeds = ChassisSpeeds(linearX, linearY, angularZ)
 
-        module_state = self.kinematics.toSwerveModuleStates(speeds)
-        optimized_module_state = []
-        i = 0
-        for state in module_state:
-            module = None
-            if i == 0:
-                module = self.front_left
-            elif i == 1:
-                module = self.front_right
-            elif i == 2:
-                module = self.rear_left
-            elif i == 3:
-                module = self.rear_right
-            
-            optimized_module_state.append(SwerveModuleState.optimize(state, module.getEncoderData()[1].get("position")))
-            i += 1
+        # print(f'{self.speeds.vx} {self.speeds.vy} {self.speeds.omega}')
 
-        front_left_state: SwerveModuleState = optimized_module_state[0]
-        front_right_state: SwerveModuleState = optimized_module_state[1]
-        rear_left_state: SwerveModuleState = optimized_module_state[2]
-        rear_right_state: SwerveModuleState = optimized_module_state[3]
+        self.module_state = self.kinematics.toSwerveModuleStates(self.speeds)
 
-        self.front_left.set(front_left_state.speed, front_left_state.angle.radians())
-        self.front_right.set(front_right_state.speed, front_right_state.angle.radians())
-        self.rear_left.set(rear_left_state.speed, rear_left_state.angle.radians())
-        self.rear_right.set(rear_right_state.speed, rear_right_state.angle.radians())
+        self.front_left_state: SwerveModuleState = self.module_state[0]
+        self.front_right_state: SwerveModuleState = self.module_state[1]
+        self.rear_left_state: SwerveModuleState = self.module_state[2]
+        self.rear_right_state: SwerveModuleState = self.module_state[3]
 
-    def toggle(self, button, joystick):
+        # convert state speeds to radians per second
+        wheel_radius = 0.0508
+        self.front_left_speed = self.front_left_state.speed / (wheel_radius) / math.pi * 2
+        self.front_right_speed = self.front_right_state.speed / (wheel_radius) / math.pi * 2
+        self.rear_left_speed = self.rear_left_state.speed / (wheel_radius) / math.pi * 2
+        self.rear_right_speed = self.rear_right_state.speed / (wheel_radius) / math.pi * 2
+
+        self.front_left.wheel_motor.set(ctre.TalonFXControlMode.Velocity, self.front_left_speed)
+        self.front_right.wheel_motor.set(ctre.TalonFXControlMode.Velocity, self.front_right_speed)
+        self.rear_left.wheel_motor.set(ctre.TalonFXControlMode.Velocity, self.rear_left_speed)
+        self.rear_right.wheel_motor.set(ctre.TalonFXControlMode.Velocity, self.rear_right_speed)
+
+        self.front_left.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(self.front_left_state.angle.radians(), "position"))
+        self.front_right.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(self.front_right_state.angle.radians(), "position"))
+        self.rear_left.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(self.rear_left_state.angle.radians(), "position"))
+        self.rear_right.axle_motor.set(ctre.TalonFXControlMode.MotionMagic, getShaftTicks(self.rear_right_state.angle.radians(), "position"))
+
+        # print(f'FL: {self.front_left.wheel_motor.getSelectedSensorVelocity()} {self.front_left_state.angle.radians()} FR: {self.front_right.getEncoderVelocity()} {self.front_right_state.angle.radians()} RL: {self.rear_left.getEncoderVelocity()} {self.rear_left_state.angle.radians()} RR: {self.rear_right.getEncoderVelocity()} {self.rear_right_state.angle.radians()}')
+
+
+
+    def toggleButton(self, button, joystick):
         if joystick.getData().get("buttons")[button] == 1:
             if self.toggle == False:
                 self.toggle = True
