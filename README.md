@@ -117,6 +117,12 @@ You can also tell the states of the joints based on the boxes to the left of the
 To publish out your own joint commands, simply use the bottom slider, or click on the buttons in order to edit the joint state being broadcast out to the robot!
 </details>
 
+# Gallery
+
+![vslam2](./docs/isaac-slam2.png)
+![vslam3](./docs/isaac-slam3.png)
+![vslam1](./docs/isaac-slam.png)
+
 
 # Setting up your own robot
 > An incredibly difficult task which we've only done once or twice. This documentation is currently untested! Here be dragons!
